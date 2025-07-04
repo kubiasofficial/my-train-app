@@ -1,0 +1,19 @@
+{
+  "rewrites": [
+    {
+      "source": "/data/:path*",
+      "destination": "/public/data/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/data/trains.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    }
+  ]
+}
