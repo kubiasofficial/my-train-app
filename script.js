@@ -31,7 +31,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ... zbytek kódu ...
-});
 
     // --- Logika pro tlačítko Discord Webhook (zůstává stejná) ---
     const testWebhookButton = document.getElementById('testWebhookButton');

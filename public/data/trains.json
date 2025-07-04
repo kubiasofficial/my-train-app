@@ -24,11 +24,3 @@
     ]
   }
 ]
-    "maxSpeed": "140 km/h",
-    "validFrom": "30.04.2025",
-    "locoType": null,
-    "stops": [
-      { "station": "Kraków Główny", "arrivalTime": null, "departureTime": "8:51" }
-    ]
-  }
-]
