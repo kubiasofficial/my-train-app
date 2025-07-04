@@ -9,7 +9,11 @@
 <body>
     <h1>Vlakové jízdní řády PKP</h1>
     <p>Vítejte v aplikaci pro sledování vlakových jízdních řádů.</p>
-    <div id="app-container"></div>
+    <div id="app-container">
+        <label for="trainSelect">Vyber vlak:</label>
+        <select id="trainSelect"><option>Načítám...</option></select>
+        <div id="trainDetail"></div>
+    </div>
     <button id="testWebhookButton">Otestovat Discord Webhook</button>
     <script src="/script.js"></script>
 </body>
