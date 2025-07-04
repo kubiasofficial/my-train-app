@@ -15,5 +15,8 @@
         }
       ]
     }
-  ]
+  ],
+  "build": {
+    "outputDirectory": "public"
+  }
 }
