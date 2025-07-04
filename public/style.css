@@ -25,3 +25,10 @@ h1 {
 .train:last-child {
     border-bottom: none;
 }
+
+.trains-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+}
