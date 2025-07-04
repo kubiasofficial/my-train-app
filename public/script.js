@@ -103,19 +103,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
         }
-        // Najdi vlaky 5-10 minut po zadaném čase
+        // Najdi vlaky 5-10 minut po zadaném čase, pokud nejsou, najdi nejbližší pozdější vlak
         const [h, m] = userTime.split(':').map(Number);
         const userMinutes = h * 60 + m;
         const minMinutes = userMinutes + 5;
         const maxMinutes = userMinutes + 10;
-        const candidates = allTrains.filter(t => {
+        let candidates = allTrains.filter(t => {
             const [th, tm] = t.departure.split(':').map(Number);
             const tMinutes = th * 60 + tm;
             return tMinutes >= minMinutes && tMinutes <= maxMinutes;
         });
         if (candidates.length === 0) {
-            detailDiv.innerHTML = '<p style="color:#c00;">Žádný vlak v rozmezí 5-10 minut po zadaném čase.</p>';
-            return;
+            // Pokud není žádný vlak v rozmezí, najdi nejbližší pozdější vlak
+            let nextTrains = allTrains
+                .map(t => {
+                    const [th, tm] = t.departure.split(':').map(Number);
+                    const tMinutes = th * 60 + tm;
+                    return { t, tMinutes };
+                })
+                .filter(obj => obj.tMinutes > userMinutes)
+                .sort((a, b) => a.tMinutes - b.tMinutes);
+            if (nextTrains.length > 0) {
+                const train = nextTrains[0].t;
+                detailDiv.innerHTML = `<div style="color:#c00;margin-bottom:8px;">Žádný vlak v rozmezí 5-10 minut po zadaném čase.<br>Nejbližší další vlak:</div>`;
+                showRandomTrainDetail(train);
+                return;
+            } else {
+                // Pokud není žádný pozdější vlak, zobraz první ranní vlak
+                const firstTrain = allTrains[0];
+                detailDiv.innerHTML = `<div style="color:#c00;margin-bottom:8px;">Žádný vlak v rozmezí 5-10 minut po zadaném čase.<br>Další vlak jede až další den:</div>`;
+                showRandomTrainDetail(firstTrain);
+                return;
+            }
         }
         const train = candidates[Math.floor(Math.random() * candidates.length)];
         showRandomTrainDetail(train);
