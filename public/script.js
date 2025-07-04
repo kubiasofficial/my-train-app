@@ -1,3 +1,9 @@
+{
+  "build": {
+    "outputDirectory": "public"
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // Načtení dat vlaků
     fetch('/data/trains.json')
