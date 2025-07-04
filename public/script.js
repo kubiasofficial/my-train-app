@@ -9,7 +9,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Nový výběr vlaku podle času ---
     const allTrains = [
-        // ... zde budou všechny vlaky podle zadání ...
+        // EIP 13xx trains (Warszawa Gróchow -> Krakow, via Warszawa Wschodnia)
         { number: "1301", departure: "04:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
         { number: "1303", departure: "05:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
         { number: "1305", departure: "06:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
@@ -28,7 +28,48 @@ document.addEventListener('DOMContentLoaded', () => {
         { number: "1331", departure: "19:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
         { number: "1333", departure: "20:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
         { number: "1335", departure: "21:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        // ... (další vlaky z tvého zadání, pro přehlednost zkráceno) ...
+
+        // EIP 31xx trains (Kraków Płaszów -> Warszawa Wschodnia, via Kraków Główny)
+        { number: "3100", departure: "03:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3102", departure: "04:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3104", departure: "05:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3106", departure: "06:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3108", departure: "07:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3110", departure: "08:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3112", departure: "09:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3114", departure: "10:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3116", departure: "11:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3118", departure: "12:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3120", departure: "13:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3122", departure: "14:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3124", departure: "15:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3126", departure: "16:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3128", departure: "17:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3130", departure: "18:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3132", departure: "19:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+        { number: "3134", departure: "20:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
+
+        // EIP 41xx / 45xx trains (Gliwice/Bielsko-Biała Główna -> Warszawa Wschodnia, via Katowice)
+        { number: "4100", departure: "04:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4500", departure: "05:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4102", departure: "06:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4502", departure: "07:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4104", departure: "08:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4504", departure: "09:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4106", departure: "10:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4506", departure: "11:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4108", departure: "12:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4508", departure: "13:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4110", departure: "14:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4510", departure: "15:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4112", departure: "16:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4512", departure: "17:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4114", departure: "18:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4514", departure: "19:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4116", departure: "20:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
+        { number: "4516", departure: "21:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
+
+        // ... další vlaky z tvého zadání ...
     ];
 
     const select = document.getElementById('trainSelect');
