@@ -87,10 +87,21 @@ document.addEventListener('DOMContentLoaded', () => {
     select.parentNode.insertBefore(customDiv, select);
 
     document.getElementById('randomTrainBtn').addEventListener('click', () => {
-        const userTime = document.getElementById('userTime').value;
+        let userTime = document.getElementById('userTime').value;
+        // Pokud není zadán čas, použij aktuální čas v ČR (Europe/Prague)
         if (!userTime) {
-            alert('Zadej aktuální čas!');
-            return;
+            try {
+                const now = new Date();
+                // Získej čas v časovém pásmu Evropa/Praha
+                const pragueTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Prague' }));
+                let h = pragueTime.getHours();
+                let m = pragueTime.getMinutes();
+                userTime = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                document.getElementById('userTime').value = userTime;
+            } catch (e) {
+                alert('Nepodařilo se zjistit aktuální čas v ČR.');
+                return;
+            }
         }
         // Najdi vlaky 5-10 minut po zadaném čase
         const [h, m] = userTime.split(':').map(Number);
