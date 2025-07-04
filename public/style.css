@@ -10,13 +10,18 @@ h1 {
     text-align: center;
     margin-top: 30px;
 }
-#trains {
-    max-width: 600px;
+#app-container {
+    max-width: 700px;
     margin: 40px auto;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     padding: 20px;
+}
+.trains-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 .train {
     border-bottom: 1px solid #eee;
@@ -25,10 +30,20 @@ h1 {
 .train:last-child {
     border-bottom: none;
 }
-
-.trains-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+button {
+    display: block;
+    margin: 30px auto 0 auto;
+    padding: 10px 20px;
+    font-size: 1rem;
+    background: #0070f3;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+button:hover {
+    background: #005bb5;
+}
 }
 }

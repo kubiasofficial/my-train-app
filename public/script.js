@@ -1,21 +1,21 @@
 
 
+
+// Nový čistý kód pro načtení vlaků a webhook tlačítko
 document.addEventListener('DOMContentLoaded', () => {
-    // Načtení dat vlaků
     fetch('/data/trains.json')
         .then(response => {
             if (!response.ok) throw new Error('Chyba při načítání dat vlaků.');
             return response.json();
         })
         .then(trains => {
-            displayTrains(trains);
+            showTrains(trains);
         })
         .catch(() => {
             const appContainer = document.getElementById('app-container');
             if (appContainer) appContainer.innerHTML = '<p>Nepodařilo se načíst data vlaků.</p>';
         });
 
-    // Webhook tlačítko
     const testWebhookButton = document.getElementById('testWebhookButton');
     if (testWebhookButton) {
         testWebhookButton.addEventListener('click', async () => {
@@ -34,9 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function displayTrains(trains) {
+function showTrains(trains) {
     const appContainer = document.getElementById('app-container');
     if (!appContainer) return;
+    appContainer.innerHTML = '';
     if (!Array.isArray(trains) || trains.length === 0) {
         appContainer.innerHTML = '<p>Žádné vlaky k zobrazení.</p>';
         return;
@@ -47,13 +48,13 @@ function displayTrains(trains) {
         const li = document.createElement('li');
         li.className = 'train';
         li.innerHTML = `
-            <h3>${train.type} ${train.number} - ${train.route}</h3>
-            <p>Max rychlost: ${train.maxSpeed}, Platnost od: ${train.validFrom}</p>
+            <h3>${train.type || ''} ${train.number || ''} - ${train.route || ''}</h3>
+            <p>Max rychlost: ${train.maxSpeed || '-'}, Platnost od: ${train.validFrom || '-'}</p>
             <h4>Zastávky:</h4>
             <ul>
                 ${Array.isArray(train.stops) ? train.stops.map(stop => `
                     <li>
-                        ${stop.station}:
+                        ${stop.station || ''}:
                         ${stop.arrivalTime ? `Příjezd: ${stop.arrivalTime}` : ''}
                         ${stop.departureTime ? `Odjezd: ${stop.departureTime}` : ''}
                     </li>
@@ -62,6 +63,5 @@ function displayTrains(trains) {
         `;
         ul.appendChild(li);
     });
-    appContainer.innerHTML = '';
     appContainer.appendChild(ul);
 }
