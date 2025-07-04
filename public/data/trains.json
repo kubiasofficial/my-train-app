@@ -1,0 +1,26 @@
+[
+  {
+    "type": "MPE",
+    "number": "35200",
+    "route": "Kraków Główny - Kozłów - Psary - Idzikowice - Warszawa Wschodnia",
+    "maxSpeed": "140 km/h",
+    "validFrom": "30.04.2025",
+    "stops": [
+      { "station": "Kraków Główny", "arrivalTime": null, "departureTime": "4:51" },
+      { "station": "Kozłów", "arrivalTime": "5:30", "departureTime": "5:32" },
+      { "station": "Warszawa Wschodnia", "arrivalTime": "7:15", "departureTime": null }
+    ]
+  },
+  {
+    "type": "MPE",
+    "number": "35102",
+    "route": "Kraków Główny - Kozłów - Psary - Idzikowice - Warszawa Wschodnia",
+    "maxSpeed": "140 km/h",
+    "validFrom": "30.04.2025",
+    "stops": [
+      { "station": "Kraków Główny", "arrivalTime": null, "departureTime": "6:51" },
+      { "station": "Kozłów", "arrivalTime": "7:30", "departureTime": "7:32" },
+      { "station": "Warszawa Wschodnia", "arrivalTime": "9:15", "departureTime": null }
+    ]
+  }
+]
