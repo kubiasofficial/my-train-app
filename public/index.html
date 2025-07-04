@@ -7,19 +7,27 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <div class="header-logo-title">
-        <img src="/logo.webp" alt="Logo společnosti" class="company-logo" />
-        <h1>Vlakové jízdní řády PKP</h1>
-    </div>
-    <p>Vítejte v aplikaci pro sledování vlakových jízdních řádů.</p>
-    <div id="app-container">
-        <label for="trainSelect">Vyber vlak:</label>
-        <select id="trainSelect"><option>Načítám...</option></select>
-        <div id="trainDetail"></div>
-        <button id="testWebhookButton">Otestovat Discord Webhook</button>
-    </div>
-    <footer style="text-align:center;color:#888;margin-top:40px;font-size:0.98rem;">
-        &copy; 2025 Simrail výkazy &mdash; design by <span style="color:#0070f3;font-weight:600;">PKP</span>
+    <header class="header-logo-title">
+        <img src="/company-logo.webp" alt="Logo společnosti MCD" class="company-logo" />
+        <h1>Dispečink strojvedoucího <span class="mcd-accent">MCD</span></h1>
+        <div class="subtitle">Multi-Cargo Doprava &mdash; moderní nástroj pro výběr a správu vlaků</div>
+    </header>
+    <div class="animated-bar"></div>
+    <p class="welcome">Vítejte v plnohodnotné aplikaci pro strojvedoucího. Vyberte si vlak podle času, zobrazte detail, odešlete hlášení na Discord a sledujte svůj provoz jednoduše a moderně.</p>
+    <main id="app-container">
+        <div class="section">
+            <label for="trainSelect">Vyber vlak:</label>
+            <select id="trainSelect"><option>Načítám...</option></select>
+        </div>
+        <div class="section">
+            <div id="trainDetail"></div>
+        </div>
+        <div class="section webhook-section">
+            <button id="testWebhookButton">Odeslat hlášení na Discord</button>
+        </div>
+    </main>
+    <footer class="footer">
+        &copy; 2025 Multi-Cargo Doprava (MCD) &mdash; design & vývoj pro strojvedoucí
     </footer>
     <script src="/script.js"></script>
 </body>
