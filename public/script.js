@@ -35,12 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function displayTrains(trains) {
     const appContainer = document.getElementById('app-container');
     if (!appContainer) return;
-    if (!Array.isArray(trains)) {
-        appContainer.innerHTML = '<p>Chybný formát dat.</p>';
-        return;
-    }
-    if (trains.length === 0) {
-        appContainer.innerHTML = '<p>Žádné vlaky nenalezeny.</p>';
+    if (!Array.isArray(trains) || trains.length === 0) {
+        appContainer.innerHTML = '<p>Žádné vlaky k zobrazení.</p>';
         return;
     }
     const ul = document.createElement('ul');
@@ -49,11 +45,18 @@ function displayTrains(trains) {
         const li = document.createElement('li');
         li.className = 'train';
         li.innerHTML = `
-            <strong>${train.type || ''} ${train.number || ''}</strong><br>
-            Trasa: ${train.route || '-'}<br>
-            Max. rychlost: ${train.maxSpeed || '-'}<br>
-            Platí od: ${train.validFrom || '-'}<br>
-            Zastávky: ${Array.isArray(train.stops) ? train.stops.map(stop => stop.station).join(', ') : '-'}
+            <h3>${train.type} ${train.number} - ${train.route}</h3>
+            <p>Max rychlost: ${train.maxSpeed}, Platnost od: ${train.validFrom}</p>
+            <h4>Zastávky:</h4>
+            <ul>
+                ${Array.isArray(train.stops) ? train.stops.map(stop => `
+                    <li>
+                        ${stop.station}:
+                        ${stop.arrivalTime ? `Příjezd: ${stop.arrivalTime}` : ''}
+                        ${stop.departureTime ? `Odjezd: ${stop.departureTime}` : ''}
+                    </li>
+                `).join('') : '<li>Žádné zastávky</li>'}
+            </ul>
         `;
         ul.appendChild(li);
     });
