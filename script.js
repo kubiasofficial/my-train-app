@@ -10,17 +10,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const response = await fetch('/data/trains.json');
         if (!response.ok) {
+            // Pokud response není OK (např. 404 Not Found), logujeme stav
+            console.error(`Chyba HTTP! Status: ${response.status}, Status Text: ${response.statusText}, URL: ${response.url}`);
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         allTrains = await response.json();
         console.log('Načtená data vlaků:', allTrains);
 
-        displayTrains(allTrains); // Zobrazíme načtené vlaky
+        displayTrains(allTrains);
     } catch (error) {
         console.error('Chyba při načítání dat vlaků:', error);
+        // Zkuste také logovat celou chybu, pokud není typu Error
+        if (error instanceof TypeError) {
+            console.error('Pravděpodobná chyba sítě nebo CORS:', error.message);
+        } else if (error instanceof Error) {
+            console.error('Konkrétní chyba:', error.message);
+        }
         const appContainer = document.getElementById('app-container');
         appContainer.innerHTML = '<p>Nepodařilo se načíst data vlaků. Zkuste to prosím později.</p>';
     }
+
+    // ... zbytek kódu ...
+});
 
     // --- Logika pro tlačítko Discord Webhook (zůstává stejná) ---
     const testWebhookButton = document.getElementById('testWebhookButton');
