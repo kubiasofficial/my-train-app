@@ -1,0 +1,39 @@
+[
+  {
+    "id": "MPE35200",
+    "type": "MPE",
+    "number": "35200",
+    "route": "Kraków Główny - Kozłów - Psary - Idzikowice - Warszawa Wschodnia",
+    "maxSpeed": "140 km/h",
+    "validFrom": "30.04.2025",
+    "locoType": null,
+    "stops": [
+      { "station": "Kraków Główny", "arrivalTime": null, "departureTime": "4:51" }
+      // Další zastávky by přišly sem, až je budeme přidávat
+    ]
+  },
+  {
+    "id": "MPE35102",
+    "type": "MPE",
+    "number": "35102",
+    "route": "Kraków Główny - Kozłów - Psary - Idzikowice - Warszawa Wschodnia",
+    "maxSpeed": "140 km/h",
+    "validFrom": "30.04.2025",
+    "locoType": null,
+    "stops": [
+      { "station": "Kraków Główny", "arrivalTime": null, "departureTime": "6:51" }
+    ]
+  },
+  {
+    "id": "MPE35104",
+    "type": "MPE",
+    "number": "35104",
+    "route": "Kraków Główny - Kozłów - Psary - Idzikowice - Warszawa Wschodnia",
+    "maxSpeed": "140 km/h",
+    "validFrom": "30.04.2025",
+    "locoType": null,
+    "stops": [
+      { "station": "Kraków Główny", "arrivalTime": null, "departureTime": "8:51" }
+    ]
+  }
+]

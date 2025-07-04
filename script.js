@@ -1,14 +1,32 @@
-// Zde bude později tvůj seznam allTrains
-const allTrains = []; // Zatim prazdne, pozdeji doplnime data
+// script.js
 
-document.addEventListener('DOMContentLoaded', () => {
+// Načteme data o vlacích ze souboru trains.json
+let allTrains = [];
+
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('Aplikace se načetla.');
 
+    // Načtení dat o vlacích
+    try {
+        const response = await fetch('/data/trains.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        allTrains = await response.json();
+        console.log('Načtená data vlaků:', allTrains);
+
+        displayTrains(allTrains); // Zobrazíme načtené vlaky
+    } catch (error) {
+        console.error('Chyba při načítání dat vlaků:', error);
+        const appContainer = document.getElementById('app-container');
+        appContainer.innerHTML = '<p>Nepodařilo se načíst data vlaků. Zkuste to prosím později.</p>';
+    }
+
+    // --- Logika pro tlačítko Discord Webhook (zůstává stejná) ---
     const testWebhookButton = document.getElementById('testWebhookButton');
     if (testWebhookButton) {
         testWebhookButton.addEventListener('click', async () => {
             try {
-                // Voláme naši Serverless Function na Vercelu (když bude nasazena)
                 const response = await fetch('/api/webhook', {
                     method: 'POST',
                     headers: {
@@ -31,4 +49,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Zde bude další logika pro zobrazování vlaků, filtrování atd.
+// Funkce pro zobrazení vlaků na stránce
+function displayTrains(trainsToDisplay) {
+    const appContainer = document.getElementById('app-container');
+    appContainer.innerHTML = ''; // Vymažeme starý obsah
+
+    if (trainsToDisplay.length === 0) {
+        appContainer.innerHTML = '<p>Žádné vlaky k zobrazení.</p>';
+        return;
+    }
+
+    const ul = document.createElement('ul');
+    trainsToDisplay.forEach(train => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <h3>${train.type} ${train.number} - ${train.route}</h3>
+            <p>Max rychlost: ${train.maxSpeed}, Platnost od: ${train.validFrom}</p>
+            <h4>Zastávky:</h4>
+            <ul>
+                ${train.stops.map(stop => `
+                    <li>
+                        ${stop.station}:
+                        ${stop.arrivalTime ? `Příjezd: ${stop.arrivalTime}` : ''}
+                        ${stop.departureTime ? `Odjezd: ${stop.departureTime}` : ''}
+                    </li>
+                `).join('')}
+            </ul>
+        `;
+        ul.appendChild(li);
+    });
+    appContainer.appendChild(ul);
+}
