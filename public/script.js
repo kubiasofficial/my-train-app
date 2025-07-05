@@ -8,77 +8,42 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Nový výběr vlaku podle času ---
-    const allTrains = [
-        // EIP 13xx trains (Warszawa Gróchow -> Krakow, via Warszawa Wschodnia)
-        { number: "1301", departure: "04:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1303", departure: "05:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1305", departure: "06:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1307", departure: "07:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1309", departure: "08:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1311", departure: "09:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1313", departure: "10:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1315", departure: "11:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1317", departure: "12:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1319", departure: "13:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1321", departure: "14:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1323", departure: "15:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1325", departure: "16:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1327", departure: "17:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1329", departure: "18:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1331", departure: "19:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1333", departure: "20:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-        { number: "1335", departure: "21:12", startStation: "Warszawa Gróchow", endStation: "Krakow", via: "Warszawa Wschodnia" },
-
-        // EIP 31xx trains (Kraków Płaszów -> Warszawa Wschodnia, via Kraków Główny)
-        { number: "3100", departure: "03:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3102", departure: "04:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3104", departure: "05:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3106", departure: "06:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3108", departure: "07:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3110", departure: "08:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3112", departure: "09:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3114", departure: "10:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3116", departure: "11:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3118", departure: "12:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3120", departure: "13:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3122", departure: "14:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3124", departure: "15:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3126", departure: "16:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3128", departure: "17:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3130", departure: "18:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3132", departure: "19:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-        { number: "3134", departure: "20:47", startStation: "Kraków Płaszów", endStation: "Warszawa Wschodnia", via: "Kraków Główny" },
-
-        // EIP 41xx / 45xx trains (Gliwice/Bielsko-Biała Główna -> Warszawa Wschodnia, via Katowice)
-        { number: "4100", departure: "04:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4500", departure: "05:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4102", departure: "06:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4502", departure: "07:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4104", departure: "08:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4504", departure: "09:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4106", departure: "10:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4506", departure: "11:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4108", departure: "12:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4508", departure: "13:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4110", departure: "14:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4510", departure: "15:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4112", departure: "16:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4512", departure: "17:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4114", departure: "18:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4514", departure: "19:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4116", departure: "20:41", startStation: "Gliwice", endStation: "Warszawa Wschodnia", via: "Katowice" },
-        { number: "4516", departure: "21:41", startStation: "Bielsko-Biała Główna", endStation: "Warszawa Wschodnia", via: "Katowice" },
-
-        // ... další vlaky z tvého zadání ...
-    ];
+    let allTrains = [];
+    fetch('data/trains.json')
+        .then(response => response.json())
+        .then(data => {
+            // Převod z JSON do formátu používaného aplikací
+            allTrains = data.map(train => {
+                // Najdi první odjezd (departureTime) v poli stops
+                let departureObj = train.stops.find(s => s.departureTime);
+                let departure = departureObj ? departureObj.departureTime : '';
+                let startStation = train.stops[0]?.station || '';
+                let endStation = train.stops[train.stops.length - 1]?.station || '';
+                return {
+                    number: train.number,
+                    departure,
+                    startStation,
+                    endStation,
+                    via: train.route,
+                    type: train.type,
+                    maxSpeed: train.maxSpeed,
+                    validFrom: train.validFrom,
+                    stops: train.stops
+                };
+            });
+        });
 
     const detailDiv = document.getElementById('trainDetail');
     const trainModalSection = document.getElementById('trainModalSection');
     const generateTrainBtn = document.getElementById('generateTrainBtn');
     const closeTrainModalBtn = document.getElementById('closeTrainModalBtn');
-
     if (generateTrainBtn) {
         generateTrainBtn.addEventListener('click', () => {
+            if (!allTrains.length) {
+                detailDiv.innerHTML = '<div style="color:#c00;">Vlaky se načítají, zkuste to za chvíli...</div>';
+                trainModalSection.style.display = 'block';
+                return;
+            }
             const timeInput = document.getElementById('trainTimeInput');
             let userTime = timeInput && timeInput.value ? timeInput.value : '';
             if (!userTime) {
@@ -98,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const minMinutes = userMinutes + 5;
             const maxMinutes = userMinutes + 10;
             let candidates = allTrains.filter(t => {
+                if (!t.departure) return false;
                 const [th, tm] = t.departure.split(':').map(Number);
                 const tMinutes = th * 60 + tm;
                 return tMinutes >= minMinutes && tMinutes <= maxMinutes;
@@ -105,11 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (candidates.length === 0) {
                 let nextTrains = allTrains
                     .map(t => {
+                        if (!t.departure) return null;
                         const [th, tm] = t.departure.split(':').map(Number);
                         const tMinutes = th * 60 + tm;
                         return { t, tMinutes };
                     })
-                    .filter(obj => obj.tMinutes > userMinutes)
+                    .filter(obj => obj && obj.tMinutes > userMinutes)
                     .sort((a, b) => a.tMinutes - b.tMinutes);
                 if (nextTrains.length > 0) {
                     const train = nextTrains[0].t;
@@ -127,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
             trainModalSection.style.display = 'block';
         });
     }
+
     if (closeTrainModalBtn) {
         closeTrainModalBtn.addEventListener('click', () => {
             trainModalSection.style.display = 'none';
