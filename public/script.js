@@ -7,21 +7,35 @@
     let activeTrainWidgets = [];
 
     function renderWhoDoingTable() {
-        whoDoingTable.innerHTML = '';
-        activeTrainWidgets.forEach(widget => {
-            const div = document.createElement('div');
-            div.className = 'who-doing-widget';
-            div.innerHTML = `
-                <div class="who-doing-anim">
-                    <span class="who-doing-name">${widget.employee}</span>
-                    <span class="who-doing-train">🚆 ${widget.trainNumber}</span>
-                    <span class="who-doing-time">Odjezd: ${widget.departureTime}</span>
-                    <button class="end-route-btn" data-employee="${widget.employee}">Ukončit trasu</button>
-                </div>
-            `;
-            whoDoingTable.appendChild(div);
-        });
-        // Animace a eventy
+        // Vykreslit oddělenou tabulku pro "Kdo co dělá"
+        let html = `<table class="who-doing-table">
+            <thead>
+                <tr>
+                    <th>Zaměstnanec</th>
+                    <th>Vlak</th>
+                    <th>Odjezd</th>
+                    <th>Akce</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+        if (activeTrainWidgets.length === 0) {
+            html += `<tr><td colspan="4" style="text-align:center;color:#888;">Nikdo aktuálně nepřevzal žádný vlak.</td></tr>`;
+        } else {
+            activeTrainWidgets.forEach(widget => {
+                html += `
+                    <tr class="who-doing-row">
+                        <td class="who-doing-name">${widget.employee}</td>
+                        <td class="who-doing-train">🚆 ${widget.trainNumber}</td>
+                        <td class="who-doing-time">${widget.departureTime}</td>
+                        <td><button class="end-route-btn" data-employee="${widget.employee}">Ukončit trasu</button></td>
+                    </tr>
+                `;
+            });
+        }
+        html += `</tbody></table>`;
+        whoDoingTable.innerHTML = html;
+        // Eventy pro tlačítka
         whoDoingTable.querySelectorAll('.end-route-btn').forEach(btn => {
             btn.onclick = () => showEndRouteModal(btn.getAttribute('data-employee'));
         });
