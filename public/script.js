@@ -136,8 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showRandomTrainDetail(train) {
         detailDiv.innerHTML = `
-            <h3>EIP/IC/EC ${train.number} (${train.startStation} → ${train.endStation})</h3>
-            <p>Odjezd: <b>${train.departure}</b> &nbsp; | &nbsp; Přes: ${train.via ? train.via : '-'}</p>
+            <h3>EIP/IC/EC ${train.number} (${train.startStation} → ${train.endStation}) 🚄</h3>
+            <p>Odjezd: <b>${train.departure}</b> &nbsp; | &nbsp; Přes: ${train.via ? train.via : '-'} &nbsp; <span style="font-size:1.3em;">🕒</span></p>
         `;
     }
 
