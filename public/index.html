@@ -15,11 +15,11 @@
     <p class="welcome">Vítejte v plnohodnotné aplikaci pro strojvedoucího. Vyberte si vlak podle času, zobrazte detail, odešlete hlášení na Discord a sledujte svůj provoz jednoduše a moderně.</p>
     <main id="app-container">
         <div class="section">
-            <label for="trainSelect">Vyber vlak:</label>
-            <select id="trainSelect"><option>Načítám...</option></select>
+            <button id="generateTrainBtn">Generuj vlak</button>
         </div>
-        <div class="section">
-            <div id="trainDetail"></div>
+        <div class="section" id="trainModalSection" style="display:none;">
+            <div id="trainDetail" class="train-modal"></div>
+            <button id="closeTrainModalBtn" style="margin-top:16px;">Zavřít</button>
         </div>
         <div class="section webhook-section">
             <button id="dutyButton">Služba</button>

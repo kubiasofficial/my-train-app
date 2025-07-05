@@ -72,73 +72,67 @@ document.addEventListener('DOMContentLoaded', () => {
         // ... další vlaky z tvého zadání ...
     ];
 
-    const select = document.getElementById('trainSelect');
     const detailDiv = document.getElementById('trainDetail');
+    const trainModalSection = document.getElementById('trainModalSection');
+    const generateTrainBtn = document.getElementById('generateTrainBtn');
+    const closeTrainModalBtn = document.getElementById('closeTrainModalBtn');
 
-    // Skryj select, přidej nové tlačítko a input
-    select.style.display = 'none';
-    const customDiv = document.createElement('div');
-    customDiv.style.textAlign = 'center';
-    customDiv.style.marginBottom = '18px';
-    customDiv.innerHTML = `
-        <input type="time" id="userTime" style="padding:7px 14px;border-radius:6px;border:1px solid #bfc9d1;font-size:1rem;" required>
-        <button id="randomTrainBtn" style="margin-left:12px;">Vyber vlak podle času</button>
-    `;
-    select.parentNode.insertBefore(customDiv, select);
-
-    document.getElementById('randomTrainBtn').addEventListener('click', () => {
-        let userTime = document.getElementById('userTime').value;
-        // Pokud není zadán čas, použij aktuální čas v ČR (Europe/Prague)
-        if (!userTime) {
-            try {
-                const now = new Date();
-                // Získej čas v časovém pásmu Evropa/Praha
-                const pragueTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Prague' }));
-                let h = pragueTime.getHours();
-                let m = pragueTime.getMinutes();
-                userTime = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-                document.getElementById('userTime').value = userTime;
-            } catch (e) {
-                alert('Nepodařilo se zjistit aktuální čas v ČR.');
-                return;
+    if (generateTrainBtn) {
+        generateTrainBtn.addEventListener('click', () => {
+            // Vstup pro čas
+            let userTime = prompt('Zadejte čas (HH:MM) nebo nechte prázdné pro aktuální čas v ČR:');
+            if (!userTime) {
+                try {
+                    const now = new Date();
+                    const pragueTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Prague' }));
+                    let h = pragueTime.getHours();
+                    let m = pragueTime.getMinutes();
+                    userTime = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                } catch (e) {
+                    alert('Nepodařilo se zjistit aktuální čas v ČR.');
+                    return;
+                }
             }
-        }
-        // Najdi vlaky 5-10 minut po zadaném čase, pokud nejsou, najdi nejbližší pozdější vlak
-        const [h, m] = userTime.split(':').map(Number);
-        const userMinutes = h * 60 + m;
-        const minMinutes = userMinutes + 5;
-        const maxMinutes = userMinutes + 10;
-        let candidates = allTrains.filter(t => {
-            const [th, tm] = t.departure.split(':').map(Number);
-            const tMinutes = th * 60 + tm;
-            return tMinutes >= minMinutes && tMinutes <= maxMinutes;
-        });
-        if (candidates.length === 0) {
-            // Pokud není žádný vlak v rozmezí, najdi nejbližší pozdější vlak
-            let nextTrains = allTrains
-                .map(t => {
-                    const [th, tm] = t.departure.split(':').map(Number);
-                    const tMinutes = th * 60 + tm;
-                    return { t, tMinutes };
-                })
-                .filter(obj => obj.tMinutes > userMinutes)
-                .sort((a, b) => a.tMinutes - b.tMinutes);
-            if (nextTrains.length > 0) {
-                const train = nextTrains[0].t;
-                detailDiv.innerHTML = `<div style="color:#c00;margin-bottom:8px;">Žádný vlak v rozmezí 5-10 minut po zadaném čase.<br>Nejbližší další vlak:</div>`;
-                showRandomTrainDetail(train);
-                return;
+            const [h, m] = userTime.split(':').map(Number);
+            const userMinutes = h * 60 + m;
+            const minMinutes = userMinutes + 5;
+            const maxMinutes = userMinutes + 10;
+            let candidates = allTrains.filter(t => {
+                const [th, tm] = t.departure.split(':').map(Number);
+                const tMinutes = th * 60 + tm;
+                return tMinutes >= minMinutes && tMinutes <= maxMinutes;
+            });
+            if (candidates.length === 0) {
+                let nextTrains = allTrains
+                    .map(t => {
+                        const [th, tm] = t.departure.split(':').map(Number);
+                        const tMinutes = th * 60 + tm;
+                        return { t, tMinutes };
+                    })
+                    .filter(obj => obj.tMinutes > userMinutes)
+                    .sort((a, b) => a.tMinutes - b.tMinutes);
+                if (nextTrains.length > 0) {
+                    const train = nextTrains[0].t;
+                    detailDiv.innerHTML = `<div style="color:#c00;margin-bottom:8px;">Žádný vlak v rozmezí 5-10 minut po zadaném čase.<br>Nejbližší další vlak:</div>`;
+                    showRandomTrainDetail(train);
+                } else {
+                    const firstTrain = allTrains[0];
+                    detailDiv.innerHTML = `<div style="color:#c00;margin-bottom:8px;">Žádný vlak v rozmezí 5-10 minut po zadaném čase.<br>Další vlak jede až další den:</div>`;
+                    showRandomTrainDetail(firstTrain);
+                }
             } else {
-                // Pokud není žádný pozdější vlak, zobraz první ranní vlak
-                const firstTrain = allTrains[0];
-                detailDiv.innerHTML = `<div style="color:#c00;margin-bottom:8px;">Žádný vlak v rozmezí 5-10 minut po zadaném čase.<br>Další vlak jede až další den:</div>`;
-                showRandomTrainDetail(firstTrain);
-                return;
+                const train = candidates[Math.floor(Math.random() * candidates.length)];
+                showRandomTrainDetail(train);
             }
-        }
-        const train = candidates[Math.floor(Math.random() * candidates.length)];
-        showRandomTrainDetail(train);
-    });
+            trainModalSection.style.display = 'block';
+        });
+    }
+    if (closeTrainModalBtn) {
+        closeTrainModalBtn.addEventListener('click', () => {
+            trainModalSection.style.display = 'none';
+            detailDiv.innerHTML = '';
+        });
+    }
 
     function showRandomTrainDetail(train) {
         detailDiv.innerHTML = `
