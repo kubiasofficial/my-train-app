@@ -4,24 +4,25 @@
     // const takeTrainModalContent = document.getElementById('takeTrainModalContent');
     // const closeTakeTrainModalBtn = document.getElementById('closeTakeTrainModalBtn');
     // Odebráno: tlačítko a tabulka "Vzít vlak" a "Kdo co dělá" dle požadavku uživatele.
-// --- Zaměstnanci paletka a status ---
+// --- Zaměstnanci widget (nový systém) ---
 let employees = [];
-
-const employeeBtn = document.getElementById('employeeBtn');
-const employeePalette = document.getElementById('employeePalette');
-const employeeList = document.getElementById('employeeList');
-const employeeStatusTableBody = document.querySelector('#employeeStatusTable tbody'); // Získáváme tbody element
-const actionStatusMessage = document.getElementById('actionStatusMessage'); // Pro zprávy o akcích
-
-const selectedEmployeeInfo = document.getElementById('selectedEmployeeInfo'); // Nový rodičovský element pro lepší kontrolu
-const selectedEmployeeDisplay = document.getElementById('selectedEmployeeDisplay'); // Nový element pro zobrazení jména
-const employeeStatusActions = document.getElementById('employeeStatusActions');   // Nový element pro tlačítka "Do služby" / "Mimo službu"
-
+const employeeStatusTableBody = document.querySelector('#employeeStatusTable tbody');
+const actionStatusMessage = document.getElementById('actionStatusMessage');
+const myStatusDisplay = document.getElementById('myStatusDisplay');
+const myStatusActions = document.getElementById('myStatusActions');
 const empInBtn = document.getElementById('empInBtn');
 const empOutBtn = document.getElementById('empOutBtn');
 
+// Získat přihlášeného uživatele z localStorage
+function getLoggedInUser() {
+    try {
+        const userStr = localStorage.getItem('discordUser');
+        if (!userStr) return null;
+        return JSON.parse(userStr);
+    } catch (e) { return null; }
+}
 
-let selectedEmployee = null; // Toto bude uchovávat celého vybraného zaměstnance
+let myEmployee = null;
 
 // Funkce pro aktualizaci/přidání statusu zaměstnance do tabulky
 async function updateEmployeeStatusInTable(empName, inDuty) {
@@ -42,44 +43,46 @@ async function updateEmployeeStatusInTable(empName, inDuty) {
         statusCell.className = statusClass;
         statusCell.textContent = statusText;
     }
-
-    // Aktualizovat status v poli employees
-    const empIndex = employees.findIndex(emp => emp.name === empName);
-    if (empIndex !== -1) {
-        employees[empIndex].currentStatus = inDuty ? 'Ve službě' : 'Mimo službu';
-        // Uložit na server
-        await fetch('/api/employees', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: employees[empIndex].id, currentStatus: employees[empIndex].currentStatus })
-        });
-    }
 }
 
-// Funkce pro načtení počátečních statusů (pokud byste je chtěli načítat např. z localStorage)
+// Funkce pro načtení počátečních statusů a nalezení mého zaměstnance
 async function loadInitialEmployeeStatuses() {
-    // Načíst zaměstnance ze serveru
     const res = await fetch('/api/employees');
     employees = await res.json();
+    const user = getLoggedInUser();
+    if (user) {
+        myEmployee = employees.find(emp => emp.discordId === user.id || emp.name === user.username);
+    }
     employees.forEach(emp => {
         updateEmployeeStatusInTable(emp.name, emp.currentStatus === 'Ve službě');
     });
+    updateMyStatusWidget();
+}
+
+function updateMyStatusWidget() {
+    if (!myEmployee) {
+        myStatusDisplay.textContent = 'Nepodařilo se najít váš účet v seznamu zaměstnanců.';
+        myStatusActions.style.display = 'none';
+        return;
+    }
+    const inDuty = myEmployee.currentStatus === 'Ve službě';
+    myStatusDisplay.textContent = `Status: ${inDuty ? '🟢 Ve službě' : '🔴 Mimo službu'}`;
+    myStatusActions.style.display = 'flex';
 }
 
 // Funkce pro zobrazení zprávy
 function showStatusMessage(message, isError = false) {
     actionStatusMessage.textContent = message;
     actionStatusMessage.style.color = isError ? '#e53935' : '#43b581';
-    setTimeout(() => actionStatusMessage.textContent = '', 5000); // Zpráva zmizí za 5s
+    setTimeout(() => actionStatusMessage.textContent = '', 5000);
 }
 
-// Funkce pro odeslání stavu zaměstnance na Discord
+// Funkce pro odeslání stavu zaměstnance na Discord a uložení na server
 async function sendEmployeeStatus(emp, inDuty) {
     const embed = {
         color: inDuty ? 0x43b581 : 0xe53935,
         title: inDuty ? '🚦 Zaměstnanec ve službě' : '🏁 Zaměstnanec mimo službu',
         description: `**${emp.name}** je nyní ${inDuty ? 've službě! \u{1F7E2}' : 'mimo službu. \u{1F534}'}`,
-        // thumbnail: { url: emp.avatar }, // Předpokládá, že 'avatar' pole existuje v objektu zaměstnance
         timestamp: new Date().toISOString(),
         footer: {
             text: 'Multi-Cargo Doprava',
@@ -87,23 +90,21 @@ async function sendEmployeeStatus(emp, inDuty) {
         }
     };
     try {
-        const res = await fetch('https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S', {
+        // Uložit na server
+        await fetch('/api/employees', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: emp.id, currentStatus: inDuty ? 'Ve službě' : 'Mimo službu' })
+        });
+        // Odeslat na Discord
+        await fetch('https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ embeds: [embed] })
         });
-        if (res.ok) {
-            showStatusMessage('Zpráva byla úspěšně odeslána!');
-            updateEmployeeStatusInTable(emp.name, inDuty); // Aktualizovat status v tabulce
-            // Po odeslání skrýt akce pro zaměstnance a resetovat výběr
-            selectedEmployeeDisplay.style.display = 'none';
-            employeeStatusActions.style.display = 'none';
-            selectedEmployee = null;
-        } else {
-            showStatusMessage('Chyba při odesílání na Discord.', true);
-        }
+        showStatusMessage('Status byl úspěšně změněn a odeslán!');
     } catch (e) {
-        showStatusMessage('Chyba při odesílání na Discord.', true);
+        showStatusMessage('Chyba při ukládání nebo odesílání na Discord.', true);
     }
 }
 
@@ -112,64 +113,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Načíst počáteční statusy při načtení stránky
     loadInitialEmployeeStatuses();
 
-    // Při načtení stránky tlačítka "Do služby" a "Mimo službu" skryj
-    if (employeeStatusActions) {
-        employeeStatusActions.style.display = 'none';
-    }
-
-    if (employeeBtn) {
-        employeeBtn.addEventListener('click', () => {
-            // Skrýt ostatní panely (dutyDropdown už neexistuje)
-            if (typeof trainModalSection !== 'undefined' && trainModalSection) trainModalSection.style.display = 'none';
-
-            // Toggle paletky zaměstnanců
-            const isPaletteVisible = employeePalette.style.display === 'block';
-            employeePalette.style.display = isPaletteVisible ? 'none' : 'block';
-
-            // Skrýt vybraného zaměstnance a jeho tlačítka vždy při otevření/zavření paletky
-            selectedEmployeeDisplay.style.display = 'none';
-            if (employeeStatusActions) employeeStatusActions.style.display = 'none';
-            selectedEmployee = null; // Zrušit výběr zaměstnance
-
-            if (!isPaletteVisible) {
-                // Pokud se paletka otevírá, vygeneruj seznam zaměstnanců
-                employeeList.innerHTML = '';
-                employees.forEach(emp => {
-                    const btn = document.createElement('button');
-                    btn.textContent = emp.name;
-                    btn.onclick = () => {
-                        selectedEmployee = emp; // Uložit celého zaměstnance
-                        employeePalette.style.display = 'none'; // Zavřít paletku po výběru
-
-                        selectedEmployeeDisplay.textContent = `Vybraný zaměstnanec: ${emp.name}`;
-                        selectedEmployeeDisplay.style.display = 'block'; // Zobrazit jméno vybraného
-                        if (employeeStatusActions) employeeStatusActions.style.display = 'flex';   // Zobrazit tlačítka Do/Mimo službu
-                        showStatusMessage(`Vybrán zaměstnanec: ${emp.name}`); // Zpráva o výběru
-                    };
-                    employeeList.appendChild(btn);
-                });
-            }
-        });
-    }
-
-    // Event listenery pro tlačítka "Do služby" a "Mimo službu"
+    // Event listenery pro tlačítka "Příchod" a "Odchod"
     if (empInBtn) {
         empInBtn.addEventListener('click', async () => {
-            if (selectedEmployee) {
-                await sendEmployeeStatus(selectedEmployee, true); // True pro "Do služby"
-                await updateEmployeeStatusInTable(selectedEmployee.name, true);
-            } else {
-                showStatusMessage('Nejprve vyberte zaměstnance.', true);
+            if (myEmployee) {
+                await sendEmployeeStatus(myEmployee, true);
+                myEmployee.currentStatus = 'Ve službě';
+                updateEmployeeStatusInTable(myEmployee.name, true);
+                updateMyStatusWidget();
             }
         });
     }
     if (empOutBtn) {
         empOutBtn.addEventListener('click', async () => {
-            if (selectedEmployee) {
-                await sendEmployeeStatus(selectedEmployee, false); // False pro "Mimo službu"
-                await updateEmployeeStatusInTable(selectedEmployee.name, false);
-            } else {
-                showStatusMessage('Nejprve vyberte zaměstnance.', true);
+            if (myEmployee) {
+                await sendEmployeeStatus(myEmployee, false);
+                myEmployee.currentStatus = 'Mimo službu';
+                updateEmployeeStatusInTable(myEmployee.name, false);
+                updateMyStatusWidget();
             }
         });
     }
