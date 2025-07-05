@@ -7,6 +7,40 @@
 // Výběr vlaku ze selectu a zobrazení detailu
 
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Restart alert ---
+    const restartTimes = ["01:30", "08:30", "15:30"];
+    const restartAlert = document.getElementById('restartAlert');
+    const closeRestartAlert = document.getElementById('closeRestartAlert');
+    function checkRestartAlert() {
+        const now = new Date();
+        // CET = UTC+1, v létě CEST = UTC+2, použij čas v Praze
+        const pragueTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Prague' }));
+        const h = pragueTime.getHours().toString().padStart(2, '0');
+        const m = pragueTime.getMinutes().toString().padStart(2, '0');
+        const current = `${h}:${m}`;
+        // Pro každou restart time spočítej "restart - 30min"
+        for (let t of restartTimes) {
+            let [th, tm] = t.split(':').map(Number);
+            let restartDate = new Date(pragueTime);
+            restartDate.setHours(th, tm, 0, 0);
+            restartDate.setMinutes(restartDate.getMinutes() - 30);
+            let alertH = restartDate.getHours().toString().padStart(2, '0');
+            let alertM = restartDate.getMinutes().toString().padStart(2, '0');
+            let alertTime = `${alertH}:${alertM}`;
+            if (current === alertTime) {
+                if (restartAlert) restartAlert.style.display = 'block';
+                return;
+            }
+        }
+        if (restartAlert) restartAlert.style.display = 'none';
+    }
+    if (closeRestartAlert) {
+        closeRestartAlert.addEventListener('click', () => {
+            if (restartAlert) restartAlert.style.display = 'none';
+        });
+    }
+    setInterval(checkRestartAlert, 30000); // kontrola každých 30s
+    checkRestartAlert();
 
     // --- Nový výběr vlaku podle času ---
     let allTrains = [];

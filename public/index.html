@@ -14,6 +14,10 @@
     <div class="animated-bar"></div>
     <p class="welcome">Vítejte v plnohodnotné aplikaci pro strojvedoucího. Vyberte si vlak podle času, zobrazte detail, odešlete hlášení na Discord a sledujte svůj provoz jednoduše a moderně.</p>
     <main id="app-container">
+        <div id="restartAlert" style="display:none;position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:1000;background:linear-gradient(90deg,#fff6f6 0%,#ffeaea 100%);color:#b71c1c;font-weight:700;padding:14px 32px;border-radius:12px;box-shadow:0 4px 24px #e5393533,0 1.5px 0 #fff;font-size:1.13rem;letter-spacing:1px;border:1.5px solid #e53935;animation:fadeInDetail 0.7s cubic-bezier(.4,2,.6,1);min-width:260px;text-align:center;">
+            <span>⚠️ Za 30 minut proběhne restart serveru CZ-1!</span>
+            <button id="closeRestartAlert" style="margin-left:18px;padding:4px 14px;font-size:1rem;border-radius:7px;border:none;background:#e53935;color:#fff;cursor:pointer;box-shadow:0 2px 8px #e5393533;">Zavřít</button>
+        </div>
 
         <div class="section webhook-section">
             <button id="dutyButton" class="duty-red">Služba</button>
