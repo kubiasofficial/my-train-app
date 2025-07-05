@@ -88,12 +88,13 @@ h1 {
 }
 
 .subtitle {
-    color: #b0c4d8;
+    color: #111;
     font-size: 1.18rem;
     margin-bottom: 0;
-    font-weight: 500;
+    font-weight: 700;
     text-align: center;
     letter-spacing: 1px;
+    font-family: 'Segoe UI Bold', 'Segoe UI', Arial, sans-serif;
 }
 
 .animated-bar {
