@@ -29,15 +29,18 @@
                         <div id="employeeList" style="display:flex;flex-direction:column;gap:10px;"></div>
                     </div>
 
-                    <div id="selectedEmployeeDisplay" style="display:none; margin-top:15px; font-size:1.18rem; font-weight:700;"></div>
-                    <div id="employeeStatusActions" style="display:none; margin-top:10px; display:flex; gap:18px; justify-content:center;">
-                        <button class="employee-green" id="empInBtn">🚦 Do služby</button>
-                        <button class="duty-red" id="empOutBtn">🏁 Mimo službu</button>
+                    <div id="selectedEmployeeInfo" style="margin-top:15px; text-align: center;">
+                        <div id="selectedEmployeeDisplay" style="display:none; font-size:1.18rem; font-weight:700;"></div>
+                        <div id="employeeStatusActions" style="display:none; margin-top:10px; display:flex; gap:18px; justify-content:center;">
+                            <button class="employee-green" id="empInBtn">🚦 Do služby</button>
+                            <button class="duty-red" id="empOutBtn">🏁 Mimo službu</button>
+                        </div>
                     </div>
                     <div id="actionStatusMessage" style="margin-top:10px; font-size:1.08rem; font-weight:600; text-align:center;"></div>
 
 
-                    <button id="dutyButton" class="duty-red">Služba (obecné hlášení)</button> <div id="dutyDropdown" class="duty-dropdown" style="display:none;">
+                    <button id="dutyButton" class="duty-red">Služba (obecné hlášení)</button>
+                    <div id="dutyDropdown" class="duty-dropdown" style="display:none;">
                         <select id="dutyType">
                             <option value="">Vyberte možnost</option>
                             <option value="in">DO služby</option>

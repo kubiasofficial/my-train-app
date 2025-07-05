@@ -14,8 +14,10 @@ const employeeList = document.getElementById('employeeList');
 const employeeStatusTableBody = document.querySelector('#employeeStatusTable tbody'); // Získáváme tbody element
 const actionStatusMessage = document.getElementById('actionStatusMessage'); // Pro zprávy o akcích
 
-const selectedEmployeeDisplay = document.getElementById('selectedEmployeeDisplay'); // Nový element
-const employeeStatusActions = document.getElementById('employeeStatusActions');   // Nový element pro tlačítka
+const selectedEmployeeInfo = document.getElementById('selectedEmployeeInfo'); // Nový rodičovský element pro lepší kontrolu
+const selectedEmployeeDisplay = document.getElementById('selectedEmployeeDisplay'); // Nový element pro zobrazení jména
+const employeeStatusActions = document.getElementById('employeeStatusActions');   // Nový element pro tlačítka "Do služby" / "Mimo službu"
+
 const empInBtn = document.getElementById('empInBtn');
 const empOutBtn = document.getElementById('empOutBtn');
 
@@ -37,12 +39,12 @@ function updateEmployeeStatusInTable(empName, inDuty) {
         nameCell.textContent = empName;
 
         const statusCell = row.insertCell(1);
-        statusCell.className = statusClass;
+        statusCell.className = statusClass; // Nastaví třídu pro barvu textu
         statusCell.textContent = statusText;
     } else {
         // Pokud řádek existuje, aktualizovat status
         const statusCell = row.cells[1];
-        statusCell.className = statusClass;
+        statusCell.className = statusClass; // Aktualizuje třídu pro barvu textu
         statusCell.textContent = statusText;
     }
 
@@ -55,10 +57,10 @@ function updateEmployeeStatusInTable(empName, inDuty) {
 
 // Funkce pro načtení počátečních statusů (pokud byste je chtěli načítat např. z localStorage)
 function loadInitialEmployeeStatuses() {
-    // Inicializovat tabulku se známými zaměstnanci, pokud mají uložený stav
+    // Inicializovat tabulku se známými zaměstnanci
     employees.forEach(emp => {
         // Zde byste mohli načíst skutečný status z localStorage nebo API
-        // Prozatím jen zobrazíme jejich počáteční 'Neznámý' nebo předdefinovaný stav.
+        // Prozatím zobrazíme jejich výchozí 'Neznámý' nebo co mají v currentStatus
         updateEmployeeStatusInTable(emp.name, emp.currentStatus === 'Ve službě');
     });
 }
@@ -76,7 +78,7 @@ async function sendEmployeeStatus(emp, inDuty) {
         color: inDuty ? 0x43b581 : 0xe53935,
         title: inDuty ? '🚦 Zaměstnanec ve službě' : '🏁 Zaměstnanec mimo službu',
         description: `**${emp.name}** je nyní ${inDuty ? 've službě! \u{1F7E2}' : 'mimo službu. \u{1F534}'}`,
-        thumbnail: { url: emp.avatar },
+        // thumbnail: { url: emp.avatar }, // Předpokládá, že 'avatar' pole existuje v objektu zaměstnance
         timestamp: new Date().toISOString(),
         footer: {
             text: 'Multi-Cargo Doprava',
@@ -92,12 +94,10 @@ async function sendEmployeeStatus(emp, inDuty) {
         if (res.ok) {
             showStatusMessage('Zpráva byla úspěšně odeslána!');
             updateEmployeeStatusInTable(emp.name, inDuty); // Aktualizovat status v tabulce
-            // Zavřít panely po odeslání
-            employeePalette.style.display = 'none';
-            dutyDropdown.style.display = 'none';
-            selectedEmployeeDisplay.style.display = 'none'; // Skrýt vybraného zaměstnance
-            employeeStatusActions.style.display = 'none'; // Skrýt tlačítka
-            selectedEmployee = null; // Zrušit výběr zaměstnance
+            // Po odeslání skrýt akce pro zaměstnance a resetovat výběr
+            selectedEmployeeDisplay.style.display = 'none';
+            employeeStatusActions.style.display = 'none';
+            selectedEmployee = null;
         } else {
             showStatusMessage('Chyba při odesílání na Discord.', true);
         }
@@ -116,27 +116,34 @@ document.addEventListener('DOMContentLoaded', () => {
             // Skrýt ostatní panely
             dutyDropdown.style.display = 'none';
             trainModalSection.style.display = 'none';
-            selectedEmployeeDisplay.style.display = 'none'; // Skrýt vybraného zaměstnance
-            employeeStatusActions.style.display = 'none';   // Skrýt tlačítka
+            
+            // Toggle paletky zaměstnanců
+            const isPaletteVisible = employeePalette.style.display === 'block';
+            employeePalette.style.display = isPaletteVisible ? 'none' : 'block';
+
+            // Skrýt vybraného zaměstnance a jeho tlačítka, pokud se paletka zavírá nebo je jiný výběr
+            selectedEmployeeDisplay.style.display = 'none';
+            employeeStatusActions.style.display = 'none';
             selectedEmployee = null; // Zrušit výběr zaměstnance
 
-            employeePalette.style.display = employeePalette.style.display === 'none' ? 'block' : 'none';
-            
-            // Vygeneruj seznam zaměstnanců
-            employeeList.innerHTML = '';
-            employees.forEach(emp => {
-                const btn = document.createElement('button');
-                btn.textContent = emp.name;
-                btn.onclick = () => {
-                    selectedEmployee = emp; // Uložit celého zaměstnance
-                    employeePalette.style.display = 'none'; // Zavřít paletku po výběru
-                    selectedEmployeeDisplay.textContent = `Vybraný zaměstnanec: ${emp.name}`;
-                    selectedEmployeeDisplay.style.display = 'block'; // Zobrazit jméno vybraného
-                    employeeStatusActions.style.display = 'flex';   // Zobrazit tlačítka Do/Mimo službu
-                    showStatusMessage(`Vybrán zaměstnanec: ${emp.name}`); // Zpráva o výběru
-                };
-                employeeList.appendChild(btn);
-            });
+            if (!isPaletteVisible) {
+                // Pokud se paletka otevírá, vygeneruj seznam zaměstnanců
+                employeeList.innerHTML = '';
+                employees.forEach(emp => {
+                    const btn = document.createElement('button');
+                    btn.textContent = emp.name;
+                    btn.onclick = () => {
+                        selectedEmployee = emp; // Uložit celého zaměstnance
+                        employeePalette.style.display = 'none'; // Zavřít paletku po výběru
+                        
+                        selectedEmployeeDisplay.textContent = `Vybraný zaměstnanec: ${emp.name}`;
+                        selectedEmployeeDisplay.style.display = 'block'; // Zobrazit jméno vybraného
+                        employeeStatusActions.style.display = 'flex';   // Zobrazit tlačítka Do/Mimo službu
+                        showStatusMessage(`Vybrán zaměstnanec: ${emp.name}`); // Zpráva o výběru
+                    };
+                    employeeList.appendChild(btn);
+                });
+            }
         });
     }
 
@@ -171,13 +178,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (dutyButton) {
         dutyButton.addEventListener('click', () => {
-            // Skrýt ostatní panely
+            // Skrýt ostatní panely a vybraného zaměstnance s jeho tlačítky
             employeePalette.style.display = 'none';
             selectedEmployeeDisplay.style.display = 'none';
             employeeStatusActions.style.display = 'none';
             selectedEmployee = null; // Zrušit výběr zaměstnance
 
+            // Toggle dutyDropdown
             dutyDropdown.style.display = dutyDropdown.style.display === 'none' ? 'block' : 'none';
+            
             // Resetovat dropdown a input jména při otevření
             dutyType.value = '';
             userNameInput.value = '';
@@ -186,7 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         dutyType.addEventListener('change', () => {
             selectedDuty = dutyType.value;
-            // Neautomaticky předvyplňovat jméno zde, protože je to "obecné hlášení"
             if (selectedDuty === 'in' || selectedDuty === 'out') {
                 nameInputDiv.style.display = 'block';
             } else {
@@ -196,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('sendDutyBtn').addEventListener('click', async () => {
             const name = userNameInput.value.trim();
-            const empToUpdate = employees.find(emp => emp.name === name);
+            let empToUpdate = employees.find(emp => emp.name === name);
 
             if (!selectedDuty || !name) {
                 showStatusMessage('Vyberte typ služby a zadejte své jméno.', true);
@@ -204,12 +212,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (!empToUpdate) {
                 // Pokud zadané jméno neodpovídá žádnému ze seznamu, ale přesto chceme odeslat.
-                // Zde můžete zvolit, zda to povolit nebo ne. Prozatím varování.
-                if (!confirm('Zadané jméno zaměstnance není v seznamu. Chcete přesto odeslat hlášení?')) {
+                if (!confirm('Zadané jméno zaměstnance není v seznamu. Chcete přesto odeslat hlášení? Tabulka se aktualizuje pouze pro existující zaměstnance.')) {
                     return;
                 }
-                // Vytvořit dočasného zaměstnance pro odeslání na Discord a zobrazení v tabulce
-                // POZOR: Tento zaměstnanec nebude v původním 'employees' poli a jeho status nebude perzistentní.
+                // Vytvořit dočasného "dummy" zaměstnance pro Discord, aby se zpráva odeslala
+                // Jeho stav se NEBUDE aktualizovat v lokální tabulce zaměstnanců, protože není v `employees` poli.
                 empToUpdate = { id: 'manual_entry', name: name, currentStatus: 'Neznámý' };
             }
 
@@ -235,7 +242,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (res.ok) {
                     showStatusMessage('Zpráva byla úspěšně odeslána!');
-                    updateEmployeeStatusInTable(name, selectedDuty === 'in'); // Aktualizovat status v tabulce
+                    // Aktualizovat status v tabulce POUZE pokud zaměstnanec existuje v původním seznamu
+                    if (employees.some(emp => emp.name === name)) {
+                         updateEmployeeStatusInTable(name, selectedDuty === 'in');
+                    }
                     dutyDropdown.style.display = 'none';
                     dutyType.value = '';
                     userNameInput.value = '';
@@ -250,7 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Zbytek vašeho původního script.js kódu (restart alert, načítání vlaků, generování vlaku) ---
-    // Ponechán beze změn, stačí ho zkopírovat pod výše uvedené úpravy.
 
     // --- Restart alert ---
     const restartTimes = ["01:30", "08:30", "15:30"];
