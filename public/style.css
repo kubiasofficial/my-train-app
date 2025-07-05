@@ -1,259 +1,408 @@
-/* Červené tlačítko pro službu */
-.duty-red {
-  background: linear-gradient(90deg, #e53935 0%, #b71c1c 100%) !important;
-  color: #fff !important;
-  box-shadow: 0 4px 18px #e5393533, 0 1.5px 0 #fff;
-}
-.duty-red:hover {
-  background: linear-gradient(90deg, #b71c1c 0%, #e53935 100%) !important;
-  box-shadow: 0 8px 28px #e5393555;
-}
 /* Zjednodušený, sjednocený a optimalizovaný CSS pro MCD panel */
 
 body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
 }
 
 h1 {
-  color: #222;
-  text-align: center;
-  margin: 0 0 8px 0;
-  font-size: 2.7rem;
-  letter-spacing: 1.5px;
-  font-weight: 800;
-  text-shadow: 0 2px 16px #1de9b633, 0 1px 0 #0a223a;
-  font-family: 'Lato', 'Roboto', 'Open Sans', Arial, sans-serif;
+    color: #222;
+    text-align: center;
+    margin: 0 0 8px 0;
+    font-size: 2.7rem;
+    letter-spacing: 1.5px;
+    font-weight: 800;
+    text-shadow: 0 2px 16px #1de9b633, 0 1px 0 #0a223a;
+    font-family: 'Lato', 'Roboto', 'Open Sans', Arial, sans-serif;
 }
 
-p.subtitle {
-  text-align: center;
-  color: #111;
-  margin-bottom: 30px;
-  font-size: 1.18rem;
-  font-weight: 700;
-  letter-spacing: 1px;
+.subtitle { /* Změnil jsem z p.subtitle na .subtitle, protože to je div */
+    text-align: center;
+    color: #111;
+    margin-bottom: 30px;
+    font-size: 1.18rem;
+    font-weight: 700;
+    letter-spacing: 1px;
 }
 
 .header-logo-title {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 32px;
-  gap: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 32px;
+    gap: 8px;
 }
 
 .company-logo {
-  width: 90px;
-  height: 90px;
-  object-fit: contain;
-  border-radius: 18px;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.13);
-  background: #fff;
-  border: 2.5px solid #0a223a;
-  margin-bottom: 2px;
-  transition: transform 0.5s cubic-bezier(.4,2,.6,1);
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    border-radius: 18px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.13);
+    background: #fff;
+    border: 2.5px solid #0a223a;
+    margin-bottom: 2px;
+    transition: transform 0.5s cubic-bezier(.4,2,.6,1);
 }
 
 .company-logo:hover {
-  transform: scale(1.08) rotate(-2deg);
-  box-shadow: 0 10px 32px #00bfff44;
+    transform: scale(1.08) rotate(-2deg);
+    box-shadow: 0 10px 32px #00bfff44;
 }
 
 .mcd-accent {
-  color: #00bfff;
-  letter-spacing: 2px;
-  font-weight: 800;
-  text-shadow: 0 2px 12px #00bfff33;
+    color: #00bfff;
+    letter-spacing: 2px;
+    font-weight: 800;
+    text-shadow: 0 2px 12px #00bfff33;
 }
 
 .animated-bar {
-  width: 100vw;
-  height: 4px;
-  background: linear-gradient(90deg, #00bfff 0%, #0a223a 100%);
-  margin-bottom: 18px;
-  box-shadow: 0 2px 12px #00bfff44;
-  animation: bar-move 2.5s infinite linear alternate;
+    width: 100vw;
+    height: 4px;
+    background: linear-gradient(90deg, #00bfff 0%, #0a223a 100%);
+    margin-bottom: 18px;
+    box-shadow: 0 2px 12px #00bfff44;
+    animation: bar-move 2.5s infinite linear alternate;
 }
 
 @keyframes bar-move {
-  0% { filter: brightness(1.1) blur(0.5px); }
-  100% { filter: brightness(1.5) blur(2px); }
+    0% { filter: brightness(1.1) blur(0.5px); }
+    100% { filter: brightness(1.5) blur(2px); }
 }
 
 .welcome {
-  text-align: center;
-  color: #234;
-  margin-bottom: 32px;
-  font-size: 1.18rem;
-  font-weight: 500;
-  background: linear-gradient(90deg, #e0f7fa 0%, #f8fbff 100%);
-  border-radius: 10px;
-  padding: 10px 0;
-  box-shadow: 0 2px 8px #00bfff11;
+    text-align: center;
+    color: #234;
+    margin-bottom: 32px;
+    font-size: 1.18rem;
+    font-weight: 500;
+    background: linear-gradient(90deg, #e0f7fa 0%, #f8fbff 100%);
+    border-radius: 10px;
+    padding: 10px 0;
+    box-shadow: 0 2px 8px #00bfff11;
 }
 
-#app-container {
-  max-width: 600px;
-  margin: 40px auto;
-  background: rgba(255,255,255,0.95);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
-  padding: 32px 28px 24px 28px;
-  backdrop-filter: blur(2px);
-  border: 1px solid #e3e3e3;
-  text-align: center;
+/* --- Nový layout pro hlavní obsah a status tabulku --- */
+#main-app-layout {
+    display: flex;
+    justify-content: center; /* Centruje celý layout */
+    margin: 40px auto;
+    max-width: 1200px; /* Zvětšil jsem max-width pro celý layout */
+    gap: 30px; /* Mezera mezi levým a pravým sloupcem */
+    padding: 0 20px; /* Padding pro menší obrazovky */
+    flex-wrap: wrap; /* Umožní zalomení na menších obrazovkách */
 }
+
+.content-wrapper {
+    flex: 1; /* Umožní zabrat dostupný prostor */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centruje obsah uvnitř wrapperu */
+    max-width: 600px; /* Ponecháme stejnou šířku pro hlavní panel */
+    background: rgba(255,255,255,0.95);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+    padding: 32px 28px 24px 28px;
+    backdrop-filter: blur(2px);
+    border: 1px solid #e3e3e3;
+    text-align: center;
+}
+
+.main-center-panel {
+    width: 100%; /* Hlavní panel uvnitř content-wrapperu */
+}
+
+
+.status-column-right {
+    width: 350px; /* Šířka pro tabulku statusů */
+    background: rgba(255,255,255,0.95);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+    padding: 20px;
+    backdrop-filter: blur(2px);
+    border: 1px solid #e3e3e3;
+    text-align: center;
+    align-self: flex-start; /* Zarovná tabulku nahoru */
+}
+
+.status-column-right h3 {
+    margin-top: 0;
+    color: #0a223a;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+#employeeStatusTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+#employeeStatusTable th,
+#employeeStatusTable td {
+    border: 1px solid #ddd;
+    padding: 10px 8px;
+    text-align: left;
+    font-size: 0.95rem;
+}
+
+#employeeStatusTable th {
+    background-color: #f2f2f2;
+    color: #333;
+    font-weight: 600;
+}
+
+#employeeStatusTable tr:nth-child(even) {
+    background-color: #f8f8f8;
+}
+
+/* Styly pro status text v tabulce */
+.status-in-service {
+    color: #43b581; /* Zelená */
+    font-weight: 700;
+}
+
+.status-out-of-service {
+    color: #e53935; /* Červená */
+    font-weight: 700;
+}
+
+
+/* --- Zbytek původního CSS, ale s úpravami pro konzistenci --- */
 
 label {
-  font-weight: 600;
-  color: #333;
-  margin-right: 10px;
-  font-size: 1.05rem;
+    font-weight: 600;
+    color: #333;
+    margin-right: 10px;
+    font-size: 1.05rem;
 }
 
 select, input[type="time"], input[type="text"] {
-  padding: 9px 16px;
-  border-radius: 9px;
-  border: 1.5px solid #bfc9d1;
-  font-size: 1.09rem;
-  background: #f7fafd;
-  color: #222;
-  margin-bottom: 8px;
-  margin-top: 2px;
-  transition: border 0.2s, box-shadow 0.2s;
-  outline: none;
-  font-family: inherit;
-  box-shadow: 0 2px 8px #00bfff11;
+    padding: 9px 16px;
+    border-radius: 9px;
+    border: 1.5px solid #bfc9d1;
+    font-size: 1.09rem;
+    background: #f7fafd;
+    color: #222;
+    margin-bottom: 8px; /* Pro konzistentní mezery */
+    margin-top: 2px;
+    transition: border 0.2s, box-shadow 0.2s;
+    outline: none;
+    font-family: inherit;
+    box-shadow: 0 2px 8px #00bfff11;
 }
 
 #trainTimeInput {
-  width: 160px;
-  margin-bottom: 0;
-  margin-top: 0;
-  font-size: 1.13rem;
-  text-align: center;
-  letter-spacing: 1px;
-  border-radius: 10px;
-  border: 1.5px solid #bfc9d1;
-  background: #f7fafd;
-  box-shadow: 0 2px 8px #00bfff22;
-  transition: border 0.2s, box-shadow 0.2s;
+    width: 160px;
+    margin-bottom: 0;
+    margin-top: 0;
+    font-size: 1.13rem;
+    text-align: center;
+    letter-spacing: 1px;
+    border-radius: 10px;
+    border: 1.5px solid #bfc9d1;
+    background: #f7fafd;
+    box-shadow: 0 2px 8px #00bfff22;
+    transition: border 0.2s, box-shadow 0.2s;
 }
 
 #trainTimeInput:focus {
-  border: 1.5px solid #0070f3;
-  box-shadow: 0 0 0 2px #0070f344;
+    border: 1.5px solid #0070f3;
+    box-shadow: 0 0 0 2px #0070f344;
 }
 
 select:focus, input[type="time"]:focus, input[type="text"]:focus {
-  border: 1.5px solid #005aa0;
-  box-shadow: 0 0 0 2px #005aa033;
+    border: 1.5px solid #005aa0;
+    box-shadow: 0 0 0 2px #005aa033;
 }
 
 #trainDetail {
-  margin-top: 18px;
-  background: linear-gradient(120deg, #f8fbff 60%, #e0f7fa 100%);
-  border-radius: 12px;
-  padding: 22px 24px 16px 24px;
-  box-shadow: 0 4px 24px #00bfff22;
-  border: 1.5px solid #b0c4d8;
-  min-height: 80px;
-  animation: fadeInDetail 0.7s cubic-bezier(.4,2,.6,1);
-  transition: box-shadow 0.3s;
-  color: #222;
+    margin-top: 18px;
+    background: linear-gradient(120deg, #f8fbff 60%, #e0f7fa 100%);
+    border-radius: 12px;
+    padding: 22px 24px 16px 24px;
+    box-shadow: 0 4px 24px #00bfff22;
+    border: 1.5px solid #b0c4d8;
+    min-height: 80px;
+    animation: fadeInDetail 0.7s cubic-bezier(.4,2,.6,1);
+    transition: box-shadow 0.3s;
+    color: #222;
 }
 
 #trainDetail:hover {
-  box-shadow: 0 8px 32px #00bfff33;
+    box-shadow: 0 8px 32px #00bfff33;
 }
 
 #trainDetail h3 {
-  margin-top: 0;
-  color: #0a223a;
-  font-size: 1.3rem;
-  letter-spacing: 1px;
-  font-weight: 700;
-  text-shadow: 0 2px 8px #00bfff11;
+    margin-top: 0;
+    color: #0a223a;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    font-weight: 700;
+    text-shadow: 0 2px 8px #00bfff11;
 }
 
 #trainDetail h4 {
-  margin-bottom: 6px;
-  margin-top: 18px;
-  color: #444;
-  font-size: 1.05rem;
+    margin-bottom: 6px;
+    margin-top: 18px;
+    color: #444;
+    font-size: 1.05rem;
 }
 
 #trainDetail ul {
-  margin-left: 18px;
-  padding: 0;
-  font-size: 1rem;
+    margin-left: 18px;
+    padding: 0;
+    font-size: 1rem;
 }
 
 #trainDetail li {
-  margin-bottom: 4px;
+    margin-bottom: 4px;
 }
 
 button {
-  display: inline-block;
-  margin: 18px 10px 0 10px;
-  padding: 12px 32px;
-  font-size: 1.13rem;
-  background: linear-gradient(90deg, #0070f3 0%, #005aa0 100%);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 700;
-  box-shadow: 0 4px 18px #005aa033, 0 1.5px 0 #fff;
-  transition: background 0.22s, transform 0.13s, box-shadow 0.22s;
-  outline: none;
-  letter-spacing: 0.5px;
-  position: relative;
-  overflow: hidden;
+    display: inline-block;
+    margin: 18px 10px 0 10px;
+    padding: 12px 32px;
+    font-size: 1.13rem;
+    background: linear-gradient(90deg, #0070f3 0%, #005aa0 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 700;
+    box-shadow: 0 4px 18px #005aa033, 0 1.5px 0 #fff;
+    transition: background 0.22s, transform 0.13s, box-shadow 0.22s;
+    outline: none;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
 }
 
 button:after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(255,255,255,0.18);
-  border-radius: 100%;
-  transform: translate(-50%, -50%);
-  transition: width 0.3s, height 0.3s;
-  z-index: 0;
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255,255,255,0.18);
+    border-radius: 100%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+    z-index: 0;
 }
 
 button:hover:after {
-  width: 220%;
-  height: 600%;
+    width: 220%;
+    height: 600%;
 }
 
 button:hover {
-  background: linear-gradient(90deg, #005aa0 0%, #0070f3 100%);
-  transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 8px 28px #0070f344;
+    background: linear-gradient(90deg, #005aa0 0%, #0070f3 100%);
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 8px 28px #0070f344;
 }
 
 .footer {
-  text-align: center;
-  color: #888;
-  margin-top: 40px;
-  font-size: 1rem;
-  letter-spacing: 1px;
-  background: #f8fbff;
-  padding: 18px 0 10px 0;
-  border-top: 1.5px solid #e3e3e3;
-  box-shadow: 0 -2px 12px #00bfff11;
+    text-align: center;
+    color: #888;
+    margin-top: 40px;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    background: #f8fbff;
+    padding: 18px 0 10px 0;
+    border-top: 1.5px solid #e3e3e3;
+    box-shadow: 0 -2px 12px #00bfff11;
 }
 
 @keyframes fadeInDetail {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Styly pro zaměstnance a službu (přesunuto z inline stylů a sjednoceno) */
+.employee-green {
+    background: linear-gradient(90deg, #43b581 0%, #2ecc40 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 18px #43b58133, 0 1.5px 0 #fff;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1.13rem;
+    padding: 12px 32px;
+    margin-bottom: 8px;
+    margin-top: 8px;
+    cursor: pointer;
+    transition: background 0.22s, transform 0.13s, box-shadow 0.22s;
+    border: none; /* Přidáno pro konzistenci s ostatními tlačítky */
+}
+.employee-green:hover {
+    background: linear-gradient(90deg, #2ecc40 0%, #43b581 100%) !important;
+    box-shadow: 0 8px 28px #43b58155;
+    transform: translateY(-2px) scale(1.04);
+}
+
+.duty-red {
+    background: linear-gradient(90deg, #e53935 0%, #b71c1c 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 18px #e5393533, 0 1.5px 0 #fff;
+    border: none; /* Přidáno pro konzistenci s ostatními tlačítky */
+}
+.duty-red:hover {
+    background: linear-gradient(90deg, #b71c1c 0%, #e53935 100%) !important;
+    box-shadow: 0 8px 28px #e5393555;
+}
+
+/* Styly pro paletku zaměstnanců a dropdown služby */
+.employee-palette, .duty-dropdown {
+    margin-top:12px;
+    background:#f7fafd;
+    border-radius:10px;
+    padding:18px 18px 10px 18px;
+    box-shadow:0 4px 18px #00bfff22;
+    border:1.5px solid #bfc9d1;
+    max-width:320px;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+.employee-palette button { /* Styly pro tlačítka v employeeList */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1.5px solid #bfc9d1;
+    background: #fff;
+    font-weight: 600;
+    font-size: 1.08rem;
+    cursor: pointer;
+    color: #111;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0; /* Override default button margin */
+    box-shadow: none; /* Remove default button shadow */
+    transition: background 0.2s, border 0.2s, transform 0.1s;
+}
+
+.employee-palette button:hover {
+    background: #eef2f8;
+    border-color: #a7bccd;
+    transform: translateY(-1px);
+    box-shadow: none;
+}
+
+/* Responzivní design */
+@media (max-width: 900px) {
+    #main-app-layout {
+        flex-direction: column;
+        align-items: center; /* Centruje sloupce, když se zalomí */
+    }
+
+    .content-wrapper, .status-column-right {
+        max-width: 90%; /* Zvětší šířku na menších obrazovkách */
+        margin-bottom: 20px; /* Mezera mezi zalomenými sloupci */
+    }
 }

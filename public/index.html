@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vlakové jízdní řády PKP</title>
+    <title>Dispečink strojvedoucího MCD</title>
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -13,64 +13,65 @@
     </header>
     <div class="animated-bar"></div>
     <p class="welcome">Vítejte v plnohodnotné aplikaci pro strojvedoucího. Vyberte si vlak podle času, zobrazte detail, odešlete hlášení na Discord a sledujte svůj provoz jednoduše a moderně.</p>
-    <main id="app-container">
+
+    <div id="main-app-layout">
         <div id="restartAlert" style="display:none;position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:1000;background:linear-gradient(90deg,#fff6f6 0%,#ffeaea 100%);color:#b71c1c;font-weight:700;padding:14px 32px;border-radius:12px;box-shadow:0 4px 24px #e5393533,0 1.5px 0 #fff;font-size:1.13rem;letter-spacing:1px;border:1.5px solid #e53935;animation:fadeInDetail 0.7s cubic-bezier(.4,2,.6,1);min-width:260px;text-align:center;">
             <span>⚠️ Za 30 minut proběhne restart serveru CZ-1!</span>
             <button id="closeRestartAlert" style="margin-left:18px;padding:4px 14px;font-size:1rem;border-radius:7px;border:none;background:#e53935;color:#fff;cursor:pointer;box-shadow:0 2px 8px #e5393533;">Zavřít</button>
         </div>
 
-        <div class="section webhook-section">
-            <button id="employeeBtn" class="employee-green">👤 Zaměstnanci</button>
-            <div id="employeePalette" style="display:none;margin-top:12px;background:#f7fafd;border-radius:10px;padding:18px 18px 10px 18px;box-shadow:0 4px 18px #00bfff22;border:1.5px solid #bfc9d1;max-width:320px;margin-left:auto;margin-right:auto;">
-                <div style="font-weight:600;margin-bottom:8px;">Vyberte zaměstnance:</div>
-                <div id="employeeList" style="display:flex;flex-direction:column;gap:10px;"></div>
-            </div>
-            <div id="employeeStatusTable" style="display:none;margin-top:18px;text-align:center;"></div>
-<style>
-.employee-green {
-  background: linear-gradient(90deg, #43b581 0%, #2ecc40 100%) !important;
-  color: #fff !important;
-  box-shadow: 0 4px 18px #43b58133, 0 1.5px 0 #fff;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 1.13rem;
-  padding: 12px 32px;
-  margin-bottom: 8px;
-  margin-top: 8px;
-  cursor: pointer;
-  transition: background 0.22s, transform 0.13s, box-shadow 0.22s;
-}
-.employee-green:hover {
-  background: linear-gradient(90deg, #2ecc40 0%, #43b581 100%) !important;
-  box-shadow: 0 8px 28px #43b58155;
-  transform: translateY(-2px) scale(1.04);
-}
-</style>
-            <button id="dutyButton" class="duty-red">Služba</button>
-            <div id="dutyDropdown" style="display:none;margin-top:12px;">
-                <select id="dutyType" style="padding:7px 14px;border-radius:6px;border:1px solid #bfc9d1;font-size:1rem;">
-                    <option value="">Vyberte možnost</option>
-                    <option value="in">DO služby</option>
-                    <option value="out">Mimo službu</option>
-                </select>
-                <div id="nameInputDiv" style="display:none;margin-top:10px;">
-                    <input type="text" id="userName" placeholder="Zadejte své jméno" style="padding:7px 14px;border-radius:6px;border:1px solid #bfc9d1;font-size:1rem;">
-                    <button id="sendDutyBtn" style="margin-left:10px;">Odeslat</button>
+        <div class="content-wrapper">
+            <main class="main-center-panel">
+                <div class="section webhook-section">
+                    <button id="employeeBtn" class="employee-green">👤 Zaměstnanci</button>
+                    <div id="employeePalette" class="employee-palette" style="display:none;">
+                        <div style="font-weight:600;margin-bottom:8px;">Vyberte zaměstnance:</div>
+                        <div id="employeeList" style="display:flex;flex-direction:column;gap:10px;"></div>
+                    </div>
+                    <button id="dutyButton" class="duty-red">Služba</button>
+                    <div id="dutyDropdown" class="duty-dropdown" style="display:none;">
+                        <select id="dutyType">
+                            <option value="">Vyberte možnost</option>
+                            <option value="in">DO služby</option>
+                            <option value="out">Mimo službu</option>
+                        </select>
+                        <div id="nameInputDiv" style="display:none;margin-top:10px;">
+                            <input type="text" id="userName" placeholder="Zadejte své jméno">
+                            <button id="sendDutyBtn" style="margin-left:10px;">Odeslat</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
+
+                <div class="section">
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+                        <input type="time" id="trainTimeInput" placeholder="HH:MM" style="width:160px;">
+                        <button id="generateTrainBtn">Generuj vlak</button>
+                        <div style="font-size:0.98rem;color:#888;margin-top:2px;">Zadejte čas nebo nechte prázdné pro aktuální čas</div>
+                    </div>
+                </div>
+
+                <div class="section" id="trainModalSection" style="display:none;">
+                    <div id="trainDetail" class="train-modal"></div>
+                    <button id="closeTrainModalBtn" style="margin-top:16px;">Zavřít</button>
+                </div>
+            </main>
+
+            <aside class="status-column-right">
+                <h3>Stav zaměstnanců</h3>
+                <table id="employeeStatusTable">
+                    <thead>
+                        <tr>
+                            <th>Jméno</th>
+                            <th>Stav</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+                <div id="statusMessage"></div> </aside>
         </div>
-        <div class="section">
-            <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-                <input type="time" id="trainTimeInput" placeholder="HH:MM" style="width:160px;">
-                <button id="generateTrainBtn">Generuj vlak</button>
-                <div style="font-size:0.98rem;color:#888;margin-top:2px;">Zadejte čas nebo nechte prázdné pro aktuální čas</div>
-            </div>
-        </div>
-        <div class="section" id="trainModalSection" style="display:none;">
-            <div id="trainDetail" class="train-modal"></div>
-            <button id="closeTrainModalBtn" style="margin-top:16px;">Zavřít</button>
-        </div>
-    </main>
+    </div>
+
     <footer class="footer">
         &copy; 2025 Multi-Cargo Doprava (MCD) &mdash; design & vývoj pro strojvedoucí
     </footer>
