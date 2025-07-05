@@ -1,9 +1,197 @@
 body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(120deg, #0a223a 0%, #101c2c 100%);
+    font-family: 'Lato', 'Roboto', 'Open Sans', Arial, sans-serif;
+    background: #151c26;
     margin: 0;
     padding: 0;
     min-height: 100vh;
+    color: #eaf6fb;
+    font-size: 1.13rem;
+    letter-spacing: 0.01em;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1 {
+    color: #1de9b6;
+    text-align: center;
+    margin: 0 0 8px 0;
+    font-size: 2.7rem;
+    letter-spacing: 1.5px;
+    font-weight: 800;
+    text-shadow: 0 2px 16px #1de9b633, 0 1px 0 #0a223a;
+    font-family: 'Lato', 'Roboto', 'Open Sans', Arial, sans-serif;
+}
+
+.header-logo-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 38px;
+    margin-bottom: 0;
+    gap: 8px;
+}
+
+.mcd-accent {
+    color: #00bfff;
+    letter-spacing: 2px;
+    font-weight: 900;
+    text-shadow: 0 2px 12px #00bfff33;
+}
+
+.subtitle {
+    color: #b0c4d8;
+    font-size: 1.18rem;
+    margin-bottom: 0;
+    font-weight: 500;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.animated-bar {
+    width: 100vw;
+    height: 4px;
+    background: linear-gradient(90deg, #00bfff 0%, #1de9b6 100%);
+    margin-bottom: 22px;
+    box-shadow: 0 2px 12px #00bfff44;
+    animation: bar-move 2.5s infinite linear alternate;
+}
+
+@keyframes bar-move {
+    0% { filter: brightness(1.1) blur(0.5px); }
+    100% { filter: brightness(1.5) blur(2px); }
+}
+
+.welcome {
+    text-align: center;
+    color: #eaf6fb;
+    margin-bottom: 36px;
+    font-size: 1.22rem;
+    font-weight: 500;
+    background: linear-gradient(90deg, #1de9b6 0%, #00bfff 100%);
+    border-radius: 12px;
+    padding: 14px 0 14px 0;
+    box-shadow: 0 2px 16px #00bfff11;
+    opacity: 0.93;
+}
+
+.section {
+    margin-bottom: 28px;
+}
+
+.webhook-section {
+    text-align: center;
+}
+
+#app-container {
+    max-width: 600px;
+    margin: 48px auto 0 auto;
+    background: rgba(24, 32, 44, 0.98);
+    border-radius: 22px;
+    box-shadow: 0 10px 40px #00bfff22, 0 1.5px 0 #1de9b6;
+    padding: 40px 36px 32px 36px;
+    border: 1.5px solid #1de9b6;
+    backdrop-filter: blur(3px);
+}
+
+label {
+    font-weight: 700;
+    color: #eaf6fb;
+    margin-right: 12px;
+    font-size: 1.08rem;
+}
+
+select, input[type="time"] {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1.5px solid #00bfff;
+    font-size: 1.08rem;
+    background: #1a2533;
+    color: #eaf6fb;
+    margin-bottom: 18px;
+    transition: border 0.2s, box-shadow 0.2s;
+    outline: none;
+    font-family: inherit;
+}
+select:focus, input[type="time"]:focus {
+    border: 2px solid #1de9b6;
+    box-shadow: 0 0 0 2px #1de9b655;
+}
+
+#trainDetail {
+    margin-top: 18px;
+    background: linear-gradient(120deg, #1a2533 60%, #22334a 100%);
+    border-radius: 14px;
+    padding: 26px 28px 18px 28px;
+    box-shadow: 0 6px 32px #00bfff22;
+    border: 1.5px solid #1de9b6;
+    min-height: 80px;
+    animation: fadeInDetail 0.7s cubic-bezier(.4,2,.6,1);
+    transition: box-shadow 0.3s;
+    color: #eaf6fb;
+}
+#trainDetail:hover {
+    box-shadow: 0 12px 40px #00bfff33;
+}
+#trainDetail h3 {
+    margin-top: 0;
+    color: #1de9b6;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    font-weight: 700;
+    text-shadow: 0 2px 8px #00bfff11;
+}
+@keyframes fadeInDetail {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#trainDetail h4 {
+    margin-bottom: 6px;
+    margin-top: 18px;
+    color: #1de9b6;
+    font-size: 1.08rem;
+}
+#trainDetail ul {
+    margin: 0 0 0 18px;
+    padding: 0;
+    color: #eaf6fb;
+    font-size: 1.01rem;
+}
+#trainDetail li {
+    margin-bottom: 4px;
+}
+
+#testWebhookButton, button {
+    display: block;
+    margin: 32px auto 0 auto;
+    padding: 14px 36px;
+    font-size: 1.13rem;
+    background: linear-gradient(90deg, #00bfff 60%, #1de9b6 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    box-shadow: 0 2px 16px #00bfff33;
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+    outline: none;
+}
+#testWebhookButton:hover, button:hover {
+    background: linear-gradient(90deg, #1de9b6 60%, #00bfff 100%);
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 6px 24px #1de9b655;
+}
+
+.footer {
+    text-align: center;
+    color: #b0c4d8;
+    margin-top: 48px;
+    font-size: 1.05rem;
+    letter-spacing: 1px;
+    background: #1a2533;
+    padding: 22px 0 14px 0;
+    border-top: 1.5px solid #1de9b6;
+    box-shadow: 0 -2px 16px #00bfff11;
+    border-radius: 0 0 18px 18px;
 }
 
 h1 {
