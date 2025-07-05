@@ -3,7 +3,12 @@ const employees = [
     {
         id: '417061947759001600',
         name: 'kubiasofficial',
-        currentStatus: 'Neznámý' // Přidáme pole pro uchování aktuálního stavu
+        currentStatus: 'Neznámý'
+    },
+    {
+        id: '1350594297250185331',
+        name: 'Vašíček_Andrejka',
+        currentStatus: 'Neznámý'
     }
     // Další zaměstnance lze přidat sem
 ];
