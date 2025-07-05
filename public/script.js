@@ -123,9 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (employeeBtn) {
         employeeBtn.addEventListener('click', () => {
-            // Skrýt ostatní panely
-            dutyDropdown.style.display = 'none';
-            trainModalSection.style.display = 'none';
+            // Skrýt ostatní panely (dutyDropdown už neexistuje)
+            if (typeof trainModalSection !== 'undefined' && trainModalSection) trainModalSection.style.display = 'none';
 
             // Toggle paletky zaměstnanců
             const isPaletteVisible = employeePalette.style.display === 'block';
