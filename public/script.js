@@ -5,19 +5,7 @@
     // const closeTakeTrainModalBtn = document.getElementById('closeTakeTrainModalBtn');
     // Odebráno: tlačítko a tabulka "Vzít vlak" a "Kdo co dělá" dle požadavku uživatele.
 // --- Zaměstnanci paletka a status ---
-const employees = [
-    {
-        id: '417061947759001600',
-        name: 'kubiasofficial',
-        currentStatus: 'Neznámý'
-    },
-    {
-        id: '1350594297250185331',
-        name: 'Vašíček_Andrejka',
-        currentStatus: 'Neznámý'
-    }
-    // Další zaměstnance lze přidat sem
-];
+let employees = [];
 
 const employeeBtn = document.getElementById('employeeBtn');
 const employeePalette = document.getElementById('employeePalette');
@@ -36,26 +24,22 @@ const empOutBtn = document.getElementById('empOutBtn');
 let selectedEmployee = null; // Toto bude uchovávat celého vybraného zaměstnance
 
 // Funkce pro aktualizaci/přidání statusu zaměstnance do tabulky
-function updateEmployeeStatusInTable(empName, inDuty) {
-    let row = document.getElementById(`status-row-${empName.replace(/\s/g, '-')}`); // ID řádku podle jména
+async function updateEmployeeStatusInTable(empName, inDuty) {
+    let row = document.getElementById(`status-row-${empName.replace(/\s/g, '-')}`);
     const statusText = inDuty ? '🟢 Ve službě' : '🔴 Mimo službu';
     const statusClass = inDuty ? 'status-in-service' : 'status-out-of-service';
 
     if (!row) {
-        // Pokud řádek neexistuje, vytvořit nový
         row = employeeStatusTableBody.insertRow();
         row.id = `status-row-${empName.replace(/\s/g, '-')}`;
-
         const nameCell = row.insertCell(0);
         nameCell.textContent = empName;
-
         const statusCell = row.insertCell(1);
-        statusCell.className = statusClass; // Nastaví třídu pro barvu textu
+        statusCell.className = statusClass;
         statusCell.textContent = statusText;
     } else {
-        // Pokud řádek existuje, aktualizovat status
         const statusCell = row.cells[1];
-        statusCell.className = statusClass; // Aktualizuje třídu pro barvu textu
+        statusCell.className = statusClass;
         statusCell.textContent = statusText;
     }
 
@@ -63,15 +47,21 @@ function updateEmployeeStatusInTable(empName, inDuty) {
     const empIndex = employees.findIndex(emp => emp.name === empName);
     if (empIndex !== -1) {
         employees[empIndex].currentStatus = inDuty ? 'Ve službě' : 'Mimo službu';
+        // Uložit na server
+        await fetch('/api/employees', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: employees[empIndex].id, currentStatus: employees[empIndex].currentStatus })
+        });
     }
 }
 
 // Funkce pro načtení počátečních statusů (pokud byste je chtěli načítat např. z localStorage)
-function loadInitialEmployeeStatuses() {
-    // Inicializovat tabulku se známými zaměstnanci
+async function loadInitialEmployeeStatuses() {
+    // Načíst zaměstnance ze serveru
+    const res = await fetch('/api/employees');
+    employees = await res.json();
     employees.forEach(emp => {
-        // Zde byste mohli načíst skutečný status z localStorage nebo API
-        // Prozatím zobrazíme jejich výchozí 'Neznámý' nebo co mají v currentStatus
         updateEmployeeStatusInTable(emp.name, emp.currentStatus === 'Ve službě');
     });
 }
@@ -164,18 +154,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listenery pro tlačítka "Do služby" a "Mimo službu"
     if (empInBtn) {
-        empInBtn.addEventListener('click', () => {
+        empInBtn.addEventListener('click', async () => {
             if (selectedEmployee) {
-                sendEmployeeStatus(selectedEmployee, true); // True pro "Do služby"
+                await sendEmployeeStatus(selectedEmployee, true); // True pro "Do služby"
+                await updateEmployeeStatusInTable(selectedEmployee.name, true);
             } else {
                 showStatusMessage('Nejprve vyberte zaměstnance.', true);
             }
         });
     }
     if (empOutBtn) {
-        empOutBtn.addEventListener('click', () => {
+        empOutBtn.addEventListener('click', async () => {
             if (selectedEmployee) {
-                sendEmployeeStatus(selectedEmployee, false); // False pro "Mimo službu"
+                await sendEmployeeStatus(selectedEmployee, false); // False pro "Mimo službu"
+                await updateEmployeeStatusInTable(selectedEmployee.name, false);
             } else {
                 showStatusMessage('Nejprve vyberte zaměstnance.', true);
             }
