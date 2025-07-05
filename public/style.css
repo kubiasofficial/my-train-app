@@ -1,13 +1,87 @@
+h1 {
+    color: #222;
+    text-align: center;
+    margin-top: 40px;
+    font-size: 2.5rem;
+    letter-spacing: 1px;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+p {
+    text-align: center;
+    color: #555;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
 body {
-    font-family: 'Lato', 'Roboto', 'Open Sans', Arial, sans-serif;
-    background: #fff;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    color: #222;
-    font-size: 1.13rem;
-    letter-spacing: 0.01em;
-    -webkit-font-smoothing: antialiased;
+}
+#app-container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: rgba(255,255,255,0.95);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+    padding: 32px 28px 24px 28px;
+    backdrop-filter: blur(2px);
+    border: 1px solid #e3e3e3;
+}
+label {
+    font-weight: 600;
+    color: #333;
+    margin-right: 10px;
+}
+select {
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1px solid #bfc9d1;
+    font-size: 1rem;
+    background: #f7fafd;
+    margin-bottom: 18px;
+    transition: border 0.2s;
+}
+select:focus {
+    border: 1.5px solid #0070f3;
+    outline: none;
+}
+#trainDetail {
+    margin-top: 18px;
+    background: #f8fbff;
+    border-radius: 8px;
+    padding: 18px 20px 10px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #e3e3e3;
+}
+#trainDetail h3 {
+    margin-top: 0;
+}
+.footer {
+    text-align: center;
+    color: #888;
+    margin-top: 40px;
+    font-size: 0.98rem;
+}
+button {
+    display: block;
+    margin: 32px auto 0 auto;
+    padding: 12px 32px;
+    font-size: 1.08rem;
+    background: linear-gradient(90deg, #0070f3 60%, #005bb5 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: background 0.2s, transform 0.1s;
+}
+button:hover {
+    background: linear-gradient(90deg, #005bb5 60%, #0070f3 100%);
+    transform: translateY(-2px) scale(1.03);
 }
 
 h1 {
