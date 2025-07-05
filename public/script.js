@@ -64,6 +64,11 @@
                 takeTrainModalContent.innerHTML += `<div style=\"color:#e53935;margin-top:8px;\">Vyplňte všechny údaje!</div>`;
                 return;
             }
+            // Validace: zaměstnanec nemůže převzít více vlaků najednou
+            if (activeTrainWidgets.some(w => w.employee === emp)) {
+                takeTrainModalContent.innerHTML += `<div style=\"color:#e53935;margin-top:8px;\">Tento zaměstnanec už má převzatý vlak!</div>`;
+                return;
+            }
             // Přidat widget
             activeTrainWidgets.push({ employee: emp, trainNumber, departureTime: depTime });
             renderWhoDoingTable();
@@ -110,13 +115,35 @@
             const emp = document.getElementById('endRouteEmployeeSelect').value;
             const endTime = document.getElementById('endRouteTimeInput').value;
             if (!emp || !endTime) {
-                takeTrainModalContent.innerHTML += `<div style="color:#e53935;margin-top:8px;">Vyplňte všechny údaje!</div>`;
+                takeTrainModalContent.innerHTML += `<div style=\"color:#e53935;margin-top:8px;\">Vyplňte všechny údaje!</div>`;
                 return;
             }
             // Najít a odstranit widget
+            const widget = activeTrainWidgets.find(w => w.employee === emp);
             activeTrainWidgets = activeTrainWidgets.filter(w => w.employee !== emp);
             renderWhoDoingTable();
             takeTrainModal.style.display = 'none';
+
+            // (Volitelně) Odeslat zprávu na Discord o ukončení trasy
+            if (widget) {
+                const webhookUrl = 'https://discord.com/api/webhooks/1390989690072727605/IwgaE5140eg1RVJuIgC8hmjGpi-IhC5pYCAzRJqstgtFVkuzQ8YadyR4TWhXC9UysbMv';
+                const train = allTrains.find(t => t.number === widget.trainNumber);
+                const embed = {
+                    color: 0xe53935,
+                    title: '🏁 Ukončení trasy',
+                    description: `**${emp}** právě ukončil trasu vlaku **${widget.trainNumber}**${train && train.startStation && train.endStation ? ` (${train.startStation} → ${train.endStation})` : ''} v čase **${endTime}**.`,
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: 'Multi-Cargo Doprava',
+                        icon_url: 'https://cdn.discordapp.com/emojis/1140725956576686201.webp?size=96&quality=lossless'
+                    }
+                };
+                fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ embeds: [embed] })
+                });
+            }
         };
     }
 
