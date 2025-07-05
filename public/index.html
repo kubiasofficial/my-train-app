@@ -16,6 +16,7 @@
       </div>
     </div>
     <div id="mainContent" style="display:none;">
+      <div id="userProfileBar" style="position:fixed;top:18px;right:24px;z-index:1000;display:flex;align-items:center;gap:10px;"></div>
       <header class="header-logo-title">
           <h1>Dispečink strojvedoucího <span class="mcd-accent">MCD</span></h1>
           <div class="subtitle">Multi-Cargo Doprava &mdash; moderní nástroj pro výběr a správu vlaků</div>
@@ -64,10 +65,26 @@
           } catch(e) {}
         }
       }
+      function renderUserProfile() {
+        const bar = document.getElementById('userProfileBar');
+        if (!bar) return;
+        const userStr = localStorage.getItem('discordUser');
+        if (!userStr) { bar.innerHTML = ''; return; }
+        let user;
+        try { user = JSON.parse(userStr); } catch(e) { bar.innerHTML = ''; return; }
+        let avatarUrl = user.avatar
+          ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+          : 'https://cdn.discordapp.com/embed/avatars/0.png';
+        bar.innerHTML = `
+          <img src="${avatarUrl}" alt="avatar" style="width:36px;height:36px;border-radius:50%;box-shadow:0 2px 8px #0004;">
+          <span style="color:#fff;font-weight:600;font-size:1.08em;">${user.username}#${user.discriminator}</span>
+        `;
+      }
       document.addEventListener('DOMContentLoaded', function() {
         saveDiscordUserFromUrl();
         if(isLoggedIn()) {
           showMainContent();
+          renderUserProfile();
         } else {
           showLogin();
         }
@@ -77,6 +94,9 @@
             window.location.href = '/api/discord-login';
           });
         }
+      });
+      window.addEventListener('storage', function(e) {
+        if (e.key === 'discordUser') renderUserProfile();
       });
     </script>
 
