@@ -12,83 +12,23 @@
         <div class="subtitle">Multi-Cargo Doprava &mdash; moderní nástroj pro výběr a správu vlaků</div>
     </header>
     <div class="animated-bar"></div>
-    <p class="welcome">Vítejte v plnohodnotné aplikaci pro strojvedoucího. Vyberte si vlak podle času, zobrazte detail, odešlete hlášení na Discord a sledujte svůj provoz jednoduše a moderně.</p>
 
-    <div id="main-app-layout">
-        <div id="restartAlert" style="display:none;position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:1000;background:linear-gradient(90deg,#fff6f6 0%,#ffeaea 100%);color:#b71c1c;font-weight:700;padding:14px 32px;border-radius:12px;box-shadow:0 4px 24px #e5393533,0 1.5px 0 #fff;font-size:1.13rem;letter-spacing:1px;border:1.5px solid #e53935;animation:fadeInDetail 0.7s cubic-bezier(.4,2,.6,1);min-width:260px;text-align:center;">
-            <span>⚠️ Za 30 minut proběhne restart serveru CZ-1!</span>
-            <button id="closeRestartAlert" style="margin-left:18px;padding:4px 14px;font-size:1rem;border-radius:7px;border:none;background:#e53935;color:#fff;cursor:pointer;box-shadow:0 2px 8px #e5393533;">Zavřít</button>
+    <div class="main-rozcestnik">
+      <div class="rozcestnik-palette">
+        <button class="rozcestnik-toggle">☰ Otevřít rozcestník</button>
+        <div class="rozcestnik-menu" style="display:none;">
+          <a href="/strojvedouci.html" class="rozcestnik-link">👤 Strojvedoucí</a>
+          <a href="/index.html" class="rozcestnik-link">🏠 Dispečink</a>
         </div>
-
-        <div class="content-wrapper">
-            <main class="main-center-panel">
-                <div class="section webhook-section" style="display:flex;gap:12px;align-items:center;justify-content:center;">
-                    <button id="employeeBtn" class="employee-green">👤 Zaměstnanci</button>
-                    <div id="employeePalette" class="employee-palette" style="display:none;">
-                        <div style="font-weight:600;margin-bottom:8px;">Vyberte zaměstnance:</div>
-                        <div id="employeeList" style="display:flex;flex-direction:column;gap:10px;"></div>
-                    </div>
-
-                    <div id="selectedEmployeeInfo" style="margin-top:15px; text-align: center;">
-                        <div id="selectedEmployeeDisplay" style="display:none; font-size:1.18rem; font-weight:700;"></div>
-                        <div id="employeeStatusActions" style="display:none; margin-top:10px; display:flex; gap:18px; justify-content:center;">
-                            <button class="employee-green" id="empInBtn">🚦 Do služby</button>
-                            <button class="duty-red" id="empOutBtn">🏁 Mimo službu</button>
-                        </div>
-                    </div>
-                    <div id="actionStatusMessage" style="margin-top:10px; font-size:1.08rem; font-weight:600; text-align:center;"></div>
-
-
-
-                </div>
-
-                <div class="section">
-                    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-                        <input type="time" id="trainTimeInput" placeholder="HH:MM" style="width:160px;">
-                        <select id="trainTypeFilter" style="width:160px; margin-top:6px;">
-                            <option value="">Všechny typy vlaků</option>
-                            <option value="EIP">EIP</option>
-                            <option value="EIJ">EIJ</option>
-                            <option value="IC">IC</option>
-                            <option value="EIE">EIE</option>
-                        </select>
-                        <button id="generateTrainBtn">Generuj vlak</button>
-                        <div style="font-size:0.98rem;color:#888;margin-top:2px;">Zadejte čas nebo nechte prázdné pro aktuální čas</div>
-                        <div style="font-size:0.95rem;color:#888;">Filtrovat podle typu vlaku</div>
-                    </div>
-                </div>
-
-                <div class="section" id="trainModalSection" style="display:none;">
-                    <div id="trainDetail" class="train-modal"></div>
-                    <div id="trainActionButtons" style="display:flex;gap:12px;justify-content:center;margin-top:16px;">
-                        <button id="chooseOtherTrainBtn">Vybrat jiný spoj</button>
-                        <button id="closeTrainModalBtn">Zavřít</button>
-                        <select id="takeOverEmployeeSelect" style="display:none;padding:7px 12px;border-radius:7px;font-size:1em;margin-right:8px;"></select>
-                        <button id="takeOverTrainBtn" class="employee-green" style="display:none;">Převzít vlak</button>
-                        <button id="endRideBtn" class="duty-red" style="display:none;">Ukončit jízdu</button>
-                    </div>
-                </div>
-            </main>
-
-            <aside class="status-column-right" style="display:flex;flex-direction:row;gap:24px;">
-                <div style="flex:1;min-width:220px;">
-                    <h3>Stav zaměstnanců</h3>
-                    <table id="employeeStatusTable">
-                        <thead>
-                            <tr>
-                                <th>Jméno</th>
-                                <th>Stav</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-                <!-- Kdo co dělá sekce byla odstraněna dle požadavku uživatele -->
-            </aside>
-
-            <!-- Modální okno pro Vzít vlak / Ukončit trasu bylo odstraněno dle požadavku uživatele -->
-        </div>
+      </div>
+      <div class="rozcestnik-welcome">
+        <h2>Vítejte v Multi-Cargo Doprava</h2>
+        <p>Vyberte si sekci aplikace:</p>
+        <ul class="rozcestnik-list">
+          <li><a href="/strojvedouci.html" class="rozcestnik-tile">👤 Strojvedoucí</a></li>
+          <li><a href="#" class="rozcestnik-tile disabled">🚄 Výběr vlaku (přes stránku Strojvedoucí)</a></li>
+        </ul>
+      </div>
     </div>
 
     <footer class="footer">

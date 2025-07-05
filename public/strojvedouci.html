@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strojvedoucí | Multi-Cargo Doprava</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header class="header-logo-title">
+        <h1>Strojvedoucí <span class="mcd-accent">MCD</span></h1>
+        <div class="subtitle">Přehled a správa strojvedoucích společnosti</div>
+    </header>
+    <div class="animated-bar"></div>
+    <main class="main-center-panel" style="margin: 0 auto; max-width: 700px;">
+        <section class="section" style="margin-top: 32px; text-align: center;">
+            <h2>Seznam strojvedoucích</h2>
+            <div id="driversList" style="margin-top: 24px;"></div>
+        </section>
+        <section class="section" style="margin-top: 32px; text-align: center;">
+            <button id="employeeBtn" class="employee-green">👤 Zaměstnanci</button>
+            <div id="employeePalette" class="employee-palette" style="display:none;">
+                <div style="font-weight:600;margin-bottom:8px;">Vyberte zaměstnance:</div>
+                <div id="employeeList" style="display:flex;flex-direction:column;gap:10px;"></div>
+            </div>
+            <div id="selectedEmployeeInfo" style="margin-top:15px; text-align: center;">
+                <div id="selectedEmployeeDisplay" style="display:none; font-size:1.18rem; font-weight:700;"></div>
+                <div id="employeeStatusActions" style="display:none; margin-top:10px; display:flex; gap:18px; justify-content:center;">
+                    <button class="employee-green" id="empInBtn">🚦 Do služby</button>
+                    <button class="duty-red" id="empOutBtn">🏁 Mimo službu</button>
+                </div>
+            </div>
+            <div id="actionStatusMessage" style="margin-top:10px; font-size:1.08rem; font-weight:600; text-align:center;"></div>
+        </section>
+        <section class="section" style="margin-top: 32px; text-align: center;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+                <input type="time" id="trainTimeInput" placeholder="HH:MM" style="width:160px;">
+                <select id="trainTypeFilter" style="width:160px; margin-top:6px;">
+                    <option value="">Všechny typy vlaků</option>
+                    <option value="EIP">EIP</option>
+                    <option value="EIJ">EIJ</option>
+                    <option value="IC">IC</option>
+                    <option value="EIE">EIE</option>
+                </select>
+                <button id="generateTrainBtn">Generuj vlak</button>
+                <div style="font-size:0.98rem;color:#888;margin-top:2px;">Zadejte čas nebo nechte prázdné pro aktuální čas</div>
+                <div style="font-size:0.95rem;color:#888;">Filtrovat podle typu vlaku</div>
+            </div>
+        </section>
+        <section class="section" id="trainModalSection" style="display:none;">
+            <div id="trainDetail" class="train-modal"></div>
+            <div id="trainActionButtons" style="display:flex;gap:12px;justify-content:center;margin-top:16px;">
+                <button id="chooseOtherTrainBtn">Vybrat jiný spoj</button>
+                <button id="closeTrainModalBtn">Zavřít</button>
+                <select id="takeOverEmployeeSelect" style="display:none;padding:7px 12px;border-radius:7px;font-size:1em;margin-right:8px;"></select>
+                <button id="takeOverTrainBtn" class="employee-green" style="display:none;">Převzít vlak</button>
+                <button id="endRideBtn" class="duty-red" style="display:none;">Ukončit jízdu</button>
+            </div>
+        </section>
+    </main>
+    <footer class="footer">
+        &copy; 2025 Multi-Cargo Doprava (MCD) &mdash; stránka strojvedoucích
+    </footer>
+</body>
+</html>
