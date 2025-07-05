@@ -1,3 +1,126 @@
+/* === MODERNÍ ŽELEZNIČNÍ VZHLED - JEDINÁ HLAVNÍ SEKCE === */
+body {
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #e3f0ff 0%, #f7fafc 100%);
+    color: #1a237e;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    letter-spacing: 0.01em;
+}
+
+.header-logo-title {
+    background: linear-gradient(90deg, #003399 0%, #0057b8 100%);
+    color: #fff;
+    padding: 32px 0 18px 0;
+    text-align: center;
+    box-shadow: 0 6px 24px #00339922;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 5px solid #ffd600;
+    animation: fadeInUp 1.2s cubic-bezier(.4,1.5,.6,1) 0.1s both;
+}
+
+.header-logo-title h1 {
+    margin: 0;
+    font-size: 3.1em;
+    letter-spacing: 2px;
+    font-weight: 900;
+    text-shadow: 0 2px 8px #00339955;
+    text-transform: uppercase;
+}
+
+.mcd-accent {
+    color: #ffd600;
+    font-size: 1.1em;
+    font-weight: 700;
+}
+
+.section {
+    background: linear-gradient(120deg, #fff 80%, #e3f0ff 100%);
+    padding: 32px 28px;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px #00339911, 0 1.5px 0 #fff;
+    text-align: center;
+    position: relative;
+    margin-bottom: 24px;
+    border: 1.5px solid #e3eafc;
+    animation: fadeInUp 1.1s cubic-bezier(.4,1.5,.6,1) both;
+}
+
+.main-center-panel {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    max-width: 650px;
+    width: 100%;
+}
+
+.status-column-right {
+    flex: 1;
+    background: linear-gradient(120deg, #fff 80%, #e3f0ff 100%);
+    padding: 28px 22px;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px #00339911, 0 1.5px 0 #fff;
+    min-width: 280px;
+    max-width: 400px;
+    box-sizing: border-box;
+    border: 1.5px solid #e3eafc;
+    animation: fadeInUp 1.1s cubic-bezier(.4,1.5,.6,1) both;
+}
+
+#employeeStatusTable th {
+    background: linear-gradient(90deg, #e3f0ff 0%, #f7fafc 100%);
+    font-weight: 700;
+    color: #003399;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 2.5px solid #ffd600;
+}
+
+#employeeStatusTable tr:nth-child(even) {
+    background-color: #f7fafc;
+}
+
+#employeeStatusTable tr:hover {
+    background: linear-gradient(90deg, #e3f0ff 0%, #ffd60022 100%);
+}
+
+.who-doing-widget {
+    background: linear-gradient(90deg, #fff 70%, #e3f6ff 100%);
+    border-radius: 16px;
+    box-shadow: 0 6px 24px #43b58122, 0 1.5px 0 #fff;
+    padding: 22px 28px 22px 28px;
+    display: flex;
+    align-items: center;
+    animation: whoDoPulse 1.2s infinite alternate cubic-bezier(.6,1.5,.6,1);
+    gap: 22px;
+    position: relative;
+    border: 1.5px solid #e3eafc;
+    animation: fadeInUp 1.1s cubic-bezier(.4,1.5,.6,1) both;
+}
+
+.footer {
+    text-align: center;
+    padding: 24px 0 18px 0;
+    margin-top: 40px;
+    background: linear-gradient(90deg, #003399 0%, #0057b8 100%);
+    color: #fff;
+    font-size: 1em;
+    border-top: 4px solid #ffd600;
+    letter-spacing: 0.04em;
+    box-shadow: 0 -2px 12px #00339922;
+    position: relative;
+    overflow: hidden;
+}
+
+/* === KONEC MODERNÍ SEKCE === */
+
 /* Discord login button moderní styl */
 .discord-login-btn {
   background: linear-gradient(90deg, #7289da 0%, #99aab5 100%);
@@ -102,6 +225,8 @@
   font-weight: 700;
   text-decoration: none;
   transition: background 0.2s, color 0.2s, transform 0.2s;
+  position: relative;
+  overflow: hidden;
 }
 .rozcestnik-tile:hover {
   background: linear-gradient(90deg, #667eea11 0%, #764ba211 100%);
@@ -112,6 +237,17 @@
   pointer-events: none;
   opacity: 0.5;
 }
+.rozcestnik-tile::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.0) 100%);
+  transform: skewX(-20deg);
+  pointer-events: none;
+  animation: shine 2.5s infinite;
+}
+
 /* Moderní styl pro <input type="time"> a <select> */
 input[type="time"], select {
   background: #fff;
@@ -146,15 +282,16 @@ select {
 }
 /* --- Widget kdo co dělá --- */
 .who-doing-widget {
-  background: linear-gradient(90deg, #e0ffe7 0%, #e3f6ff 100%);
-  border-radius: 13px;
-  box-shadow: 0 4px 18px #43b58122, 0 1.5px 0 #fff;
-  padding: 18px 22px 18px 22px;
+  background: linear-gradient(90deg, #fff 70%, #e3f6ff 100%);
+  border-radius: 16px;
+  box-shadow: 0 6px 24px #43b58122, 0 1.5px 0 #fff;
+  padding: 22px 28px 22px 28px;
   display: flex;
   align-items: center;
   animation: whoDoPulse 1.2s infinite alternate cubic-bezier(.6,1.5,.6,1);
-  gap: 18px;
+  gap: 22px;
   position: relative;
+  border: 1.5px solid #e3eafc;
 }
 .who-doing-anim {
   display: flex;
@@ -248,204 +385,50 @@ select {
 .info-tooltip-container:hover .info-tooltip-text {
   display: block;
 }
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(135deg, #e0f2f7 0%, #c4e4ee 100%);
-    color: #333;
-    line-height: 1.6;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
 
-.header-logo-title {
-    background: linear-gradient(90deg, #667eea, #764ba2);
+/* MODERNÍ TLAČÍTKA */
+button, .button {
+    background: linear-gradient(90deg, #0057b8 0%, #003399 100%);
     color: #fff;
-    padding: 25px 0;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    margin-bottom: 25px;
-    position: relative; /* Pro animovanou lištu */
-    overflow: hidden;
-}
-
-.header-logo-title h1 {
-    margin: 0;
-    font-size: 2.8em;
-    letter-spacing: 1.5px;
-    font-weight: 800;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.mcd-accent {
-    color: #ffeb3b; /* Jasně žlutá */
-    font-size: 1.1em;
-}
-
-.subtitle {
-    font-size: 1.1em;
-    margin-top: 5px;
-    opacity: 0.9;
-}
-
-.animated-bar {
-    height: 5px;
-    background: linear-gradient(90deg, #ffeb3b, #fbc02d);
-    width: 0;
-    animation: fillBar 2s ease-out forwards;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-}
-
-@keyframes fillBar {
-    from { width: 0; }
-    to { width: 100%; }
-}
-
-.welcome {
-    text-align: center;
-    font-size: 1.1em;
-    margin: 20px auto;
-    max-width: 800px;
-    padding: 0 20px;
-    color: #555;
-}
-
-/* Hlavní layout pro content */
-#main-app-layout {
-    display: flex; /* Použijeme flexbox pro hlavní layout */
-    justify-content: center; /* Centrujeme obsah */
-    align-items: flex-start; /* Zarovnáme na začátek (nahoru) */
-    flex-grow: 1; /* Povolíme, aby se roztáhl */
-    padding: 20px;
-    gap: 30px; /* Mezera mezi hlavním panelem a boční tabulkou */
-}
-
-.content-wrapper {
-    display: flex;
-    gap: 30px; /* Mezera mezi main a aside */
-    width: 100%;
-    max-width: 1200px; /* Omezíme celkovou šířku obsahu */
-    align-items: flex-start; /* Zarovnání obsahu k hornímu okraji */
-}
-
-.main-center-panel {
-    flex: 2; /* Hlavní panel zabere více místa */
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-    max-width: 600px; /* Omezíme šířku hlavního panelu */
-    width: 100%;
-}
-
-.status-column-right {
-    flex: 1; /* Boční panel zabere méně místa */
-    background-color: #ffffff;
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-    min-width: 280px; /* Minimální šířka pro tabulku */
-    max-width: 400px;
-    box-sizing: border-box;
-}
-
-.status-column-right h3 {
-    text-align: center;
-    color: #444;
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 1.6em;
-}
-
-#employeeStatusTable {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    font-size: 0.95em;
-}
-
-#employeeStatusTable th,
-#employeeStatusTable td {
-    padding: 12px 15px;
-    border: 1px solid #eee;
-    text-align: left;
-}
-
-#employeeStatusTable th {
-    background-color: #f5f5f5;
-    font-weight: 600;
-    color: #555;
-    text-transform: uppercase;
-}
-
-#employeeStatusTable tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-#employeeStatusTable tr:hover {
-    background-color: #f1f1f1;
-}
-
-.status-in-service {
-    color: #43b581; /* Discord green */
-    font-weight: 700;
-}
-
-.status-out-of-service {
-    color: #e53935; /* Discord red */
-    font-weight: 700;
-}
-
-
-/* Obecné styly pro sekce a tlačítka */
-.section {
-    background-color: #ffffff;
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    position: relative; /* Pro absolutní pozicování paletky */
-}
-
-button {
-    background-color: #007bff;
-    color: white;
     border: none;
-    padding: 12px 25px;
-    border-radius: 8px;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-size: 1.13em;
+    font-weight: 700;
+    box-shadow: 0 4px 18px #00339922;
     cursor: pointer;
-    font-size: 1.1em;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    letter-spacing: 0.03em;
+    outline: none;
+    margin: 6px 0;
 }
-
-button:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
+button:hover, .button:hover {
+    background: linear-gradient(90deg, #ffd600 0%, #0057b8 100%);
+    color: #003399;
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 8px 32px #ffd60033;
 }
-
-button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+button:active, .button:active {
+    background: #003399;
+    color: #ffd600;
+    transform: scale(0.98);
 }
-
+/* Speciální barvy pro stavové tlačítka */
 .employee-green {
-    background-color: #43b581; /* Discord green */
+    background: linear-gradient(90deg, #43b581 0%, #a8e063 100%);
+    color: #fff;
 }
-
 .employee-green:hover {
-    background-color: #38956d;
+    background: linear-gradient(90deg, #388e3c 0%, #43b581 100%);
+    color: #fff;
 }
-
 .duty-red {
-    background-color: #e53935; /* Discord red */
+    background: linear-gradient(90deg, #e53935 0%, #ff6f60 100%);
+    color: #fff;
 }
-
 .duty-red:hover {
-    background-color: #c62828;
+    background: linear-gradient(90deg, #b71c1c 0%, #e53935 100%);
+    color: #fff;
 }
 
 /* Styly pro paletku zaměstnanců */
@@ -542,78 +525,49 @@ button:active {
     to { opacity: 1; transform: translateY(0) translateX(-50%); }
 }
 
-
-/* Styly pro modální okno vlaku (zůstávají stejné) */
-.train-modal {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 20px;
-    margin-top: 15px;
-    text-align: left;
+/* --- Animace pro moderní železniční web --- */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.train-modal h3 {
-    color: #4a90e2;
-    margin-top: 0;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 8px;
+@keyframes shine {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
 }
 
-.train-modal p {
-    margin-bottom: 8px;
+.header-logo-title {
+  animation: fadeInUp 1.2s cubic-bezier(.4,1.5,.6,1) 0.1s both;
 }
 
-.train-modal ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 15px;
+.section, .main-center-panel, .status-column-right, .who-doing-widget {
+  animation: fadeInUp 1.1s cubic-bezier(.4,1.5,.6,1) both;
 }
 
-.train-modal ul li {
-    background-color: #e9f7fe;
-    margin-bottom: 8px;
-    padding: 10px 15px;
-    border-radius: 7px;
-    border-left: 4px solid #4a90e2;
+/* --- Dekorativní obrázek vlaku v zápatí --- */
+.footer::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 420px;
+  height: 80px;
+  background: url('https://cdn.jsdelivr.net/gh/filipesp/railway-svg-assets/train-cd.svg') no-repeat center/contain;
+  opacity: 0.13;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
-/* Footer */
-.footer {
-    text-align: center;
-    padding: 20px;
-    margin-top: 30px;
-    background-color: #e0f2f7;
-    color: #777;
-    font-size: 0.9em;
-    border-top: 1px solid #d0e8f2;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    #main-app-layout {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .content-wrapper {
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-    }
-
-    .main-center-panel,
-    .status-column-right {
-        max-width: 90%; /* Více místa na mobilu */
-        width: 100%;
-    }
-
-    .header-logo-title h1 {
-        font-size: 2em;
-    }
-
-    .subtitle {
-        font-size: 0.9em;
-    }
+/* --- Dekorativní obrázek kolejí v headeru --- */
+.header-logo-title::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 420px;
+  height: 32px;
+  background: url('https://cdn.jsdelivr.net/gh/filipesp/railway-svg-assets/rails.svg') no-repeat center/contain;
+  opacity: 0.18;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
