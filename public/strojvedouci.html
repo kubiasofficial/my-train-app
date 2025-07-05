@@ -5,8 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Strojvedoucí | Multi-Cargo Doprava</title>
     <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', Arial, sans-serif; background: #f7f8fa; color: #23272a; }
+      #loginOverlay { position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.97);display:flex;align-items:center;justify-content:center;flex-direction:column; }
+      #loginOverlay > div { background:#23272a;padding:36px 32px 28px 32px;border-radius:18px;box-shadow:0 8px 32px #0008;display:flex;flex-direction:column;align-items:center;min-width:320px; }
+      #loginOverlay img { width:72px;height:72px;border-radius:16px;margin-bottom:18px;box-shadow:0 2px 8px #0006; }
+      .discord-login-btn { background: linear-gradient(90deg, #6a8cff 0%, #a084ee 100%); color: #fff; border: none; border-radius: 9px; font-weight: 600; font-size: 1.15em; padding: 12px 32px; box-shadow: 0 2px 8px #6a8cff22; cursor: pointer; transition: background 0.2s, box-shadow 0.2s; }
+      .discord-login-btn:hover { background: linear-gradient(90deg, #4f6edb 0%, #a084ee 100%); box-shadow: 0 4px 16px #6a8cff33; }
+    </style>
 </head>
 <body>
+    <div id="loginOverlay" style="display:none;">
+      <div>
+        <img src="/logo.webp" alt="Logo">
+        <h2 style="color:#fff;font-size:1.5em;margin-bottom:10px;">Přihlášení do MCD</h2>
+        <p style="color:#b9bbbe;font-size:1.08em;margin-bottom:22px;text-align:center;">Pro pokračování se přihlašte přes Discord.</p>
+        <button id="discordLoginBtn" class="discord-login-btn" style="font-size:1.15em;padding:12px 32px;border-radius:9px;box-shadow:0 2px 8px #0004;">🔑 Přihlásit se přes Discord</button>
+      </div>
+    </div>
     <header class="header-logo-title">
         <h1>Strojvedoucí <span class="mcd-accent">MCD</span></h1>
         <div class="subtitle">Přehled a správa strojvedoucích společnosti</div>
@@ -78,8 +95,43 @@
         </section>
     </main>
     <script>
-      // Rozcestník toggle skript + Discord login
+      // Globální přihlášení přes Discord (stejné jako na index.html)
+      function isLoggedIn() {
+        return localStorage.getItem('discordUser') !== null;
+      }
+      function showMainContent() {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      function showLogin() {
+        document.getElementById('loginOverlay').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function saveDiscordUserFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        if(params.has('discordUser')) {
+          try {
+            const user = decodeURIComponent(params.get('discordUser'));
+            localStorage.setItem('discordUser', user);
+            window.history.replaceState({}, document.title, window.location.pathname);
+            showMainContent();
+          } catch(e) {}
+        }
+      }
       document.addEventListener('DOMContentLoaded', function() {
+        saveDiscordUserFromUrl();
+        if(isLoggedIn()) {
+          showMainContent();
+        } else {
+          showLogin();
+        }
+        var btn = document.getElementById('discordLoginBtn');
+        if(btn) {
+          btn.addEventListener('click', function() {
+            window.location.href = '/api/discord-login';
+          });
+        }
+        // Rozcestník toggle skript
         var toggle = document.querySelector('.rozcestnik-toggle');
         var menu = document.querySelector('.rozcestnik-menu');
         if(toggle && menu) {
@@ -90,12 +142,6 @@
             if (!toggle.contains(e.target) && !menu.contains(e.target)) {
               menu.style.display = 'none';
             }
-          });
-        }
-        var btn = document.getElementById('discordLoginBtn');
-        if(btn) {
-          btn.addEventListener('click', function() {
-            window.location.href = '/api/discord-login';
           });
         }
       });
