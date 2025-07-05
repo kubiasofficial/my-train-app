@@ -1,3 +1,93 @@
+    // --- Zaměstnanci paletka a status ---
+    const employees = [
+        {
+            id: '417061947759001600',
+            name: 'Kubia',
+            avatar: 'https://cdn.discordapp.com/avatars/417061947759001600/0e7e2e2e2e2e2e2e2e2e2e2e2e2e2e2e.png?size=128' // změň na skutečný hash pokud chceš
+        }
+        // Další zaměstnance lze přidat sem
+    ];
+    const employeeBtn = document.getElementById('employeeBtn');
+    const employeePalette = document.getElementById('employeePalette');
+    const employeeList = document.getElementById('employeeList');
+    const employeeStatusTable = document.getElementById('employeeStatusTable');
+    let selectedEmployee = null;
+    if (employeeBtn) {
+        employeeBtn.addEventListener('click', () => {
+            employeePalette.style.display = employeePalette.style.display === 'none' ? 'block' : 'none';
+            employeeStatusTable.style.display = 'none';
+            // Vygeneruj seznam zaměstnanců
+            employeeList.innerHTML = '';
+            employees.forEach(emp => {
+                const btn = document.createElement('button');
+                btn.textContent = emp.name;
+                btn.style.display = 'flex';
+                btn.style.alignItems = 'center';
+                btn.style.gap = '10px';
+                btn.style.padding = '8px 18px';
+                btn.style.borderRadius = '8px';
+                btn.style.border = '1.5px solid #bfc9d1';
+                btn.style.background = '#fff';
+                btn.style.fontWeight = '600';
+                btn.style.fontSize = '1.08rem';
+                btn.style.cursor = 'pointer';
+                btn.innerHTML = `<img src="${emp.avatar}" alt="avatar" style="width:32px;height:32px;border-radius:50%;border:1.5px solid #43b581;"> ${emp.name}`;
+                btn.onclick = () => {
+                    selectedEmployee = emp;
+                    showEmployeeStatusTable(emp);
+                };
+                employeeList.appendChild(btn);
+            });
+        });
+    }
+    function showEmployeeStatusTable(emp) {
+        employeePalette.style.display = 'none';
+        employeeStatusTable.style.display = 'block';
+        employeeStatusTable.innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+                <img src="${emp.avatar}" alt="avatar" style="width:64px;height:64px;border-radius:50%;border:2.5px solid #43b581;box-shadow:0 4px 18px #43b58122;">
+                <div style="font-size:1.18rem;font-weight:700;">${emp.name}</div>
+                <div style="display:flex;gap:18px;">
+                    <button class="employee-green" id="empInBtn">🚦 Do služby</button>
+                    <button class="duty-red" id="empOutBtn">🏁 Mimo službu</button>
+                </div>
+                <div id="empStatusMsg" style="margin-top:10px;font-size:1.08rem;"></div>
+            </div>
+        `;
+        document.getElementById('empInBtn').onclick = () => sendEmployeeStatus(emp, true);
+        document.getElementById('empOutBtn').onclick = () => sendEmployeeStatus(emp, false);
+    }
+    async function sendEmployeeStatus(emp, inDuty) {
+        // Odeslat embed na Discord webhook
+        const embed = {
+            color: inDuty ? 0x43b581 : 0xe53935,
+            title: inDuty ? '🚦 Zaměstnanec ve službě' : '🏁 Zaměstnanec mimo službu',
+            description: `**${emp.name}** je nyní ${inDuty ? 've službě! \u{1F7E2}' : 'mimo službu. \u{1F534}'}`,
+            thumbnail: { url: emp.avatar },
+            timestamp: new Date().toISOString(),
+            footer: {
+                text: 'Multi-Cargo Doprava',
+                icon_url: 'https://cdn.discordapp.com/emojis/1140725956576686201.webp?size=96&quality=lossless'
+            }
+        };
+        try {
+            await fetch('https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ embeds: [embed] })
+            });
+            // Zobrazit status na stránce
+            employeeStatusTable.innerHTML = `
+                <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+                    <img src="${emp.avatar}" alt="avatar" style="width:64px;height:64px;border-radius:50%;border:2.5px solid #43b581;box-shadow:0 4px 18px #43b58122;">
+                    <div style="font-size:1.18rem;font-weight:700;">${emp.name}</div>
+                    <div style="font-size:1.13rem;font-weight:600;color:${inDuty ? '#43b581' : '#e53935'};margin-top:8px;">${inDuty ? '🟢 Ve službě' : '🔴 Mimo službu'}</div>
+                </div>
+            `;
+        } catch (e) {
+            employeeStatusTable.innerHTML = `<div style="color:#e53935;">Chyba při odesílání na Discord.</div>`;
+        }
+    }
 // Načtení vlaků a webhook tlačítko
 
 // Načtení vlaků a webhook tlačítko

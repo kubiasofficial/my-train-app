@@ -20,6 +20,32 @@
         </div>
 
         <div class="section webhook-section">
+            <button id="employeeBtn" class="employee-green">👤 Zaměstnanci</button>
+            <div id="employeePalette" style="display:none;margin-top:12px;background:#f7fafd;border-radius:10px;padding:18px 18px 10px 18px;box-shadow:0 4px 18px #00bfff22;border:1.5px solid #bfc9d1;max-width:320px;margin-left:auto;margin-right:auto;">
+                <div style="font-weight:600;margin-bottom:8px;">Vyberte zaměstnance:</div>
+                <div id="employeeList" style="display:flex;flex-direction:column;gap:10px;"></div>
+            </div>
+            <div id="employeeStatusTable" style="display:none;margin-top:18px;text-align:center;"></div>
+<style>
+.employee-green {
+  background: linear-gradient(90deg, #43b581 0%, #2ecc40 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 18px #43b58133, 0 1.5px 0 #fff;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.13rem;
+  padding: 12px 32px;
+  margin-bottom: 8px;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: background 0.22s, transform 0.13s, box-shadow 0.22s;
+}
+.employee-green:hover {
+  background: linear-gradient(90deg, #2ecc40 0%, #43b581 100%) !important;
+  box-shadow: 0 8px 28px #43b58155;
+  transform: translateY(-2px) scale(1.04);
+}
+</style>
             <button id="dutyButton" class="duty-red">Služba</button>
             <div id="dutyDropdown" style="display:none;margin-top:12px;">
                 <select id="dutyType" style="padding:7px 14px;border-radius:6px;border:1px solid #bfc9d1;font-size:1rem;">
