@@ -14,6 +14,11 @@
     <div class="animated-bar"></div>
     <p class="welcome">Vítejte v plnohodnotné aplikaci pro strojvedoucího. Vyberte si vlak podle času, zobrazte detail, odešlete hlášení na Discord a sledujte svůj provoz jednoduše a moderně.</p>
     <main id="app-container">
+        <div class="section" id="simrail-time-section" style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:18px;">
+            <span style="font-weight:600;color:#005aa0;font-size:1.08rem;">SimRail CZ-1 čas:</span>
+            <span id="simrailTime" style="font-family:'Segoe UI Mono',monospace;font-size:1.13rem;background:#f7fafd;border-radius:7px;padding:5px 14px;box-shadow:0 2px 8px #00bfff11;border:1.5px solid #bfc9d1;min-width:70px;letter-spacing:1px;">--:--:--</span>
+            <button id="refreshSimrailTimeBtn" title="Aktualizovat čas" style="padding:6px 14px;font-size:1.01rem;margin:0 0 0 8px;">↻</button>
+        </div>
         <div class="section webhook-section">
             <button id="dutyButton" class="duty-red">Služba</button>
             <div id="dutyDropdown" style="display:none;margin-top:12px;">
