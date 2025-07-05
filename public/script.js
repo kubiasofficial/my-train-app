@@ -7,32 +7,7 @@
 // Výběr vlaku ze selectu a zobrazení detailu
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- SimRail CZ-1 čas ---
-    const simrailTimeSpan = document.getElementById('simrailTime');
-    const refreshSimrailTimeBtn = document.getElementById('refreshSimrailTimeBtn');
-    let simrailTimeValue = '';
-    async function fetchSimrailTime() {
-        try {
-            const res = await fetch('https://api.simrail.eu/v1/server-time/cz-1');
-            if (!res.ok) throw new Error('Chyba načítání času');
-            const data = await res.json();
-            const date = new Date(data.time);
-            const h = date.getHours().toString().padStart(2, '0');
-            const m = date.getMinutes().toString().padStart(2, '0');
-            const s = date.getSeconds().toString().padStart(2, '0');
-            simrailTimeSpan.textContent = `${h}:${m}:${s}`;
-            simrailTimeValue = `${h}:${m}`;
-        } catch (e) {
-            simrailTimeSpan.textContent = '--:--:--';
-            simrailTimeValue = '';
-        }
-    }
-    if (simrailTimeSpan && refreshSimrailTimeBtn) {
-        fetchSimrailTime();
-        refreshSimrailTimeBtn.addEventListener('click', fetchSimrailTime);
-        // Autoaktualizace každých 10 sekund
-        setInterval(fetchSimrailTime, 10000);
-    }
+
     // --- Nový výběr vlaku podle času ---
     let allTrains = [];
     fetch('data/trains.json')
