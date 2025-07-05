@@ -1,3 +1,56 @@
+/* --- Widget kdo co dělá --- */
+.who-doing-widget {
+  background: linear-gradient(90deg, #e0ffe7 0%, #e3f6ff 100%);
+  border-radius: 13px;
+  box-shadow: 0 4px 18px #43b58122, 0 1.5px 0 #fff;
+  padding: 18px 22px 18px 22px;
+  display: flex;
+  align-items: center;
+  animation: whoDoPulse 1.2s infinite alternate cubic-bezier(.6,1.5,.6,1);
+  gap: 18px;
+  position: relative;
+}
+.who-doing-anim {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+}
+.who-doing-name {
+  font-weight: 700;
+  color: #2e7d32;
+  font-size: 1.13em;
+}
+.who-doing-train {
+  font-weight: 600;
+  color: #1976d2;
+  font-size: 1.08em;
+}
+.who-doing-time {
+  color: #555;
+  font-size: 1em;
+}
+.end-route-btn {
+  background: #e53935;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 18px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: auto;
+  transition: background 0.2s, transform 0.2s;
+  box-shadow: 0 2px 8px #e5393533;
+}
+.end-route-btn:hover {
+  background: #b71c1c;
+  transform: scale(1.07);
+}
+@keyframes whoDoPulse {
+  0% { box-shadow: 0 4px 18px #43b58122, 0 1.5px 0 #fff; }
+  100% { box-shadow: 0 8px 32px #43b58155, 0 1.5px 0 #fff; }
+}
 /* --- Animovaný otazník info --- */
 .info-tooltip-container {
   display: inline-block;

@@ -1,3 +1,121 @@
+    // --- Vzít vlak a Kdo co dělá ---
+    const takeTrainBtn = document.getElementById('takeTrainBtn');
+    const takeTrainModal = document.getElementById('takeTrainModal');
+    const takeTrainModalContent = document.getElementById('takeTrainModalContent');
+    const closeTakeTrainModalBtn = document.getElementById('closeTakeTrainModalBtn');
+    const whoDoingTable = document.getElementById('whoDoingTable');
+    let activeTrainWidgets = [];
+
+    function renderWhoDoingTable() {
+        whoDoingTable.innerHTML = '';
+        activeTrainWidgets.forEach(widget => {
+            const div = document.createElement('div');
+            div.className = 'who-doing-widget';
+            div.innerHTML = `
+                <div class="who-doing-anim">
+                    <span class="who-doing-name">${widget.employee}</span>
+                    <span class="who-doing-train">🚆 ${widget.trainNumber}</span>
+                    <span class="who-doing-time">Odjezd: ${widget.departureTime}</span>
+                    <button class="end-route-btn" data-employee="${widget.employee}">Ukončit trasu</button>
+                </div>
+            `;
+            whoDoingTable.appendChild(div);
+        });
+        // Animace a eventy
+        whoDoingTable.querySelectorAll('.end-route-btn').forEach(btn => {
+            btn.onclick = () => showEndRouteModal(btn.getAttribute('data-employee'));
+        });
+    }
+
+    function showTakeTrainModal() {
+        // Výběr zaměstnance a zadání času + číslo vlaku
+        let employeeOptions = employees.map(emp => `<option value="${emp.name}">${emp.name}</option>`).join('');
+        let trainOptions = allTrains.map(train => `<option value="${train.number}">${train.number} (${train.startStation} → ${train.endStation})</option>`).join('');
+        takeTrainModalContent.innerHTML = `
+            <h2>Vzít vlak</h2>
+            <label>Jméno zaměstnance:</label><br>
+            <select id="takeTrainEmployeeSelect"><option value="">Vyberte...</option>${employeeOptions}</select><br><br>
+            <label>Číslo vlaku:</label><br>
+            <select id="takeTrainNumberSelect"><option value="">Vyberte...</option>${trainOptions}</select><br><br>
+            <label>Čas odjezdu:</label><br>
+            <input type="time" id="takeTrainTimeInput"><br><br>
+            <button id="confirmTakeTrainBtn" class="employee-green">Potvrdit</button>
+        `;
+        takeTrainModal.style.display = 'flex';
+        document.getElementById('confirmTakeTrainBtn').onclick = async () => {
+            const emp = document.getElementById('takeTrainEmployeeSelect').value;
+            const trainNumber = document.getElementById('takeTrainNumberSelect').value;
+            const depTime = document.getElementById('takeTrainTimeInput').value;
+            if (!emp || !trainNumber || !depTime) {
+                takeTrainModalContent.innerHTML += `<div style=\"color:#e53935;margin-top:8px;\">Vyplňte všechny údaje!</div>`;
+                return;
+            }
+            // Přidat widget
+            activeTrainWidgets.push({ employee: emp, trainNumber, departureTime: depTime });
+            renderWhoDoingTable();
+            takeTrainModal.style.display = 'none';
+
+            // Odeslat embed na Discord
+            const webhookUrl = 'https://discord.com/api/webhooks/1390989690072727605/IwgaE5140eg1RVJuIgC8hmjGpi-IhC5pYCAzRJqstgtFVkuzQ8YadyR4TWhXC9UysbMv';
+            const train = allTrains.find(t => t.number === trainNumber);
+            const embed = {
+                color: 0x43b581,
+                title: '🚆 Převzetí vlaku',
+                description: `**${emp}** právě převzal vlak číslo **${trainNumber}**${train && train.startStation && train.endStation ? ` (${train.startStation} → ${train.endStation})` : ''} s odjezdem **${depTime}**.`,
+                timestamp: new Date().toISOString(),
+                footer: {
+                    text: 'Multi-Cargo Doprava',
+                    icon_url: 'https://cdn.discordapp.com/emojis/1140725956576686201.webp?size=96&quality=lossless'
+                }
+            };
+            try {
+                await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ embeds: [embed] })
+                });
+            } catch (e) {
+                // případně logovat chybu, ale neblokovat UI
+            }
+        };
+    }
+
+    function showEndRouteModal(employeeName) {
+        // Ukončení trasy pro daného zaměstnance
+        takeTrainModalContent.innerHTML = `
+            <h2>Ukončit trasu</h2>
+            <label>Jméno zaměstnance:</label><br>
+            <select id="endRouteEmployeeSelect"><option value="">Vyberte...</option>${employees.map(emp => `<option value="${emp.name}">${emp.name}</option>`).join('')}</select><br><br>
+            <label>Čas ukončení:</label><br>
+            <input type="time" id="endRouteTimeInput"><br><br>
+            <button id="confirmEndRouteBtn" class="duty-red">Ukončit trasu</button>
+        `;
+        takeTrainModal.style.display = 'flex';
+        document.getElementById('endRouteEmployeeSelect').value = employeeName;
+        document.getElementById('confirmEndRouteBtn').onclick = () => {
+            const emp = document.getElementById('endRouteEmployeeSelect').value;
+            const endTime = document.getElementById('endRouteTimeInput').value;
+            if (!emp || !endTime) {
+                takeTrainModalContent.innerHTML += `<div style="color:#e53935;margin-top:8px;">Vyplňte všechny údaje!</div>`;
+                return;
+            }
+            // Najít a odstranit widget
+            activeTrainWidgets = activeTrainWidgets.filter(w => w.employee !== emp);
+            renderWhoDoingTable();
+            takeTrainModal.style.display = 'none';
+        };
+    }
+
+    if (takeTrainBtn) {
+        takeTrainBtn.addEventListener('click', showTakeTrainModal);
+    }
+    if (closeTakeTrainModalBtn) {
+        closeTakeTrainModalBtn.addEventListener('click', () => {
+            takeTrainModal.style.display = 'none';
+        });
+    }
+    // Animace pro widgety (CSS doplním níže)
+    renderWhoDoingTable();
 // --- Zaměstnanci paletka a status ---
 const employees = [
     {
