@@ -310,20 +310,17 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => response.json())
         .then(data => {
             allTrains = data.map(train => {
-                let departureObj = train.stops.find(s => s.departureTime);
-                let departure = departureObj ? departureObj.departureTime : '';
-                let startStation = train.stops[0]?.station || '';
-                let endStation = train.stops[train.stops.length - 1]?.station || '';
+                // Nový formát: spawn, from, to, ...
                 return {
                     number: train.number,
-                    departure,
-                    startStation,
-                    endStation,
-                    via: train.route,
-                    type: train.type,
-                    maxSpeed: train.maxSpeed,
-                    validFrom: train.validFrom,
-                    stops: train.stops
+                    departure: train.spawn || '',
+                    startStation: train.from || '',
+                    endStation: train.to || '',
+                    type: train.type || '',
+                    vehicle: train.vehicle || '',
+                    length: train.length || '',
+                    weight: train.weight || '',
+                    vmax: train.vmax || '',
                 };
             });
         });
@@ -350,8 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let nextTrain = null;
             let minDiff = Infinity;
             allTrains.forEach(train => {
-                if (!train.stops || !train.stops.length) return;
-                let dep = train.stops[0].departureTime;
+                let dep = train.departure;
                 if (!dep) return;
                 let [th, tm] = dep.split(':').map(Number);
                 let trainMinutes = th * 60 + tm;
@@ -392,18 +388,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         detailDiv.innerHTML = `
-            <h3>${train.type || ''} ${train.number || ''} - ${train.route || ''}</h3>
-            <p>Max rychlost: ${train.maxSpeed || '-'}, Platnost od: ${train.validFrom || '-'}</p>
-            <h4>Zastávky:</h4>
-            <ul>
-                ${Array.isArray(train.stops) ? train.stops.map(stop => `
-                    <li>
-                        ${stop.station || ''}:
-                        ${stop.arrivalTime ? `Příjezd: ${stop.arrivalTime}` : ''}
-                        ${stop.departureTime ? `Odjezd: ${stop.departureTime}` : ''}
-                    </li>
-                `).join('') : '<li>Žádné zastávky</li>'}
-            </ul>
+            <h3>${train.type || ''} ${train.number || ''} (${train.startStation} → ${train.endStation})</h3>
+            <p>Vozidlo: ${train.vehicle || '-'} | Délka: ${train.length || '-'} | Váha: ${train.weight || '-'} | Vmax: ${train.vmax || '-'} km/h</p>
+            <p>Odjezd (spawn): <b>${train.departure || '-'}</b></p>
         `;
     }
 });
