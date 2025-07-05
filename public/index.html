@@ -14,15 +14,8 @@
     <div class="animated-bar"></div>
     <p class="welcome">Vítejte v plnohodnotné aplikaci pro strojvedoucího. Vyberte si vlak podle času, zobrazte detail, odešlete hlášení na Discord a sledujte svůj provoz jednoduše a moderně.</p>
     <main id="app-container">
-        <div class="section">
-            <button id="generateTrainBtn">Generuj vlak</button>
-        </div>
-        <div class="section" id="trainModalSection" style="display:none;">
-            <div id="trainDetail" class="train-modal"></div>
-            <button id="closeTrainModalBtn" style="margin-top:16px;">Zavřít</button>
-        </div>
         <div class="section webhook-section">
-            <button id="dutyButton">Služba</button>
+            <button id="dutyButton" class="duty-red">Služba</button>
             <div id="dutyDropdown" style="display:none;margin-top:12px;">
                 <select id="dutyType" style="padding:7px 14px;border-radius:6px;border:1px solid #bfc9d1;font-size:1rem;">
                     <option value="">Vyberte možnost</option>
@@ -34,6 +27,13 @@
                     <button id="sendDutyBtn" style="margin-left:10px;">Odeslat</button>
                 </div>
             </div>
+        </div>
+        <div class="section">
+            <button id="generateTrainBtn">Generuj vlak</button>
+        </div>
+        <div class="section" id="trainModalSection" style="display:none;">
+            <div id="trainDetail" class="train-modal"></div>
+            <button id="closeTrainModalBtn" style="margin-top:16px;">Zavřít</button>
         </div>
     </main>
     <footer class="footer">

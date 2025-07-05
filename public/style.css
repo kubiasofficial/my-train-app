@@ -1,3 +1,13 @@
+/* Červené tlačítko pro službu */
+.duty-red {
+  background: linear-gradient(90deg, #e53935 0%, #b71c1c 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 18px #e5393533, 0 1.5px 0 #fff;
+}
+.duty-red:hover {
+  background: linear-gradient(90deg, #b71c1c 0%, #e53935 100%) !important;
+  box-shadow: 0 8px 28px #e5393555;
+}
 /* Zjednodušený, sjednocený a optimalizovaný CSS pro MCD panel */
 
 body {
