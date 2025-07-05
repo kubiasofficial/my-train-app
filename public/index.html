@@ -7,32 +7,70 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <header class="header-logo-title">
-        <h1>Dispečink strojvedoucího <span class="mcd-accent">MCD</span></h1>
-        <div class="subtitle">Multi-Cargo Doprava &mdash; moderní nástroj pro výběr a správu vlaků</div>
-    </header>
-    <div class="animated-bar"></div>
-
-    <div class="main-rozcestnik">
-      <div class="rozcestnik-palette">
-        <button class="rozcestnik-toggle">☰ Otevřít rozcestník</button>
-        <div class="rozcestnik-menu" style="display:none;">
-          <a href="/strojvedouci.html" class="rozcestnik-link">👤 Strojvedoucí</a>
-          <a href="/index.html" class="rozcestnik-link">🏠 Dispečink</a>
-        </div>
+    <div id="loginOverlay" style="position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.97);display:flex;align-items:center;justify-content:center;flex-direction:column;">
+      <div style="background:#23272a;padding:36px 32px 28px 32px;border-radius:18px;box-shadow:0 8px 32px #0008;display:flex;flex-direction:column;align-items:center;min-width:320px;">
+        <img src="/logo.webp" alt="Logo" style="width:72px;height:72px;border-radius:16px;margin-bottom:18px;box-shadow:0 2px 8px #0006;">
+        <h2 style="color:#fff;font-size:1.5em;margin-bottom:10px;">Přihlášení do MCD</h2>
+        <p style="color:#b9bbbe;font-size:1.08em;margin-bottom:22px;text-align:center;">Pro pokračování se přihlašte přes Discord.</p>
+        <button id="discordLoginBtn" class="discord-login-btn" style="font-size:1.15em;padding:12px 32px;border-radius:9px;box-shadow:0 2px 8px #0004;">🔑 Přihlásit se přes Discord</button>
       </div>
-      <div class="rozcestnik-welcome">
-        <h2>Vítejte v Multi-Cargo Doprava</h2>
-        <p>Vyberte si sekci aplikace:</p>
-        <button id="discordLoginBtn" class="discord-login-btn">🔑 Přihlásit se přes Discord</button>
-        <ul class="rozcestnik-list">
-          <li><a href="/strojvedouci.html" class="rozcestnik-tile">👤 Strojvedoucí</a></li>
-          <li><a href="#" class="rozcestnik-tile disabled">🚄 Výběr vlaku (přes stránku Strojvedoucí)</a></li>
-        </ul>
+    </div>
+    <div id="mainContent" style="display:none;">
+      <header class="header-logo-title">
+          <h1>Dispečink strojvedoucího <span class="mcd-accent">MCD</span></h1>
+          <div class="subtitle">Multi-Cargo Doprava &mdash; moderní nástroj pro výběr a správu vlaků</div>
+      </header>
+      <div class="animated-bar"></div>
+      <div class="main-rozcestnik">
+        <div class="rozcestnik-palette">
+          <button class="rozcestnik-toggle">☰ Otevřít rozcestník</button>
+          <div class="rozcestnik-menu" style="display:none;">
+            <a href="/strojvedouci.html" class="rozcestnik-link">👤 Strojvedoucí</a>
+            <a href="/index.html" class="rozcestnik-link">🏠 Dispečink</a>
+          </div>
+        </div>
+        <div class="rozcestnik-welcome">
+          <h2>Vítejte v Multi-Cargo Doprava</h2>
+          <p>Vyberte si sekci aplikace:</p>
+          <ul class="rozcestnik-list">
+            <li><a href="/strojvedouci.html" class="rozcestnik-tile">👤 Strojvedoucí</a></li>
+            <li><a href="#" class="rozcestnik-tile disabled">🚄 Výběr vlaku (přes stránku Strojvedoucí)</a></li>
+          </ul>
+        </div>
       </div>
     </div>
     <script>
+      // Zjisti, jestli je uživatel přihlášen (session v localStorage)
+      function isLoggedIn() {
+        return localStorage.getItem('discordUser') !== null;
+      }
+      function showMainContent() {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('mainContent').style.display = '';
+      }
+      function showLogin() {
+        document.getElementById('loginOverlay').style.display = 'flex';
+        document.getElementById('mainContent').style.display = 'none';
+      }
+      function saveDiscordUserFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        if(params.has('discordUser')) {
+          try {
+            const user = decodeURIComponent(params.get('discordUser'));
+            localStorage.setItem('discordUser', user);
+            // Odstranit query param z URL (bez reloadu)
+            window.history.replaceState({}, document.title, window.location.pathname);
+            showMainContent();
+          } catch(e) {}
+        }
+      }
       document.addEventListener('DOMContentLoaded', function() {
+        saveDiscordUserFromUrl();
+        if(isLoggedIn()) {
+          showMainContent();
+        } else {
+          showLogin();
+        }
         var btn = document.getElementById('discordLoginBtn');
         if(btn) {
           btn.addEventListener('click', function() {

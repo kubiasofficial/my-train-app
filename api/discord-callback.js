@@ -4,29 +4,43 @@ export default async function handler(req, res) {
   const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET || 'DISCORD_CLIENT_SECRET_PLACEHOLDER';
   const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || 'https://my-train-app-five.vercel.app/api/discord-callback';
 
-  const code = req.query.code;
+  // Získání kódu z query stringu (funguje i na Vercelu)
+  let code = null;
+  if (req.query && req.query.code) {
+    code = req.query.code;
+  } else if (req.url && req.url.includes('code=')) {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    code = url.searchParams.get('code');
+  }
   if (!code) {
     res.status(400).send('Chybí kód z Discordu.');
     return;
   }
 
   // Získání access tokenu
+  const params = new URLSearchParams();
+  params.append('client_id', CLIENT_ID);
+  params.append('client_secret', CLIENT_SECRET);
+  params.append('grant_type', 'authorization_code');
+  params.append('code', code);
+  params.append('redirect_uri', REDIRECT_URI);
+  params.append('scope', 'identify');
+
   const tokenRes = await fetch('https://discord.com/api/oauth2/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: REDIRECT_URI,
-      scope: 'identify'
-    })
+    body: params.toString()
   });
 
-  const tokenData = await tokenRes.json();
+  let tokenData;
+  try {
+    tokenData = await tokenRes.json();
+  } catch (e) {
+    res.status(400).send('Chyba při čtení odpovědi z Discordu.');
+    return;
+  }
   if (!tokenData.access_token) {
-    res.status(400).send('Nepodařilo se získat access token.');
+    res.status(400).send('Nepodařilo se získat access token.\n' + JSON.stringify(tokenData));
     return;
   }
 
@@ -37,7 +51,16 @@ export default async function handler(req, res) {
   const userData = await userRes.json();
 
   // (Zde můžeš uložit session, cookie, atd.)
-  // Prozatím jen zobrazíme info o uživateli
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.end(`<h2>Přihlášení úspěšné!</h2><pre>${JSON.stringify(userData, null, 2)}</pre><a href=\"/\">Zpět na hlavní stránku</a>`);
+  // Přesměrování na hlavní stránku s Discord user daty v URL hash (pro localStorage)
+  const safeUser = {
+    id: userData.id,
+    username: userData.username,
+    discriminator: userData.discriminator,
+    avatar: userData.avatar
+  };
+  const hash = encodeURIComponent(JSON.stringify(safeUser));
+  res.writeHead(302, {
+    Location: `/?discordUser=${hash}`
+  });
+  res.end();
 }
