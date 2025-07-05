@@ -246,16 +246,25 @@ document.addEventListener('DOMContentLoaded', () => {
 let currentTakenTrain = null;
 const takeOverTrainBtn = document.getElementById('takeOverTrainBtn');
 const endRideBtn = document.getElementById('endRideBtn');
+const takeOverEmployeeSelect = document.getElementById('takeOverEmployeeSelect');
 
 function showTrainActionButtons(show) {
     if (takeOverTrainBtn) takeOverTrainBtn.style.display = show ? 'inline-block' : 'none';
+    if (takeOverEmployeeSelect) {
+        takeOverEmployeeSelect.style.display = show ? 'inline-block' : 'none';
+        if (show) {
+            // Naplnit select zaměstnanci ve službě
+            takeOverEmployeeSelect.innerHTML = '<option value="">Vyberte zaměstnance...</option>' + employees.filter(e => e.currentStatus === 'Ve službě').map(e => `<option value="${e.name}">${e.name}</option>`).join('');
+        }
+    }
     if (endRideBtn) endRideBtn.style.display = show && currentTakenTrain ? 'inline-block' : 'none';
 }
 
 function getSelectedEmployeeName() {
     // Vrátí jméno vybraného zaměstnance, pokud je ve službě
-    if (selectedEmployee && selectedEmployee.currentStatus === 'Ve službě') {
-        return selectedEmployee.name;
+    // Vrátí jméno vybraného zaměstnance z selectu
+    if (takeOverEmployeeSelect && takeOverEmployeeSelect.value) {
+        return takeOverEmployeeSelect.value;
     }
     return null;
 }
