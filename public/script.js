@@ -356,7 +356,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showTrainWithHeader(train, headerText) {
         if (train) {
-            detailDiv.innerHTML = `<div style="color:#43b581;margin-bottom:8px;">${headerText}</div>`;
+            detailDiv.innerHTML = `
+                <div style="color:#43b581;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+                    ${headerText}
+                    <span class="info-tooltip-container">
+                        <span class="info-tooltip-icon">?</span>
+                        <span class="info-tooltip-text">
+                            Ber v úvahu, že uvedený čas spawnu je čas, kdy se vlak spawne, ale někdy může trvat až 5 min, než se vlak dostane do hratelné oblasti, kde si pak můžeš vlak převzít.<br><br>
+                            <b>Doporučuje se si najít vlak na online mapách.</b>
+                        </span>
+                    </span>
+                </div>
+            `;
             showTrainDetail(train);
         } else {
             detailDiv.innerHTML = `<div style="color:#c00;margin-bottom:8px;">Žádný další vlak už dnes neodjíždí. Zkuste to zítra.</div>`;
