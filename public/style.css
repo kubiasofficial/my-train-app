@@ -117,15 +117,36 @@ label {
 
 select, input[type="time"], input[type="text"] {
   padding: 9px 16px;
-  border-radius: 7px;
+  border-radius: 9px;
   border: 1.5px solid #bfc9d1;
-  font-size: 1.05rem;
+  font-size: 1.09rem;
   background: #f7fafd;
   color: #222;
-  margin-bottom: 18px;
+  margin-bottom: 8px;
+  margin-top: 2px;
   transition: border 0.2s, box-shadow 0.2s;
   outline: none;
   font-family: inherit;
+  box-shadow: 0 2px 8px #00bfff11;
+}
+
+#trainTimeInput {
+  width: 160px;
+  margin-bottom: 0;
+  margin-top: 0;
+  font-size: 1.13rem;
+  text-align: center;
+  letter-spacing: 1px;
+  border-radius: 10px;
+  border: 1.5px solid #bfc9d1;
+  background: #f7fafd;
+  box-shadow: 0 2px 8px #00bfff22;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+#trainTimeInput:focus {
+  border: 1.5px solid #0070f3;
+  box-shadow: 0 0 0 2px #0070f344;
 }
 
 select:focus, input[type="time"]:focus, input[type="text"]:focus {

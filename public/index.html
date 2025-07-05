@@ -29,7 +29,11 @@
             </div>
         </div>
         <div class="section">
-            <button id="generateTrainBtn">Generuj vlak</button>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+                <input type="time" id="trainTimeInput" placeholder="HH:MM" style="width:160px;">
+                <button id="generateTrainBtn">Generuj vlak</button>
+                <div style="font-size:0.98rem;color:#888;margin-top:2px;">Zadejte čas nebo nechte prázdné pro aktuální čas</div>
+            </div>
         </div>
         <div class="section" id="trainModalSection" style="display:none;">
             <div id="trainDetail" class="train-modal"></div>

@@ -79,8 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (generateTrainBtn) {
         generateTrainBtn.addEventListener('click', () => {
-            // Vstup pro čas
-            let userTime = prompt('Zadejte čas (HH:MM) nebo nechte prázdné pro aktuální čas v ČR:');
+            const timeInput = document.getElementById('trainTimeInput');
+            let userTime = timeInput && timeInput.value ? timeInput.value : '';
             if (!userTime) {
                 try {
                     const now = new Date();
