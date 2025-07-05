@@ -222,12 +222,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Nový výběr vlaku podle času ---
     let allTrains = [];
+    let filteredTrains = [];
     let lastGeneratedTrainNumber = null;
+    const trainTypeFilter = document.getElementById('trainTypeFilter');
     fetch('data/trains.json')
         .then(response => response.json())
         .then(data => {
             allTrains = data.map(train => {
-                // Nový formát: spawn, from, to, ...
                 return {
                     number: train.number,
                     departure: train.spawn || '',
@@ -240,7 +241,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     vmax: train.vmax || '',
                 };
             });
+            updateFilteredTrains();
         });
+
+    function updateFilteredTrains() {
+        const selectedType = trainTypeFilter ? trainTypeFilter.value : '';
+        if (!selectedType) {
+            filteredTrains = allTrains;
+        } else {
+            filteredTrains = allTrains.filter(t => t.type === selectedType);
+        }
+    }
+
+    if (trainTypeFilter) {
+        trainTypeFilter.addEventListener('change', () => {
+            updateFilteredTrains();
+        });
+    }
 
 // --- Převzetí a ukončení jízdy ---
 let currentTakenTrain = null;
@@ -340,7 +357,7 @@ if (endRideBtn) {
     const generateTrainBtn = document.getElementById('generateTrainBtn');
     const closeTrainModalBtn = document.getElementById('closeTrainModalBtn');
     function findNextTrain(afterMinutes = null, excludeNumber = null) {
-        // Najde nejbližší vlak po zadaném čase (v minutách), kromě excludeNumber
+        // Najde nejbližší vlak po zadaném čase (v minutách), kromě excludeNumber, pouze z filtrovaných vlaků
         let now = new Date();
         let pragueTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Prague' }));
         let h = pragueTime.getHours();
@@ -348,7 +365,7 @@ if (endRideBtn) {
         let currentMinutes = afterMinutes !== null ? afterMinutes : (h * 60 + m);
         let nextTrain = null;
         let minDiff = Infinity;
-        allTrains.forEach(train => {
+        (filteredTrains.length ? filteredTrains : allTrains).forEach(train => {
             if (excludeNumber && train.number === excludeNumber) return;
             let dep = train.departure;
             if (!dep) return;
@@ -393,7 +410,7 @@ if (endRideBtn) {
 
     if (generateTrainBtn) {
         generateTrainBtn.addEventListener('click', () => {
-            if (!allTrains.length) {
+            if (!(filteredTrains.length || allTrains.length)) {
                 detailDiv.innerHTML = '<div style="color:#c00;">Vlaky se načítají, zkuste to za chvíli...</div>';
                 trainModalSection.style.display = 'block';
                 return;
@@ -409,7 +426,7 @@ if (endRideBtn) {
     const chooseOtherTrainBtn = document.getElementById('chooseOtherTrainBtn');
     if (chooseOtherTrainBtn) {
         chooseOtherTrainBtn.addEventListener('click', () => {
-            if (!allTrains.length) return;
+            if (!(filteredTrains.length || allTrains.length)) return;
             // Najít další vlak po stejném čase, ale jiný než naposledy vygenerovaný
             let now = new Date();
             let pragueTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Prague' }));
@@ -417,7 +434,7 @@ if (endRideBtn) {
             let m = pragueTime.getMinutes();
             let currentMinutes = h * 60 + m;
             // Pokud už byl nějaký vlak vygenerován, použijeme jeho čas jako "od"
-            let lastTrain = allTrains.find(t => t.number === lastGeneratedTrainNumber);
+            let lastTrain = (filteredTrains.length ? filteredTrains : allTrains).find(t => t.number === lastGeneratedTrainNumber);
             let afterMinutes = currentMinutes;
             if (lastTrain && lastTrain.departure) {
                 let [th, tm] = lastTrain.departure.split(':').map(Number);
