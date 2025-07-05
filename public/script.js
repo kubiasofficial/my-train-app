@@ -12,9 +12,15 @@ const employeeBtn = document.getElementById('employeeBtn');
 const employeePalette = document.getElementById('employeePalette');
 const employeeList = document.getElementById('employeeList');
 const employeeStatusTableBody = document.querySelector('#employeeStatusTable tbody'); // Získáváme tbody element
-const statusMessageDiv = document.getElementById('statusMessage'); // Pro zprávy o odeslání statusu
+const actionStatusMessage = document.getElementById('actionStatusMessage'); // Pro zprávy o akcích
 
-let selectedEmployee = null;
+const selectedEmployeeDisplay = document.getElementById('selectedEmployeeDisplay'); // Nový element
+const employeeStatusActions = document.getElementById('employeeStatusActions');   // Nový element pro tlačítka
+const empInBtn = document.getElementById('empInBtn');
+const empOutBtn = document.getElementById('empOutBtn');
+
+
+let selectedEmployee = null; // Toto bude uchovávat celého vybraného zaměstnance
 
 // Funkce pro aktualizaci/přidání statusu zaměstnance do tabulky
 function updateEmployeeStatusInTable(empName, inDuty) {
@@ -49,18 +55,57 @@ function updateEmployeeStatusInTable(empName, inDuty) {
 
 // Funkce pro načtení počátečních statusů (pokud byste je chtěli načítat např. z localStorage)
 function loadInitialEmployeeStatuses() {
-    // Pro ukázku: Můžete zde načíst data z localStorage nebo z backendu
-    // a poté volat updateEmployeeStatusInTable pro každého zaměstnance.
+    // Inicializovat tabulku se známými zaměstnanci, pokud mají uložený stav
     employees.forEach(emp => {
-        // Zde byste mohli mít logiku pro načtení skutečného statusu
-        // Např. let storedStatus = localStorage.getItem(`status_${emp.id}`);
-        // if (storedStatus) {
-        //     updateEmployeeStatusInTable(emp.name, storedStatus === 'in');
-        // } else {
-            updateEmployeeStatusInTable(emp.name, emp.currentStatus === 'Ve službě');
-        // }
+        // Zde byste mohli načíst skutečný status z localStorage nebo API
+        // Prozatím jen zobrazíme jejich počáteční 'Neznámý' nebo předdefinovaný stav.
+        updateEmployeeStatusInTable(emp.name, emp.currentStatus === 'Ve službě');
     });
 }
+
+// Funkce pro zobrazení zprávy
+function showStatusMessage(message, isError = false) {
+    actionStatusMessage.textContent = message;
+    actionStatusMessage.style.color = isError ? '#e53935' : '#43b581';
+    setTimeout(() => actionStatusMessage.textContent = '', 5000); // Zpráva zmizí za 5s
+}
+
+// Funkce pro odeslání stavu zaměstnance na Discord
+async function sendEmployeeStatus(emp, inDuty) {
+    const embed = {
+        color: inDuty ? 0x43b581 : 0xe53935,
+        title: inDuty ? '🚦 Zaměstnanec ve službě' : '🏁 Zaměstnanec mimo službu',
+        description: `**${emp.name}** je nyní ${inDuty ? 've službě! \u{1F7E2}' : 'mimo službu. \u{1F534}'}`,
+        thumbnail: { url: emp.avatar },
+        timestamp: new Date().toISOString(),
+        footer: {
+            text: 'Multi-Cargo Doprava',
+            icon_url: 'https://cdn.discordapp.com/emojis/1140725956576686201.webp?size=96&quality=lossless'
+        }
+    };
+    try {
+        const res = await fetch('https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ embeds: [embed] })
+        });
+        if (res.ok) {
+            showStatusMessage('Zpráva byla úspěšně odeslána!');
+            updateEmployeeStatusInTable(emp.name, inDuty); // Aktualizovat status v tabulce
+            // Zavřít panely po odeslání
+            employeePalette.style.display = 'none';
+            dutyDropdown.style.display = 'none';
+            selectedEmployeeDisplay.style.display = 'none'; // Skrýt vybraného zaměstnance
+            employeeStatusActions.style.display = 'none'; // Skrýt tlačítka
+            selectedEmployee = null; // Zrušit výběr zaměstnance
+        } else {
+            showStatusMessage('Chyba při odesílání na Discord.', true);
+        }
+    } catch (e) {
+        showStatusMessage('Chyba při odesílání na Discord.', true);
+    }
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
     // Načíst počáteční statusy při načtení stránky
@@ -68,29 +113,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (employeeBtn) {
         employeeBtn.addEventListener('click', () => {
+            // Skrýt ostatní panely
+            dutyDropdown.style.display = 'none';
+            trainModalSection.style.display = 'none';
+            selectedEmployeeDisplay.style.display = 'none'; // Skrýt vybraného zaměstnance
+            employeeStatusActions.style.display = 'none';   // Skrýt tlačítka
+            selectedEmployee = null; // Zrušit výběr zaměstnance
+
             employeePalette.style.display = employeePalette.style.display === 'none' ? 'block' : 'none';
-            // Zrušeno: employeeStatusTable.style.display = 'none'; protože se teď zobrazuje jinde
             
             // Vygeneruj seznam zaměstnanců
             employeeList.innerHTML = '';
             employees.forEach(emp => {
                 const btn = document.createElement('button');
                 btn.textContent = emp.name;
-                // Původní inline styly pro tlačítka v paletce jsou přesunuty do style.css
                 btn.onclick = () => {
-                    selectedEmployee = emp;
+                    selectedEmployee = emp; // Uložit celého zaměstnance
                     employeePalette.style.display = 'none'; // Zavřít paletku po výběru
-                    // showEmployeeStatusTable(emp); // Tuto funkci už nebudeme volat, stav je v tabulce
-                    // Můžete sem přidat logiku pro zobrazení potvrzení o výběru zaměstnance
-                    statusMessageDiv.textContent = `Vybrán zaměstnanec: ${emp.name}`;
-                    setTimeout(() => statusMessageDiv.textContent = '', 3000); // Zpráva zmizí za 3s
+                    selectedEmployeeDisplay.textContent = `Vybraný zaměstnanec: ${emp.name}`;
+                    selectedEmployeeDisplay.style.display = 'block'; // Zobrazit jméno vybraného
+                    employeeStatusActions.style.display = 'flex';   // Zobrazit tlačítka Do/Mimo službu
+                    showStatusMessage(`Vybrán zaměstnanec: ${emp.name}`); // Zpráva o výběru
                 };
                 employeeList.appendChild(btn);
             });
         });
     }
 
-    // Původní "Služba" tlačítko a logika
+    // Event listenery pro tlačítka "Do služby" a "Mimo službu"
+    if (empInBtn) {
+        empInBtn.addEventListener('click', () => {
+            if (selectedEmployee) {
+                sendEmployeeStatus(selectedEmployee, true); // True pro "Do služby"
+            } else {
+                showStatusMessage('Nejprve vyberte zaměstnance.', true);
+            }
+        });
+    }
+    if (empOutBtn) {
+        empOutBtn.addEventListener('click', () => {
+            if (selectedEmployee) {
+                sendEmployeeStatus(selectedEmployee, false); // False pro "Mimo službu"
+            } else {
+                showStatusMessage('Nejprve vyberte zaměstnance.', true);
+            }
+        });
+    }
+
+
+    // Původní "Služba" tlačítko a logika (pro ruční zadání jména)
     const dutyButton = document.getElementById('dutyButton');
     const dutyDropdown = document.getElementById('dutyDropdown');
     const dutyType = document.getElementById('dutyType');
@@ -100,20 +171,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (dutyButton) {
         dutyButton.addEventListener('click', () => {
-            dutyDropdown.style.display = dutyDropdown.style.display === 'none' ? 'block' : 'none';
-            // Skrýt paletku zaměstnanců, pokud je otevřená
+            // Skrýt ostatní panely
             employeePalette.style.display = 'none';
+            selectedEmployeeDisplay.style.display = 'none';
+            employeeStatusActions.style.display = 'none';
+            selectedEmployee = null; // Zrušit výběr zaměstnance
+
+            dutyDropdown.style.display = dutyDropdown.style.display === 'none' ? 'block' : 'none';
+            // Resetovat dropdown a input jména při otevření
+            dutyType.value = '';
+            userNameInput.value = '';
+            nameInputDiv.style.display = 'none';
         });
 
         dutyType.addEventListener('change', () => {
             selectedDuty = dutyType.value;
-            // Automaticky předvyplnit jméno, pokud je vybrán zaměstnanec
-            if (selectedEmployee) {
-                userNameInput.value = selectedEmployee.name;
-            } else {
-                userNameInput.value = ''; // Vyčistit, pokud není vybrán žádný
-            }
-
+            // Neautomaticky předvyplňovat jméno zde, protože je to "obecné hlášení"
             if (selectedDuty === 'in' || selectedDuty === 'out') {
                 nameInputDiv.style.display = 'block';
             } else {
@@ -126,15 +199,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const empToUpdate = employees.find(emp => emp.name === name);
 
             if (!selectedDuty || !name) {
-                alert('Vyberte typ služby a zadejte své jméno.');
+                showStatusMessage('Vyberte typ služby a zadejte své jméno.', true);
                 return;
             }
             if (!empToUpdate) {
-                alert('Zadané jméno zaměstnance nebylo nalezeno v seznamu.');
-                return;
+                // Pokud zadané jméno neodpovídá žádnému ze seznamu, ale přesto chceme odeslat.
+                // Zde můžete zvolit, zda to povolit nebo ne. Prozatím varování.
+                if (!confirm('Zadané jméno zaměstnance není v seznamu. Chcete přesto odeslat hlášení?')) {
+                    return;
+                }
+                // Vytvořit dočasného zaměstnance pro odeslání na Discord a zobrazení v tabulce
+                // POZOR: Tento zaměstnanec nebude v původním 'employees' poli a jeho status nebude perzistentní.
+                empToUpdate = { id: 'manual_entry', name: name, currentStatus: 'Neznámý' };
             }
 
-            // Discord embed + emoji
+            // Odeslání na Discord
             let embed = {
                 color: selectedDuty === 'in' ? 0x43b581 : 0xe53935,
                 title: selectedDuty === 'in' ? '🚦 Nastoupení do služby' : '🏁 Odchod mimo službu',
@@ -155,22 +234,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (res.ok) {
-                    statusMessageDiv.textContent = 'Zpráva byla úspěšně odeslána!';
-                    statusMessageDiv.style.color = '#43b581'; // Zelená barva pro úspěch
+                    showStatusMessage('Zpráva byla úspěšně odeslána!');
                     updateEmployeeStatusInTable(name, selectedDuty === 'in'); // Aktualizovat status v tabulce
                     dutyDropdown.style.display = 'none';
                     dutyType.value = '';
                     userNameInput.value = '';
                     nameInputDiv.style.display = 'none';
                 } else {
-                    statusMessageDiv.textContent = 'Chyba při odesílání na Discord.';
-                    statusMessageDiv.style.color = '#e53935'; // Červená barva pro chybu
+                    showStatusMessage('Chyba při odesílání na Discord.', true);
                 }
             } catch (e) {
-                statusMessageDiv.textContent = 'Chyba při odesílání na Discord.';
-                statusMessageDiv.style.color = '#e53935'; // Červená barva pro chybu
+                showStatusMessage('Chyba při odesílání na Discord.', true);
             }
-            setTimeout(() => statusMessageDiv.textContent = '', 5000); // Zpráva zmizí za 5s
         });
     }
 
