@@ -116,19 +116,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Načíst počáteční statusy při načtení stránky
     loadInitialEmployeeStatuses();
 
+    // Při načtení stránky tlačítka "Do služby" a "Mimo službu" skryj
+    if (employeeStatusActions) {
+        employeeStatusActions.style.display = 'none';
+    }
+
     if (employeeBtn) {
         employeeBtn.addEventListener('click', () => {
             // Skrýt ostatní panely
             dutyDropdown.style.display = 'none';
             trainModalSection.style.display = 'none';
-            
+
             // Toggle paletky zaměstnanců
             const isPaletteVisible = employeePalette.style.display === 'block';
             employeePalette.style.display = isPaletteVisible ? 'none' : 'block';
 
-            // Skrýt vybraného zaměstnance a jeho tlačítka, pokud se paletka zavírá nebo je jiný výběr
+            // Skrýt vybraného zaměstnance a jeho tlačítka vždy při otevření/zavření paletky
             selectedEmployeeDisplay.style.display = 'none';
-            employeeStatusActions.style.display = 'none';
+            if (employeeStatusActions) employeeStatusActions.style.display = 'none';
             selectedEmployee = null; // Zrušit výběr zaměstnance
 
             if (!isPaletteVisible) {
@@ -140,10 +145,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     btn.onclick = () => {
                         selectedEmployee = emp; // Uložit celého zaměstnance
                         employeePalette.style.display = 'none'; // Zavřít paletku po výběru
-                        
+
                         selectedEmployeeDisplay.textContent = `Vybraný zaměstnanec: ${emp.name}`;
                         selectedEmployeeDisplay.style.display = 'block'; // Zobrazit jméno vybraného
-                        employeeStatusActions.style.display = 'flex';   // Zobrazit tlačítka Do/Mimo službu
+                        if (employeeStatusActions) employeeStatusActions.style.display = 'flex';   // Zobrazit tlačítka Do/Mimo službu
                         showStatusMessage(`Vybrán zaměstnanec: ${emp.name}`); // Zpráva o výběru
                     };
                     employeeList.appendChild(btn);
