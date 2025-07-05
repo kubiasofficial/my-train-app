@@ -22,7 +22,18 @@
             <div id="trainDetail"></div>
         </div>
         <div class="section webhook-section">
-            <button id="testWebhookButton">Odeslat hlášení na Discord</button>
+            <button id="dutyButton">Služba</button>
+            <div id="dutyDropdown" style="display:none;margin-top:12px;">
+                <select id="dutyType" style="padding:7px 14px;border-radius:6px;border:1px solid #bfc9d1;font-size:1rem;">
+                    <option value="">Vyberte možnost</option>
+                    <option value="in">DO služby</option>
+                    <option value="out">Mimo službu</option>
+                </select>
+                <div id="nameInputDiv" style="display:none;margin-top:10px;">
+                    <input type="text" id="userName" placeholder="Zadejte své jméno" style="padding:7px 14px;border-radius:6px;border:1px solid #bfc9d1;font-size:1rem;">
+                    <button id="sendDutyBtn" style="margin-left:10px;">Odeslat</button>
+                </div>
+            </div>
         </div>
     </main>
     <footer class="footer">

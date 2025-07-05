@@ -170,18 +170,52 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    // Webhook tlačítko
-    const testWebhookButton = document.getElementById('testWebhookButton');
-    if (testWebhookButton) {
-        testWebhookButton.addEventListener('click', async () => {
+    // Služba tlačítko a logika
+    const dutyButton = document.getElementById('dutyButton');
+    const dutyDropdown = document.getElementById('dutyDropdown');
+    const dutyType = document.getElementById('dutyType');
+    const nameInputDiv = document.getElementById('nameInputDiv');
+    const userNameInput = document.getElementById('userName');
+    let selectedDuty = '';
+    if (dutyButton) {
+        dutyButton.addEventListener('click', () => {
+            dutyDropdown.style.display = dutyDropdown.style.display === 'none' ? 'block' : 'none';
+        });
+        dutyType.addEventListener('change', () => {
+            selectedDuty = dutyType.value;
+            if (selectedDuty === 'in' || selectedDuty === 'out') {
+                nameInputDiv.style.display = 'block';
+            } else {
+                nameInputDiv.style.display = 'none';
+            }
+        });
+        document.getElementById('sendDutyBtn').addEventListener('click', async () => {
+            const name = userNameInput.value.trim();
+            if (!selectedDuty || !name) {
+                alert('Vyberte typ služby a zadejte své jméno.');
+                return;
+            }
+            let message = '';
+            if (selectedDuty === 'in') {
+                message = `${name} právě nastoupil do služby`;
+            } else if (selectedDuty === 'out') {
+                message = `${name} odešel mimo službu`;
+            }
             try {
-                const res = await fetch('/api/webhook', {
+                const res = await fetch('https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: 'Testovací zpráva z aplikace!' })
+                    body: JSON.stringify({ content: message })
                 });
-                const data = await res.json();
-                alert(data.message || data.error);
+                if (res.ok) {
+                    alert('Zpráva byla úspěšně odeslána!');
+                    dutyDropdown.style.display = 'none';
+                    dutyType.value = '';
+                    userNameInput.value = '';
+                    nameInputDiv.style.display = 'none';
+                } else {
+                    alert('Chyba při odesílání na Discord.');
+                }
             } catch (e) {
                 alert('Chyba při odesílání na Discord.');
             }
