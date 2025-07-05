@@ -12,12 +12,30 @@
         <div class="subtitle">Přehled a správa strojvedoucích společnosti</div>
     </header>
     <div class="animated-bar"></div>
+    <div class="main-rozcestnik">
+      <div class="rozcestnik-palette">
+        <button class="rozcestnik-toggle">☰ Otevřít rozcestník</button>
+        <div class="rozcestnik-menu" style="display:none;">
+          <a href="/strojvedouci.html" class="rozcestnik-link active">👤 Strojvedoucí</a>
+          <a href="/index.html" class="rozcestnik-link">🏠 Dispečink</a>
+        </div>
+      </div>
+      <div class="rozcestnik-welcome">
+        <h2>Strojvedoucí</h2>
+        <p>Vyberte si akci:</p>
+        <ul class="rozcestnik-list">
+          <li><a href="#drivers" class="rozcestnik-tile" onclick="document.getElementById('driversSection').scrollIntoView({behavior:'smooth'});return false;">👥 Seznam strojvedoucích</a></li>
+          <li><a href="#zamestnanci" class="rozcestnik-tile" onclick="document.getElementById('zamestnanciSection').scrollIntoView({behavior:'smooth'});return false;">👤 Zaměstnanci</a></li>
+          <li><a href="#vlaky" class="rozcestnik-tile" onclick="document.getElementById('vlakySection').scrollIntoView({behavior:'smooth'});return false;">🚄 Generuj vlak</a></li>
+        </ul>
+      </div>
+    </div>
     <main class="main-center-panel" style="margin: 0 auto; max-width: 700px;">
-        <section class="section" style="margin-top: 32px; text-align: center;">
+        <section id="driversSection" class="section" style="margin-top: 32px; text-align: center;">
             <h2>Seznam strojvedoucích</h2>
             <div id="driversList" style="margin-top: 24px;"></div>
         </section>
-        <section class="section" style="margin-top: 32px; text-align: center;">
+        <section id="zamestnanciSection" class="section" style="margin-top: 32px; text-align: center;">
             <button id="employeeBtn" class="employee-green">👤 Zaměstnanci</button>
             <div id="employeePalette" class="employee-palette" style="display:none;">
                 <div style="font-weight:600;margin-bottom:8px;">Vyberte zaměstnance:</div>
@@ -32,7 +50,7 @@
             </div>
             <div id="actionStatusMessage" style="margin-top:10px; font-size:1.08rem; font-weight:600; text-align:center;"></div>
         </section>
-        <section class="section" style="margin-top: 32px; text-align: center;">
+        <section id="vlakySection" class="section" style="margin-top: 32px; text-align: center;">
             <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
                 <input type="time" id="trainTimeInput" placeholder="HH:MM" style="width:160px;">
                 <select id="trainTypeFilter" style="width:160px; margin-top:6px;">
@@ -58,6 +76,23 @@
             </div>
         </section>
     </main>
+    <script>
+      // Rozcestník toggle skript
+      document.addEventListener('DOMContentLoaded', function() {
+        var toggle = document.querySelector('.rozcestnik-toggle');
+        var menu = document.querySelector('.rozcestnik-menu');
+        if(toggle && menu) {
+          toggle.addEventListener('click', function() {
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+          });
+          document.addEventListener('click', function(e) {
+            if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+              menu.style.display = 'none';
+            }
+          });
+        }
+      });
+    </script>
     <footer class="footer">
         &copy; 2025 Multi-Cargo Doprava (MCD) &mdash; stránka strojvedoucích
     </footer>
