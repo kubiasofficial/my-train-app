@@ -5,6 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dispečink strojvedoucího MCD</title>
     <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', Arial, sans-serif; background: #f7f8fa; color: #23272a; }
+      .header-logo-title { text-align: center; margin-top: 36px; }
+      .header-logo-title h1 { font-size: 2.2em; font-weight: 700; letter-spacing: -1px; }
+      .subtitle { color: #6b7280; font-size: 1.13em; margin-top: 6px; }
+      .animated-bar { height: 4px; background: linear-gradient(90deg, #6a8cff 0%, #a084ee 100%); border-radius: 2px; margin: 32px auto 0 auto; width: 90%; max-width: 700px; }
+      .main-rozcestnik { display: flex; flex-direction: column; align-items: center; margin-top: 48px; }
+      .rozcestnik-palette { margin-bottom: 24px; }
+      .rozcestnik-toggle { background: #6a8cff; color: #fff; border: none; border-radius: 10px; padding: 13px 32px; font-size: 1.15em; font-weight: 600; box-shadow: 0 2px 12px #6a8cff22; cursor: pointer; transition: background 0.2s; }
+      .rozcestnik-toggle:hover { background: #4f6edb; }
+      .rozcestnik-menu { background: #fff; border-radius: 14px; box-shadow: 0 4px 32px #0002; padding: 18px 0 10px 0; min-width: 220px; position: absolute; right: 0; top: 60px; display: none; z-index: 100; }
+      .rozcestnik-link { display: block; padding: 12px 32px; color: #23272a; text-decoration: none; font-weight: 600; border-radius: 8px; transition: background 0.18s; }
+      .rozcestnik-link:hover, .rozcestnik-link.active { background: #f0f4ff; color: #6a8cff; }
+      .rozcestnik-welcome { margin-top: 0; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      .rozcestnik-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0; }
+      .rozcestnik-tile { display: block; padding: 16px 0; color: #23272a; text-decoration: none; font-size: 1.13em; font-weight: 600; border-radius: 10px; transition: background 0.18s, color 0.18s; text-align: center; }
+      .rozcestnik-tile:hover:not(.disabled) { background: #f0f4ff; color: #6a8cff; }
+      .rozcestnik-tile.disabled { color: #b9bbbe; cursor: not-allowed; }
+      #userProfileBar { position: fixed; top: 24px; right: 44px; z-index: 1000; display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 16px; box-shadow: 0 2px 16px #0001; padding: 7px 22px 7px 12px; min-width: 0; max-width: 320px; }
+      #userProfileBar img { width: 38px; height: 38px; border-radius: 50%; box-shadow: 0 2px 8px #0002; }
+      #userProfileBar span { color: #23272a; font-weight: 600; font-size: 1.08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+      #loginOverlay { background: linear-gradient(120deg, #e0e7ff 0%, #f7f8fa 100%); }
+      #loginOverlay > div { background: #fff; box-shadow: 0 8px 32px #6a8cff22; }
+      .discord-login-btn { background: linear-gradient(90deg, #6a8cff 0%, #a084ee 100%); color: #fff; border: none; border-radius: 9px; font-weight: 600; font-size: 1.15em; padding: 12px 32px; box-shadow: 0 2px 8px #6a8cff22; cursor: pointer; transition: background 0.2s, box-shadow 0.2s; }
+      .discord-login-btn:hover { background: linear-gradient(90deg, #4f6edb 0%, #a084ee 100%); box-shadow: 0 4px 16px #6a8cff33; }
+      @media (max-width: 600px) {
+        #userProfileBar { right: 8px; top: 8px; padding: 5px 10px 5px 7px; }
+        .header-logo-title { margin-top: 18px; }
+        .animated-bar { margin-top: 18px; }
+      }
+    </style>
 </head>
 <body>
     <div id="loginOverlay" style="position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.97);display:flex;align-items:center;justify-content:center;flex-direction:column;">
@@ -16,28 +48,25 @@
       </div>
     </div>
     <div id="mainContent" style="display:none;">
-      <div id="userProfileBar" style="position:fixed;top:18px;right:24px;z-index:1000;display:flex;align-items:center;gap:10px;"></div>
+      <div id="userProfileBar"></div>
       <header class="header-logo-title">
           <h1>Dispečink strojvedoucího <span class="mcd-accent">MCD</span></h1>
           <div class="subtitle">Multi-Cargo Doprava &mdash; moderní nástroj pro výběr a správu vlaků</div>
       </header>
       <div class="animated-bar"></div>
       <div class="main-rozcestnik">
-        <div class="rozcestnik-palette">
-          <button class="rozcestnik-toggle">☰ Otevřít rozcestník</button>
-          <div class="rozcestnik-menu" style="display:none;">
-            <a href="/strojvedouci.html" class="rozcestnik-link">👤 Strojvedoucí</a>
-            <a href="/index.html" class="rozcestnik-link">🏠 Dispečink</a>
-          </div>
+      <div class="rozcestnik-palette" style="position:relative;">
+        <button class="rozcestnik-toggle">☰ Otevřít rozcestník</button>
+        <div class="rozcestnik-menu" style="display:none;">
+          <a href="/strojvedouci.html" class="rozcestnik-link">👤 Strojvedoucí</a>
+          <a href="/index.html" class="rozcestnik-link">🏠 Dispečink</a>
         </div>
-        <div class="rozcestnik-welcome">
-          <h2>Vítejte v Multi-Cargo Doprava</h2>
-          <p>Vyberte si sekci aplikace:</p>
-          <ul class="rozcestnik-list">
-            <li><a href="/strojvedouci.html" class="rozcestnik-tile">👤 Strojvedoucí</a></li>
-            <li><a href="#" class="rozcestnik-tile disabled">🚄 Výběr vlaku (přes stránku Strojvedoucí)</a></li>
-          </ul>
-        </div>
+      </div>
+      <div class="rozcestnik-welcome">
+        <h2>Vítejte v Multi-Cargo Doprava</h2>
+        <p style="color:#b9bbbe;font-size:1.08em;margin-top:18px;">Vyberte sekci aplikace v rozcestníku ☰</p>
+        <ul class="rozcestnik-list" id="dynamicRozcestnikList" style="display:none;"></ul>
+      </div>
       </div>
     </div>
     <script>
@@ -76,8 +105,8 @@
           ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
           : 'https://cdn.discordapp.com/embed/avatars/0.png';
         bar.innerHTML = `
-          <img src="${avatarUrl}" alt="avatar" style="width:36px;height:36px;border-radius:50%;box-shadow:0 2px 8px #0004;">
-          <span style="color:#fff;font-weight:600;font-size:1.08em;">${user.username}#${user.discriminator}</span>
+          <img src="${avatarUrl}" alt="avatar" style="width:38px;height:38px;border-radius:50%;box-shadow:0 2px 8px #0002;">
+          <span>${user.username}#${user.discriminator}</span>
         `;
       }
       document.addEventListener('DOMContentLoaded', function() {
@@ -92,6 +121,31 @@
         if(btn) {
           btn.addEventListener('click', function() {
             window.location.href = '/api/discord-login';
+          });
+        }
+        // Dynamické zobrazení rozcestníku
+        var rozcestnikToggle = document.querySelector('.rozcestnik-toggle');
+        var rozcestnikMenu = document.querySelector('.rozcestnik-menu');
+        var dynamicList = document.getElementById('dynamicRozcestnikList');
+        if(rozcestnikToggle && rozcestnikMenu && dynamicList) {
+          rozcestnikToggle.addEventListener('click', function() {
+            rozcestnikMenu.style.display = rozcestnikMenu.style.display === 'block' ? 'none' : 'block';
+            // Dynamicky zobrazit volby až po otevření rozcestníku
+            if(dynamicList.style.display === 'none') {
+              dynamicList.innerHTML = `
+                <li><a href='/strojvedouci.html' class='rozcestnik-tile'>👤 Strojvedoucí</a></li>
+                <li><a href='#' class='rozcestnik-tile disabled'>🚄 Výběr vlaku (přes stránku Strojvedoucí)</a></li>
+              `;
+              dynamicList.style.display = 'flex';
+            } else {
+              dynamicList.style.display = 'none';
+            }
+          });
+          document.addEventListener('click', function(e) {
+            if (!rozcestnikToggle.contains(e.target) && !rozcestnikMenu.contains(e.target)) {
+              rozcestnikMenu.style.display = 'none';
+              dynamicList.style.display = 'none';
+            }
           });
         }
       });
