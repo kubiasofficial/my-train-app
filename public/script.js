@@ -196,17 +196,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Vyberte typ služby a zadejte své jméno.');
                 return;
             }
-            let message = '';
-            if (selectedDuty === 'in') {
-                message = `${name} právě nastoupil do služby`;
-            } else if (selectedDuty === 'out') {
-                message = `${name} odešel mimo službu`;
-            }
+            // Discord embed + emoji
+            let embed = {
+                color: selectedDuty === 'in' ? 0x43b581 : 0xe53935,
+                title: selectedDuty === 'in' ? '🚦 Nastoupení do služby' : '🏁 Odchod mimo službu',
+                description: selectedDuty === 'in'
+                    ? `**${name}** právě nastoupil do služby! \u{1F7E2}`
+                    : `**${name}** odešel mimo službu. \u{1F534}`,
+                timestamp: new Date().toISOString(),
+                footer: {
+                    text: 'Multi-Cargo Doprava',
+                    icon_url: 'https://cdn.discordapp.com/emojis/1140725956576686201.webp?size=96&quality=lossless'
+                }
+            };
             try {
                 const res = await fetch('https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: message })
+                    body: JSON.stringify({ embeds: [embed] })
                 });
                 if (res.ok) {
                     alert('Zpráva byla úspěšně odeslána!');
