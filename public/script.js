@@ -56,47 +56,52 @@
             <button id="confirmTakeTrainBtn" class="employee-green">Potvrdit</button>
         `;
         takeTrainModal.style.display = 'flex';
-        document.getElementById('confirmTakeTrainBtn').onclick = async () => {
-            const emp = document.getElementById('takeTrainEmployeeSelect').value;
-            const trainNumber = document.getElementById('takeTrainNumberSelect').value;
-            const depTime = document.getElementById('takeTrainTimeInput').value;
-            if (!emp || !trainNumber || !depTime) {
-                takeTrainModalContent.innerHTML += `<div style=\"color:#e53935;margin-top:8px;\">Vyplňte všechny údaje!</div>`;
-                return;
-            }
-            // Validace: zaměstnanec nemůže převzít více vlaků najednou
-            if (activeTrainWidgets.some(w => w.employee === emp)) {
-                takeTrainModalContent.innerHTML += `<div style=\"color:#e53935;margin-top:8px;\">Tento zaměstnanec už má převzatý vlak!</div>`;
-                return;
-            }
-            // Přidat widget
-            activeTrainWidgets.push({ employee: emp, trainNumber, departureTime: depTime });
-            renderWhoDoingTable();
-            takeTrainModal.style.display = 'none';
+        setTimeout(() => {
+            const confirmBtn = document.getElementById('confirmTakeTrainBtn');
+            if (confirmBtn) {
+                confirmBtn.onclick = async () => {
+                    const emp = document.getElementById('takeTrainEmployeeSelect').value;
+                    const trainNumber = document.getElementById('takeTrainNumberSelect').value;
+                    const depTime = document.getElementById('takeTrainTimeInput').value;
+                    if (!emp || !trainNumber || !depTime) {
+                        takeTrainModalContent.innerHTML += `<div style=\"color:#e53935;margin-top:8px;\">Vyplňte všechny údaje!</div>`;
+                        return;
+                    }
+                    // Validace: zaměstnanec nemůže převzít více vlaků najednou
+                    if (activeTrainWidgets.some(w => w.employee === emp)) {
+                        takeTrainModalContent.innerHTML += `<div style=\"color:#e53935;margin-top:8px;\">Tento zaměstnanec už má převzatý vlak!</div>`;
+                        return;
+                    }
+                    // Přidat widget
+                    activeTrainWidgets.push({ employee: emp, trainNumber, departureTime: depTime });
+                    renderWhoDoingTable();
+                    takeTrainModal.style.display = 'none';
 
-            // Odeslat embed na Discord
-            const webhookUrl = 'https://discord.com/api/webhooks/1390989690072727605/IwgaE5140eg1RVJuIgC8hmjGpi-IhC5pYCAzRJqstgtFVkuzQ8YadyR4TWhXC9UysbMv';
-            const train = allTrains.find(t => t.number === trainNumber);
-            const embed = {
-                color: 0x43b581,
-                title: '🚆 Převzetí vlaku',
-                description: `**${emp}** právě převzal vlak číslo **${trainNumber}**${train && train.startStation && train.endStation ? ` (${train.startStation} → ${train.endStation})` : ''} s odjezdem **${depTime}**.`,
-                timestamp: new Date().toISOString(),
-                footer: {
-                    text: 'Multi-Cargo Doprava',
-                    icon_url: 'https://cdn.discordapp.com/emojis/1140725956576686201.webp?size=96&quality=lossless'
-                }
-            };
-            try {
-                await fetch(webhookUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ embeds: [embed] })
-                });
-            } catch (e) {
-                // případně logovat chybu, ale neblokovat UI
+                    // Odeslat embed na Discord
+                    const webhookUrl = 'https://discord.com/api/webhooks/1390989690072727605/IwgaE5140eg1RVJuIgC8hmjGpi-IhC5pYCAzRJqstgtFVkuzQ8YadyR4TWhXC9UysbMv';
+                    const train = allTrains.find(t => t.number === trainNumber);
+                    const embed = {
+                        color: 0x43b581,
+                        title: '🚆 Převzetí vlaku',
+                        description: `**${emp}** právě převzal vlak číslo **${trainNumber}**${train && train.startStation && train.endStation ? ` (${train.startStation} → ${train.endStation})` : ''} s odjezdem **${depTime}**.`,
+                        timestamp: new Date().toISOString(),
+                        footer: {
+                            text: 'Multi-Cargo Doprava',
+                            icon_url: 'https://cdn.discordapp.com/emojis/1140725956576686201.webp?size=96&quality=lossless'
+                        }
+                    };
+                    try {
+                        await fetch(webhookUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ embeds: [embed] })
+                        });
+                    } catch (e) {
+                        // případně logovat chybu, ale neblokovat UI
+                    }
+                };
             }
-        };
+        }, 0);
     }
 
     function showEndRouteModal(employeeName) {
