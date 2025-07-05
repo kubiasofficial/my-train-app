@@ -1,4 +1,4 @@
-    // --- Zaměstnanci paletka a status ---
+// --- Zaměstnanci paletka a status ---
     const employees = [
         {
             id: '417061947759001600',
@@ -30,6 +30,8 @@
                 btn.style.fontWeight = '600';
                 btn.style.fontSize = '1.08rem';
                 btn.style.cursor = 'pointer';
+                btn.style.color = '#111';
+                btn.style.fontFamily = 'Segoe UI, Arial, sans-serif';
                 btn.innerHTML = `${emp.name}`;
                 btn.onclick = () => {
                     selectedEmployee = emp;
