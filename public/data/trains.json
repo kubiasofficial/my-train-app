@@ -19,7 +19,7 @@
   {"number":3732,"type":"EIE","name":"Rajmund","vehicle":"EU07-005","spawn":"16:27","from":"Kraków Mydlniki","to":"Poznań Główny","length":"225m","weight":"441t","vmax":120},
   {"number":3734,"type":"EIE","name":"Ryszard","vehicle":"EU07-005","spawn":"18:27","from":"Kraków Mydlniki","to":"Poznań Główny","length":"200m","weight":"395t","vmax":120},
   {"number":3736,"type":"EIE","name":"Roland","vehicle":"EP07-174","spawn":"20:27","from":"Kraków Mydlniki","to":"Poznań Główny","length":"223m","weight":"435t","vmax":120},
-  {"number":3738,"type":"EIE","name":"Rudolf","vehicle":"EU07-092","spawn":"22:27","from":"Kraków Mydlniki","to":"Poznań Główny","length":"225m","weight":"441t","vmax":120}
+  {"number":3738,"type":"EIE","name":"Rudolf","vehicle":"EU07-092","spawn":"22:27","from":"Kraków Mydlniki","to":"Poznań Główny","length":"225m","weight":"441t","vmax":120},
   {"number":1303,"type":"EIP","vehicle":"ED250-001","spawn":"04:58","from":"Warszawa Grochów","to":"Kraków Płaszów","length":"186m","weight":"414t","vmax":200},
   {"number":1305,"type":"EIP","vehicle":"ED250-009","spawn":"05:58","from":"Warszawa Grochów","to":"Kraków Płaszów","length":"186m","weight":"414t","vmax":200},
   {"number":1307,"type":"EIP","vehicle":"ED250-018","spawn":"06:58","from":"Warszawa Grochów","to":"Kraków Płaszów","length":"186m","weight":"414t","vmax":200},
