@@ -24,12 +24,23 @@
       <div class="rozcestnik-welcome">
         <h2>Vítejte v Multi-Cargo Doprava</h2>
         <p>Vyberte si sekci aplikace:</p>
+        <button id="discordLoginBtn" class="discord-login-btn">🔑 Přihlásit se přes Discord</button>
         <ul class="rozcestnik-list">
           <li><a href="/strojvedouci.html" class="rozcestnik-tile">👤 Strojvedoucí</a></li>
           <li><a href="#" class="rozcestnik-tile disabled">🚄 Výběr vlaku (přes stránku Strojvedoucí)</a></li>
         </ul>
       </div>
     </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var btn = document.getElementById('discordLoginBtn');
+        if(btn) {
+          btn.addEventListener('click', function() {
+            window.location.href = '/api/discord-login';
+          });
+        }
+      });
+    </script>
 
     <footer class="footer">
         &copy; 2025 Multi-Cargo Doprava (MCD) &mdash; design & vývoj pro strojvedoucí
