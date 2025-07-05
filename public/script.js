@@ -242,6 +242,90 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
+// --- Převzetí a ukončení jízdy ---
+let currentTakenTrain = null;
+const takeOverTrainBtn = document.getElementById('takeOverTrainBtn');
+const endRideBtn = document.getElementById('endRideBtn');
+
+function showTrainActionButtons(show) {
+    if (takeOverTrainBtn) takeOverTrainBtn.style.display = show ? 'inline-block' : 'none';
+    if (endRideBtn) endRideBtn.style.display = show && currentTakenTrain ? 'inline-block' : 'none';
+}
+
+function getSelectedEmployeeName() {
+    // Vrátí jméno vybraného zaměstnance, pokud je ve službě
+    if (selectedEmployee && selectedEmployee.currentStatus === 'Ve službě') {
+        return selectedEmployee.name;
+    }
+    return null;
+}
+
+if (takeOverTrainBtn) {
+    takeOverTrainBtn.addEventListener('click', async () => {
+        if (!lastGeneratedTrainNumber) return;
+        const train = allTrains.find(t => t.number === lastGeneratedTrainNumber);
+        const empName = getSelectedEmployeeName();
+        if (!empName) {
+            alert('Nejprve vyberte zaměstnance a dejte ho do služby!');
+            return;
+        }
+        currentTakenTrain = train;
+        showTrainActionButtons(true);
+        // Odeslat na Discord
+        const webhookUrl = 'https://discord.com/api/webhooks/1390989690072727605/IwgaE5140eg1RVJuIgC8hmjGpi-IhC5pYCAzRJqstgtFVkuzQ8YadyR4TWhXC9UysbMv';
+        const embed = {
+            color: 0x43b581,
+            title: '🚆 Převzetí vlaku',
+            description: `**${empName}** právě převzal vlak číslo **${train.number}** (${train.startStation} → ${train.endStation})\nTyp: ${train.type || '-'} | Vozidlo: ${train.vehicle || '-'} | Odjezd: ${train.departure}`,
+            timestamp: new Date().toISOString(),
+            footer: {
+                text: 'Multi-Cargo Doprava',
+                icon_url: 'https://cdn.discordapp.com/emojis/1140725956576686201.webp?size=96&quality=lossless'
+            }
+        };
+        try {
+            await fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ embeds: [embed] })
+            });
+        } catch (e) {}
+    });
+}
+
+if (endRideBtn) {
+    endRideBtn.addEventListener('click', async () => {
+        if (!currentTakenTrain) return;
+        const empName = getSelectedEmployeeName();
+        if (!empName) {
+            alert('Nejprve vyberte zaměstnance a dejte ho do služby!');
+            return;
+        }
+        // Odeslat na Discord
+        const webhookUrl = 'https://discord.com/api/webhooks/1390989690072727605/IwgaE5140eg1RVJuIgC8hmjGpi-IhC5pYCAzRJqstgtFVkuzQ8YadyR4TWhXC9UysbMv';
+        const train = currentTakenTrain;
+        const embed = {
+            color: 0xe53935,
+            title: '🏁 Ukončení jízdy',
+            description: `**${empName}** právě ukončil jízdu vlaku **${train.number}** (${train.startStation} → ${train.endStation})\nTyp: ${train.type || '-'} | Vozidlo: ${train.vehicle || '-'} | Odjezd: ${train.departure}`,
+            timestamp: new Date().toISOString(),
+            footer: {
+                text: 'Multi-Cargo Doprava',
+                icon_url: 'https://cdn.discordapp.com/emojis/1140725956576686201.webp?size=96&quality=lossless'
+            }
+        };
+        try {
+            await fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ embeds: [embed] })
+            });
+        } catch (e) {}
+        currentTakenTrain = null;
+        showTrainActionButtons(false);
+    });
+}
+
     const detailDiv = document.getElementById('trainDetail');
     const trainModalSection = document.getElementById('trainModalSection');
     const generateTrainBtn = document.getElementById('generateTrainBtn');
@@ -290,8 +374,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Vložíme detail vlaku do vnitřního divu
             const trainDetailInner = document.getElementById('trainDetailInner');
             if (trainDetailInner) showTrainDetail(train, trainDetailInner);
+            // Zobrazit tlačítka Převzít/Ukončit jízdu
+            showTrainActionButtons(true);
         } else {
             detailDiv.innerHTML = `<div style="color:#c00;margin-bottom:8px;">Žádný další vlak už dnes neodjíždí. Zkuste to zítra.</div>`;
+            showTrainActionButtons(false);
         }
     }
 
