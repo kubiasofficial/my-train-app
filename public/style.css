@@ -4,7 +4,6 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-}
 h1 {
     color: #222;
     text-align: center;
@@ -124,71 +123,62 @@ h1 {
     opacity: 0.93;
 }
 
-.section {
-    margin-bottom: 28px;
+section {
+    margin-bottom: 22px;
 }
-
 .webhook-section {
     text-align: center;
 }
 
 #app-container {
-    max-width: 600px;
-    margin: 48px auto 0 auto;
-    background: rgba(24, 32, 44, 0.98);
-    border-radius: 22px;
-    box-shadow: 0 10px 40px #00bfff22, 0 1.5px 0 #1de9b6;
-    padding: 40px 36px 32px 36px;
-    border: 1.5px solid #1de9b6;
-    backdrop-filter: blur(3px);
+    max-width: 520px;
+    margin: 36px auto 0 auto;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 24px #005aa01a;
+    padding: 32px 28px 24px 28px;
+    border: 1px solid #e3e3e3;
+}
 }
 
 label {
     font-weight: 700;
-    color: #eaf6fb;
-    margin-right: 12px;
-    font-size: 1.08rem;
+    color: #005aa0;
+    margin-right: 10px;
+    font-size: 1.05rem;
 }
 
-select, input[type="time"] {
-    padding: 10px 16px;
-    border-radius: 8px;
-    border: 1.5px solid #00bfff;
-    font-size: 1.08rem;
-    background: #1a2533;
-    color: #eaf6fb;
+select, input[type="time"], input[type="text"] {
+    padding: 9px 16px;
+    border-radius: 7px;
+    border: 1.5px solid #bfc9d1;
+    font-size: 1.05rem;
+    background: #f7fafd;
+    color: #222;
     margin-bottom: 18px;
     transition: border 0.2s, box-shadow 0.2s;
     outline: none;
     font-family: inherit;
 }
-select:focus, input[type="time"]:focus {
-    border: 2px solid #1de9b6;
-    box-shadow: 0 0 0 2px #1de9b655;
+select:focus, input[type="time"]:focus, input[type="text"]:focus {
+    border: 1.5px solid #005aa0;
+    box-shadow: 0 0 0 2px #005aa033;
 }
 
-#trainDetail {
+ #trainDetail {
     margin-top: 18px;
-    background: linear-gradient(120deg, #1a2533 60%, #22334a 100%);
-    border-radius: 14px;
-    padding: 26px 28px 18px 28px;
-    box-shadow: 0 6px 32px #00bfff22;
-    border: 1.5px solid #1de9b6;
-    min-height: 80px;
-    animation: fadeInDetail 0.7s cubic-bezier(.4,2,.6,1);
-    transition: box-shadow 0.3s;
-    color: #eaf6fb;
-}
-#trainDetail:hover {
-    box-shadow: 0 12px 40px #00bfff33;
+    background: #f7fafd;
+    border-radius: 10px;
+    padding: 18px 20px 10px 20px;
+    box-shadow: 0 2px 8px #005aa01a;
+    border: 1px solid #e3e3e3;
+    color: #222;
 }
 #trainDetail h3 {
     margin-top: 0;
-    color: #1de9b6;
-    font-size: 1.3rem;
-    letter-spacing: 1px;
+    color: #005aa0;
+    font-size: 1.18rem;
     font-weight: 700;
-    text-shadow: 0 2px 8px #00bfff11;
 }
 @keyframes fadeInDetail {
     from { opacity: 0; transform: translateY(20px); }
@@ -211,38 +201,38 @@ select:focus, input[type="time"]:focus {
     margin-bottom: 4px;
 }
 
-#testWebhookButton, button {
-    display: block;
-    margin: 32px auto 0 auto;
-    padding: 14px 36px;
-    font-size: 1.13rem;
-    background: linear-gradient(90deg, #00bfff 60%, #1de9b6 100%);
+button, #dutyButton, #sendDutyBtn {
+    display: inline-block;
+    margin: 18px 6px 0 0;
+    padding: 10px 28px;
+    font-size: 1.08rem;
+    background: #005aa0;
     color: #fff;
     border: none;
-    border-radius: 10px;
+    border-radius: 7px;
     cursor: pointer;
     font-weight: 700;
-    box-shadow: 0 2px 16px #00bfff33;
+    box-shadow: 0 2px 8px #005aa022;
     transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
     outline: none;
+    letter-spacing: 0.5px;
 }
-#testWebhookButton:hover, button:hover {
-    background: linear-gradient(90deg, #1de9b6 60%, #00bfff 100%);
-    transform: translateY(-2px) scale(1.04);
-    box-shadow: 0 6px 24px #1de9b655;
+button:hover, #dutyButton:hover, #sendDutyBtn:hover {
+    background: #0070f3;
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 6px 18px #005aa044;
 }
 
 .footer {
     text-align: center;
-    color: #b0c4d8;
-    margin-top: 48px;
-    font-size: 1.05rem;
+    color: #005aa0;
+    margin-top: 40px;
+    font-size: 1rem;
     letter-spacing: 1px;
-    background: #1a2533;
-    padding: 22px 0 14px 0;
-    border-top: 1.5px solid #1de9b6;
-    box-shadow: 0 -2px 16px #00bfff11;
-    border-radius: 0 0 18px 18px;
+    background: #f7fafd;
+    padding: 18px 0 10px 0;
+    border-top: 1.5px solid #e3e3e3;
+    box-shadow: 0 -2px 12px #005aa011;
 }
 
 h1 {
