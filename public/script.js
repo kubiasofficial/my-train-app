@@ -306,6 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Nový výběr vlaku podle času ---
     let allTrains = [];
+    let lastGeneratedTrainNumber = null;
     fetch('data/trains.json')
         .then(response => response.json())
         .then(data => {
@@ -329,6 +330,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const trainModalSection = document.getElementById('trainModalSection');
     const generateTrainBtn = document.getElementById('generateTrainBtn');
     const closeTrainModalBtn = document.getElementById('closeTrainModalBtn');
+    function findNextTrain(afterMinutes = null, excludeNumber = null) {
+        // Najde nejbližší vlak po zadaném čase (v minutách), kromě excludeNumber
+        let now = new Date();
+        let pragueTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Prague' }));
+        let h = pragueTime.getHours();
+        let m = pragueTime.getMinutes();
+        let currentMinutes = afterMinutes !== null ? afterMinutes : (h * 60 + m);
+        let nextTrain = null;
+        let minDiff = Infinity;
+        allTrains.forEach(train => {
+            if (excludeNumber && train.number === excludeNumber) return;
+            let dep = train.departure;
+            if (!dep) return;
+            let [th, tm] = dep.split(':').map(Number);
+            let trainMinutes = th * 60 + tm;
+            let diff = trainMinutes - currentMinutes;
+            if (diff >= 0 && diff < minDiff) {
+                minDiff = diff;
+                nextTrain = train;
+            }
+        });
+        return nextTrain;
+    }
+
+    function showTrainWithHeader(train, headerText) {
+        if (train) {
+            detailDiv.innerHTML = `<div style="color:#43b581;margin-bottom:8px;">${headerText}</div>`;
+            showTrainDetail(train);
+        } else {
+            detailDiv.innerHTML = `<div style="color:#c00;margin-bottom:8px;">Žádný další vlak už dnes neodjíždí. Zkuste to zítra.</div>`;
+        }
+    }
+
     if (generateTrainBtn) {
         generateTrainBtn.addEventListener('click', () => {
             if (!allTrains.length) {
@@ -336,35 +370,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 trainModalSection.style.display = 'block';
                 return;
             }
-            // Získat aktuální čas v ČR
+            let nextTrain = findNextTrain();
+            lastGeneratedTrainNumber = nextTrain ? nextTrain.number : null;
+            showTrainWithHeader(nextTrain, 'Nejbližší vlak ke spawnu (odjezdu) podle aktuálního času:');
+            trainModalSection.style.display = 'block';
+        });
+    }
+
+    // Nové tlačítko "Vybrat jiný spoj"
+    const chooseOtherTrainBtn = document.getElementById('chooseOtherTrainBtn');
+    if (chooseOtherTrainBtn) {
+        chooseOtherTrainBtn.addEventListener('click', () => {
+            if (!allTrains.length) return;
+            // Najít další vlak po stejném čase, ale jiný než naposledy vygenerovaný
             let now = new Date();
             let pragueTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Prague' }));
             let h = pragueTime.getHours();
             let m = pragueTime.getMinutes();
             let currentMinutes = h * 60 + m;
-
-            // Najít vlak, který má nejbližší spawn (odjezd z první stanice) po aktuálním čase
-            let nextTrain = null;
-            let minDiff = Infinity;
-            allTrains.forEach(train => {
-                let dep = train.departure;
-                if (!dep) return;
-                let [th, tm] = dep.split(':').map(Number);
-                let trainMinutes = th * 60 + tm;
-                let diff = trainMinutes - currentMinutes;
-                if (diff >= 0 && diff < minDiff) {
-                    minDiff = diff;
-                    nextTrain = train;
-                }
-            });
-
-            if (nextTrain) {
-                detailDiv.innerHTML = `<div style="color:#43b581;margin-bottom:8px;">Nejbližší vlak ke spawnu (odjezdu) podle aktuálního času:</div>`;
-                showTrainDetail(nextTrain);
-            } else {
-                detailDiv.innerHTML = `<div style="color:#c00;margin-bottom:8px;">Žádný vlak už dnes neodjíždí. Zkuste to zítra.</div>`;
+            // Pokud už byl nějaký vlak vygenerován, použijeme jeho čas jako "od"
+            let lastTrain = allTrains.find(t => t.number === lastGeneratedTrainNumber);
+            let afterMinutes = currentMinutes;
+            if (lastTrain && lastTrain.departure) {
+                let [th, tm] = lastTrain.departure.split(':').map(Number);
+                let lastDep = th * 60 + tm;
+                afterMinutes = lastDep;
             }
-            trainModalSection.style.display = 'block';
+            let nextOther = findNextTrain(afterMinutes, lastGeneratedTrainNumber);
+            lastGeneratedTrainNumber = nextOther ? nextOther.number : null;
+            showTrainWithHeader(nextOther, 'Další možný vlak ke spawnu (odjezdu):');
         });
     }
 
