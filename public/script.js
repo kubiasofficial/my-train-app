@@ -2,8 +2,7 @@
     const employees = [
         {
             id: '417061947759001600',
-            name: 'Kubia',
-            avatar: 'https://cdn.discordapp.com/avatars/417061947759001600/0e7e2e2e2e2e2e2e2e2e2e2e2e2e2e2e.png?size=128' // změň na skutečný hash pokud chceš
+            name: 'kubiasofficial'
         }
         // Další zaměstnance lze přidat sem
     ];
@@ -31,7 +30,7 @@
                 btn.style.fontWeight = '600';
                 btn.style.fontSize = '1.08rem';
                 btn.style.cursor = 'pointer';
-                btn.innerHTML = `<img src="${emp.avatar}" alt="avatar" style="width:32px;height:32px;border-radius:50%;border:1.5px solid #43b581;"> ${emp.name}`;
+                btn.innerHTML = `${emp.name}`;
                 btn.onclick = () => {
                     selectedEmployee = emp;
                     showEmployeeStatusTable(emp);
@@ -45,7 +44,6 @@
         employeeStatusTable.style.display = 'block';
         employeeStatusTable.innerHTML = `
             <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
-                <img src="${emp.avatar}" alt="avatar" style="width:64px;height:64px;border-radius:50%;border:2.5px solid #43b581;box-shadow:0 4px 18px #43b58122;">
                 <div style="font-size:1.18rem;font-weight:700;">${emp.name}</div>
                 <div style="display:flex;gap:18px;">
                     <button class="employee-green" id="empInBtn">🚦 Do služby</button>
@@ -79,7 +77,6 @@
             // Zobrazit status na stránce
             employeeStatusTable.innerHTML = `
                 <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
-                    <img src="${emp.avatar}" alt="avatar" style="width:64px;height:64px;border-radius:50%;border:2.5px solid #43b581;box-shadow:0 4px 18px #43b58122;">
                     <div style="font-size:1.18rem;font-weight:700;">${emp.name}</div>
                     <div style="font-size:1.13rem;font-weight:600;color:${inDuty ? '#43b581' : '#e53935'};margin-top:8px;">${inDuty ? '🟢 Ve službě' : '🔴 Mimo službu'}</div>
                 </div>
