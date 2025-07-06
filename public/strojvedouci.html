@@ -67,23 +67,7 @@
             <h2>Moje docházka</h2>
             <!-- Embed s docházkou je nyní nahoře, zde už není potřeba -->
         </section>
-        <!-- Modal pro výběr serveru a vlaku -->
-        <div id="workModalOverlay" style="display:none;position:fixed;z-index:10000;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);align-items:center;justify-content:center;">
-          <div id="workModal" style="background:#fff;padding:32px 28px 24px 28px;border-radius:18px;box-shadow:0 8px 32px #0008;min-width:340px;max-width:98vw;max-height:90vh;overflow-y:auto;">
-            <h2 style="margin-top:0;margin-bottom:18px;font-size:1.35em;">Výběr serveru</h2>
-            <div id="serverList" style="display:flex;flex-wrap:wrap;gap:12px 18px;margin-bottom:24px;"></div>
-            <div id="trainListSection" style="display:none;">
-              <h3 style="margin-bottom:12px;font-size:1.13em;">Výběr vlaku</h3>
-              <div id="trainList" style="max-height:320px;overflow-y:auto;"></div>
-            </div>
-            <div id="selectedTrainSection" style="display:none;margin-top:18px;text-align:center;">
-              <div id="selectedTrainInfo" style="margin-bottom:14px;"></div>
-              <button id="takeTrainBtn" class="discord-login-btn" style="margin-right:12px;">🚆 Převzít</button>
-              <button id="endTrainBtn" class="duty-red">🛑 Ukončit jízdu</button>
-            </div>
-            <button id="closeWorkModal" style="position:absolute;top:18px;right:18px;background:none;border:none;font-size:1.5em;cursor:pointer;">&times;</button>
-          </div>
-        </div>
+
 
 
         <section class="section" id="trainModalSection" style="display:none;">
@@ -91,8 +75,8 @@
         </section>
     </main>
     <script>
-      // --- Pracovat modal ---
       document.addEventListener('DOMContentLoaded', function() {
+        // --- Pracovat modal ---
         const pracovatBtn = document.getElementById('pracovatBtn');
         const workModalOverlay = document.getElementById('workModalOverlay');
         const closeWorkModal = document.getElementById('closeWorkModal');
@@ -236,6 +220,133 @@
           endTrainBtn.disabled = true;
           takeTrainBtn.disabled = false;
         };
+
+        // --- Globální přihlášení přes Discord (stejné jako na index.html) ---
+        function isLoggedIn() {
+          return localStorage.getItem('discordUser') !== null;
+        }
+        function showMainContent() {
+          document.getElementById('loginOverlay').style.display = 'none';
+          document.body.style.overflow = '';
+        }
+        function showLogin() {
+          document.getElementById('loginOverlay').style.display = 'flex';
+          document.body.style.overflow = 'hidden';
+        }
+        function saveDiscordUserFromUrl() {
+          const params = new URLSearchParams(window.location.search);
+          if(params.has('discordUser')) {
+            try {
+              const user = decodeURIComponent(params.get('discordUser'));
+              localStorage.setItem('discordUser', user);
+              window.history.replaceState({}, document.title, window.location.pathname);
+              showMainContent();
+            } catch(e) {}
+          }
+        }
+        saveDiscordUserFromUrl();
+        var userBar = document.getElementById('userProfileBar');
+        var loginBtn = document.getElementById('discordLoginBtn');
+        var dochazkaBtn = document.getElementById('dochazkaBtn');
+        var dochazkaEmbed = document.getElementById('dochazkaEmbed');
+        var empInBtn = document.getElementById('empInBtn');
+        var empOutBtn = document.getElementById('empOutBtn');
+        var actionStatusMessage = document.getElementById('actionStatusMessage');
+        if(isLoggedIn()) {
+          showMainContent();
+          // Zobrazit user bar
+          if(userBar) {
+            userBar.style.display = 'flex';
+            const userStr = localStorage.getItem('discordUser');
+            let user = null;
+            try { user = JSON.parse(userStr); } catch(e) {}
+            if(user) {
+              let avatarUrl = user.avatar
+                ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+                : 'https://cdn.discordapp.com/embed/avatars/0.png';
+              userBar.innerHTML = `
+                <img src="${avatarUrl}" alt="avatar" style="width:38px;height:38px;border-radius:50%;box-shadow:0 2px 8px #0002;">
+                <span>${user.username}#${user.discriminator}</span>
+              `;
+            }
+          }
+          // Skrytí tlačítka Přihlásit se
+          if(loginBtn) loginBtn.style.display = 'none';
+        } else {
+          showLogin();
+          if(userBar) userBar.style.display = 'none';
+          if(loginBtn) loginBtn.style.display = 'inline-block';
+        }
+        var btn = document.getElementById('discordLoginBtn');
+        if(btn) {
+          btn.addEventListener('click', function() {
+            window.location.href = '/api/discord-login';
+          });
+        }
+        // Rozcestník toggle skript
+        var toggle = document.querySelector('.rozcestnik-toggle');
+        var menu = document.querySelector('.rozcestnik-menu');
+        if(toggle && menu) {
+          toggle.addEventListener('click', function() {
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+          });
+          document.addEventListener('click', function(e) {
+            if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+              menu.style.display = 'none';
+            }
+          });
+        }
+        // --- Docházka embed toggle ---
+        if(dochazkaBtn && dochazkaEmbed) {
+          dochazkaBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (dochazkaEmbed.style.display === 'block') {
+              dochazkaEmbed.style.display = 'none';
+            } else {
+              dochazkaEmbed.style.display = 'block';
+            }
+          });
+        }
+        // --- Odeslání na Discord webhook ---
+        async function sendDochazkaToDiscord(type) {
+          const userStr = localStorage.getItem('discordUser');
+          if (!userStr) return;
+          let user;
+          try { user = JSON.parse(userStr); } catch(e) { return; }
+          const now = new Date();
+          const hh = now.getHours().toString().padStart(2, '0');
+          const mm = now.getMinutes().toString().padStart(2, '0');
+          const time = `${hh}:${mm}`;
+          let embed = {
+            color: type === 'in' ? 0x43b581 : 0xe53935,
+            title: type === 'in' ? '🚦 Příchod do služby' : '🏁 Odchod ze služby',
+            description: `**${user.username}** ${type === 'in' ? 'přišel do služby' : 'odešel ze služby'} v **${time}**`,
+            timestamp: new Date().toISOString(),
+            footer: {
+              text: 'Multi-Cargo Doprava',
+              icon_url: 'https://cdn.discordapp.com/emojis/1140725956576686201.webp?size=96&quality=lossless'
+            }
+          };
+          try {
+            await fetch('https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ embeds: [embed] })
+            });
+            if(actionStatusMessage) {
+              actionStatusMessage.textContent = type === 'in' ? 'Příchod byl zaznamenán a odeslán na Discord.' : 'Odchod byl zaznamenán a odeslán na Discord.';
+              actionStatusMessage.style.color = type === 'in' ? '#43b581' : '#e53935';
+              setTimeout(() => actionStatusMessage.textContent = '', 4000);
+            }
+          } catch(e) {
+            if(actionStatusMessage) {
+              actionStatusMessage.textContent = 'Chyba při odesílání na Discord.';
+              actionStatusMessage.style.color = '#e53935';
+            }
+          }
+        }
+        if(empInBtn) empInBtn.onclick = () => sendDochazkaToDiscord('in');
+        if(empOutBtn) empOutBtn.onclick = () => sendDochazkaToDiscord('out');
       });
       // Globální přihlášení přes Discord (stejné jako na index.html)
       function isLoggedIn() {
@@ -369,5 +480,23 @@
     <footer class="footer">
         &copy; 2025 Multi-Cargo Doprava (MCD) &mdash; stránka strojvedoucích
     </footer>
+
+    <!-- Modal pro výběr serveru a vlaku (přesunuto na konec body) -->
+    <div id="workModalOverlay" style="display:none;position:fixed;z-index:10000;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);align-items:center;justify-content:center;">
+      <div id="workModal" style="background:#fff;padding:32px 28px 24px 28px;border-radius:18px;box-shadow:0 8px 32px #0008;min-width:340px;max-width:98vw;max-height:90vh;overflow-y:auto;position:relative;display:flex;flex-direction:column;align-items:center;">
+        <h2 style="margin-top:0;margin-bottom:18px;font-size:1.35em;">Výběr serveru</h2>
+        <div id="serverList" style="display:flex;flex-wrap:wrap;gap:12px 18px;margin-bottom:24px;"></div>
+        <div id="trainListSection" style="display:none;width:100%;">
+          <h3 style="margin-bottom:12px;font-size:1.13em;">Výběr vlaku</h3>
+          <div id="trainList" style="max-height:320px;overflow-y:auto;"></div>
+        </div>
+        <div id="selectedTrainSection" style="display:none;margin-top:18px;text-align:center;width:100%;">
+          <div id="selectedTrainInfo" style="margin-bottom:14px;"></div>
+          <button id="takeTrainBtn" class="discord-login-btn" style="margin-right:12px;">🚆 Převzít</button>
+          <button id="endTrainBtn" class="duty-red">🛑 Ukončit jízdu</button>
+        </div>
+        <button id="closeWorkModal" style="position:absolute;top:18px;right:18px;background:none;border:none;font-size:1.5em;cursor:pointer;">&times;</button>
+      </div>
+    </div>
 </body>
 </html>
