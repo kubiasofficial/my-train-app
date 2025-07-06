@@ -13,7 +13,7 @@
       .subtitle { color: #6b7280; font-size: 1.13em; margin-top: 6px; }
       .animated-bar { height: 4px; background: linear-gradient(90deg, #6a8cff 0%, #a084ee 100%); border-radius: 2px; margin: 32px auto 0 auto; width: 90%; max-width: 700px; }
       .main-rozcestnik { display: flex; flex-direction: column; align-items: center; margin-top: 48px; }
-      .header-button-container { position: relative; width: 100%; max-width: 700px; margin-bottom: 24px; }
+      .header-button-container { position: fixed; top: 24px; left: 44px; z-index: 1000; width: 100%; max-width: 700px; }
       .rozcestnik-toggle { background: #6a8cff; color: #fff; border: none; border-radius: 10px; padding: 13px 32px; font-size: 1.15em; font-weight: 600; box-shadow: 0 2px 12px #6a8cff22; cursor: pointer; transition: background 0.2s; position: absolute; top: -18px; left: 0; }
       .rozcestnik-toggle:hover { background: #4f6edb; }
       .rozcestnik-menu { background: #fff; border-radius: 14px; box-shadow: 0 4px 32px #0002; padding: 18px 0 10px 0; min-width: 220px; position: absolute; right: 0; top: 60px; display: none; z-index: 100; }
@@ -54,7 +54,7 @@
       </header>
       <div class="animated-bar"></div>
       <div class="main-rozcestnik">
-        <div class="header-button-container">
+        <div class="header-button-container" style="position:fixed;top:24px;left:44px;z-index:1000;">
           <button class="rozcestnik-toggle open-hub-button">☰ Otevřít rozcestník</button>
           <div class="rozcestnik-menu" style="display:none;">
             <a href="/strojvedouci.html" class="rozcestnik-link">👤 Strojvedoucí</a>
