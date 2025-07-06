@@ -85,6 +85,12 @@
           </div>
         </div>
 
+
+        <section class="section" id="trainModalSection" style="display:none;">
+            <!-- Sekce detailu vlaku a akce s vlaky byla odstraněna na přání uživatele -->
+        </section>
+    </main>
+    <script>
       // --- Pracovat modal ---
       document.addEventListener('DOMContentLoaded', function() {
         const pracovatBtn = document.getElementById('pracovatBtn');
@@ -231,11 +237,6 @@
           takeTrainBtn.disabled = false;
         };
       });
-        <section class="section" id="trainModalSection" style="display:none;">
-            <!-- Sekce detailu vlaku a akce s vlaky byla odstraněna na přání uživatele -->
-        </section>
-    </main>
-    <script>
       // Globální přihlášení přes Discord (stejné jako na index.html)
       function isLoggedIn() {
         return localStorage.getItem('discordUser') !== null;
