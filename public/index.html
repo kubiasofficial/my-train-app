@@ -13,8 +13,8 @@
       .subtitle { color: #6b7280; font-size: 1.13em; margin-top: 6px; }
       .animated-bar { height: 4px; background: linear-gradient(90deg, #6a8cff 0%, #a084ee 100%); border-radius: 2px; margin: 32px auto 0 auto; width: 90%; max-width: 700px; }
       .main-rozcestnik { display: flex; flex-direction: column; align-items: center; margin-top: 48px; }
-      .rozcestnik-palette { margin-bottom: 24px; }
-      .rozcestnik-toggle { background: #6a8cff; color: #fff; border: none; border-radius: 10px; padding: 13px 32px; font-size: 1.15em; font-weight: 600; box-shadow: 0 2px 12px #6a8cff22; cursor: pointer; transition: background 0.2s; }
+      .header-button-container { position: relative; width: 100%; max-width: 700px; margin-bottom: 24px; }
+      .rozcestnik-toggle { background: #6a8cff; color: #fff; border: none; border-radius: 10px; padding: 13px 32px; font-size: 1.15em; font-weight: 600; box-shadow: 0 2px 12px #6a8cff22; cursor: pointer; transition: background 0.2s; position: absolute; top: -18px; left: 0; }
       .rozcestnik-toggle:hover { background: #4f6edb; }
       .rozcestnik-menu { background: #fff; border-radius: 14px; box-shadow: 0 4px 32px #0002; padding: 18px 0 10px 0; min-width: 220px; position: absolute; right: 0; top: 60px; display: none; z-index: 100; }
       .rozcestnik-link { display: block; padding: 12px 32px; color: #23272a; text-decoration: none; font-weight: 600; border-radius: 8px; transition: background 0.18s; }
@@ -51,22 +51,21 @@
       <div id="userProfileBar"></div>
       <header class="header-logo-title">
           <h1>Dispečink strojvedoucího <span class="mcd-accent">MCD</span></h1>
-          <div class="subtitle">Multi-Cargo Doprava &mdash; moderní nástroj pro výběr a správu vlaků</div>
       </header>
       <div class="animated-bar"></div>
       <div class="main-rozcestnik">
-      <div class="rozcestnik-palette" style="position:relative;">
-        <button class="rozcestnik-toggle">☰ Otevřít rozcestník</button>
-        <div class="rozcestnik-menu" style="display:none;">
-          <a href="/strojvedouci.html" class="rozcestnik-link">👤 Strojvedoucí</a>
-          <a href="/index.html" class="rozcestnik-link">🏠 Dispečink</a>
+        <div class="header-button-container">
+          <button class="rozcestnik-toggle open-hub-button">☰ Otevřít rozcestník</button>
+          <div class="rozcestnik-menu" style="display:none;">
+            <a href="/strojvedouci.html" class="rozcestnik-link">👤 Strojvedoucí</a>
+            <a href="/index.html" class="rozcestnik-link">🏠 Dispečink</a>
+          </div>
         </div>
-      </div>
-      <div class="rozcestnik-welcome">
-        <h2>Vítejte v Multi-Cargo Doprava</h2>
-        <p style="color:#b9bbbe;font-size:1.08em;margin-top:18px;">Vyberte sekci aplikace v rozcestníku ☰</p>
-        <ul class="rozcestnik-list" id="dynamicRozcestnikList" style="display:none;"></ul>
-      </div>
+        <div class="rozcestnik-welcome">
+          <h2>Vítejte v Multi-Cargo Doprava</h2>
+          <p class="app-description-text">Multi-Cargo Doprava — moderní nástroj pro výběr a správu vlaků</p>
+          <ul class="rozcestnik-list" id="dynamicRozcestnikList" style="display:none;"></ul>
+        </div>
       </div>
     </div>
     <script>
