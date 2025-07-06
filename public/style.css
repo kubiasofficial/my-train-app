@@ -572,27 +572,19 @@ button:active, .button:active {
   pointer-events: none;
 }
 
-/* --- Rozcestník tlačítko v levém horním rohu --- */
+/* --- Rozcestník tlačítko v levém horním rohu, zarovnané s userProfileBar --- */
 .header-button-container {
-  position: absolute;
-  top: 20px;
-  left: 20px;
+  position: fixed;
+  top: 24px;
+  left: 44px;
   z-index: 1000;
+  margin-bottom: 0;
 }
-.open-hub-button {
-  background-color: #007bff;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transition: background 0.2s;
-}
-.open-hub-button:hover {
-  background-color: #0056b3;
+@media (max-width: 600px) {
+  .header-button-container {
+    top: 8px;
+    left: 8px;
+  }
 }
 .subtitle { display: none; }
 .app-description-text {
