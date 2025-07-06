@@ -13,6 +13,9 @@
       #loginOverlay img { width:72px;height:72px;border-radius:16px;margin-bottom:18px;box-shadow:0 2px 8px #0006; }
       .discord-login-btn { background: linear-gradient(90deg, #6a8cff 0%, #a084ee 100%); color: #fff; border: none; border-radius: 9px; font-weight: 600; font-size: 1.15em; padding: 12px 32px; box-shadow: 0 2px 8px #6a8cff22; cursor: pointer; transition: background 0.2s, box-shadow 0.2s; }
       .discord-login-btn:hover { background: linear-gradient(90deg, #4f6edb 0%, #a084ee 100%); box-shadow: 0 4px 16px #6a8cff33; }
+      #userProfileBar { display: flex; align-items: center; justify-content: flex-end; padding: 8px 16px; background: #fff; border-bottom: 1px solid #eaeaea; }
+      #userProfileBar img { width: 38px; height: 38px; border-radius: 50%; margin-right: 8px; }
+      #userProfileBar span { font-size: 0.9rem; color: #23272a; }
     </style>
 </head>
 <body>
@@ -24,6 +27,7 @@
         <button id="discordLoginBtn" class="discord-login-btn" style="font-size:1.15em;padding:12px 32px;border-radius:9px;box-shadow:0 2px 8px #0004;">🔑 Přihlásit se přes Discord</button>
       </div>
     </div>
+    <div id="userProfileBar" style="display:none;"></div>
     <header class="header-logo-title">
         <h1>Strojvedoucí <span class="mcd-accent">MCD</span></h1>
         <div class="subtitle">Přehled a správa strojvedoucích společnosti</div>
@@ -40,7 +44,7 @@
       <div class="rozcestnik-welcome">
         <h2>Strojvedoucí</h2>
         <p>Vyberte si akci:</p>
-        <button id="discordLoginBtn" class="discord-login-btn" style="margin-bottom:18px;">🔑 Přihlásit se</button>
+        <button id="discordLoginBtn" class="discord-login-btn" style="margin-bottom:18px;display:none;">🔑 Přihlásit se</button>
         <ul class="rozcestnik-list">
           <li><a href="#drivers" class="rozcestnik-tile" onclick="document.getElementById('driversSection').scrollIntoView({behavior:'smooth'});return false;">👥 Seznam strojvedoucích</a></li>
           <li><a href="#zamestnanci" class="rozcestnik-tile" onclick="document.getElementById('zamestnanciSection').scrollIntoView({behavior:'smooth'});return false;">👤 Zaměstnanci</a></li>
@@ -121,10 +125,32 @@
       }
       document.addEventListener('DOMContentLoaded', function() {
         saveDiscordUserFromUrl();
+        var userBar = document.getElementById('userProfileBar');
+        var loginBtn = document.getElementById('discordLoginBtn');
         if(isLoggedIn()) {
           showMainContent();
+          // Zobrazit user bar
+          if(userBar) {
+            userBar.style.display = 'flex';
+            const userStr = localStorage.getItem('discordUser');
+            let user = null;
+            try { user = JSON.parse(userStr); } catch(e) {}
+            if(user) {
+              let avatarUrl = user.avatar
+                ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+                : 'https://cdn.discordapp.com/embed/avatars/0.png';
+              userBar.innerHTML = `
+                <img src="${avatarUrl}" alt="avatar" style="width:38px;height:38px;border-radius:50%;box-shadow:0 2px 8px #0002;">
+                <span>${user.username}#${user.discriminator}</span>
+              `;
+            }
+          }
+          // Skrytí tlačítka Přihlásit se
+          if(loginBtn) loginBtn.style.display = 'none';
         } else {
           showLogin();
+          if(userBar) userBar.style.display = 'none';
+          if(loginBtn) loginBtn.style.display = 'inline-block';
         }
         var btn = document.getElementById('discordLoginBtn');
         if(btn) {
