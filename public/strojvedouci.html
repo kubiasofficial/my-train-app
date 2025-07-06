@@ -46,10 +46,16 @@
         <p>Vyberte si akci:</p>
         <button id="discordLoginBtn" class="discord-login-btn" style="margin-bottom:18px;display:none;">🔑 Přihlásit se</button>
         <ul class="rozcestnik-list">
-          <li><a href="#drivers" class="rozcestnik-tile" onclick="document.getElementById('driversSection').scrollIntoView({behavior:'smooth'});return false;">👥 Seznam strojvedoucích</a></li>
+          <li><a href="#dochazka" class="rozcestnik-tile" id="dochazkaBtn">🕒 Docházka</a></li>
           <li><a href="#zamestnanci" class="rozcestnik-tile" onclick="document.getElementById('zamestnanciSection').scrollIntoView({behavior:'smooth'});return false;">👤 Zaměstnanci</a></li>
           <li><a href="#vlaky" class="rozcestnik-tile" onclick="document.getElementById('vlakySection').scrollIntoView({behavior:'smooth'});return false;">🚄 Generuj vlak</a></li>
         </ul>
+        <div id="dochazkaEmbed" style="display:none;max-width:340px;margin:24px auto 0 auto;padding:28px 24px 22px 24px;background:#fff;border:2.5px solid #0057b8;border-radius:18px;box-shadow:0 4px 24px #0057b822,0 1.5px 0 #fff;text-align:center;">
+          <h3 style="margin-top:0;margin-bottom:18px;">Moje docházka</h3>
+          <button class="employee-green" id="empInBtn" style="font-size:1.13em;padding:12px 32px;margin-right:18px;">🚦 Příchod</button>
+          <button class="duty-red" id="empOutBtn" style="font-size:1.13em;padding:12px 32px;">🏁 Odchod</button>
+          <div id="actionStatusMessage" style="margin-top:16px;font-size:1.08rem;font-weight:600;text-align:center;"></div>
+        </div>
       </div>
     </div>
     <main class="main-center-panel" style="margin: 0 auto; max-width: 700px;">
@@ -59,14 +65,7 @@
         </section>
         <section id="zamestnanciSection" class="section" style="margin-top: 32px; text-align: center;">
             <h2>Moje docházka</h2>
-            <div id="employeeStatusWidget" style="margin-bottom:18px;">
-                <div id="myStatusDisplay" style="font-size:1.18rem; font-weight:700; margin-bottom:10px;"></div>
-                <div id="myStatusActions" style="display:flex; gap:18px; justify-content:center;">
-                    <button class="employee-green" id="empInBtn">🚦 Příchod</button>
-                    <button class="duty-red" id="empOutBtn">🏁 Odchod</button>
-                </div>
-                <div id="actionStatusMessage" style="margin-top:10px; font-size:1.08rem; font-weight:600; text-align:center;"></div>
-            </div>
+            <!-- Embed s docházkou je nyní nahoře, zde už není potřeba -->
             <h3 style="margin-top:32px;">Status všech zaměstnanců</h3>
             <table id="employeeStatusTable" class="employee-status-table" style="margin:0 auto;min-width:320px;">
                 <thead><tr><th>Jméno</th><th>Status</th></tr></thead>
@@ -127,6 +126,11 @@
         saveDiscordUserFromUrl();
         var userBar = document.getElementById('userProfileBar');
         var loginBtn = document.getElementById('discordLoginBtn');
+        var dochazkaBtn = document.getElementById('dochazkaBtn');
+        var dochazkaEmbed = document.getElementById('dochazkaEmbed');
+        var empInBtn = document.getElementById('empInBtn');
+        var empOutBtn = document.getElementById('empOutBtn');
+        var actionStatusMessage = document.getElementById('actionStatusMessage');
         if(isLoggedIn()) {
           showMainContent();
           // Zobrazit user bar
@@ -169,6 +173,61 @@
             if (!toggle.contains(e.target) && !menu.contains(e.target)) {
               menu.style.display = 'none';
             }
+          });
+        }
+        // --- Docházka embed toggle ---
+        if(dochazkaBtn && dochazkaEmbed) {
+          dochazkaBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            dochazkaEmbed.style.display = dochazkaEmbed.style.display === 'block' ? 'none' : 'block';
+          });
+        }
+        // --- Odeslání na Discord webhook ---
+        async function sendDochazkaToDiscord(type) {
+          const userStr = localStorage.getItem('discordUser');
+          if (!userStr) return;
+          let user;
+          try { user = JSON.parse(userStr); } catch(e) { return; }
+          const now = new Date();
+          const hh = now.getHours().toString().padStart(2, '0');
+          const mm = now.getMinutes().toString().padStart(2, '0');
+          const time = `${hh}:${mm}`;
+          let embed = {
+            color: type === 'in' ? 0x43b581 : 0xe53935,
+            title: type === 'in' ? '🚦 Příchod do služby' : '🏁 Odchod ze služby',
+            description: `**${user.username}** ${type === 'in' ? 'přišel do služby' : 'odešel ze služby'} v **${time}**`,
+            timestamp: new Date().toISOString(),
+            footer: {
+              text: 'Multi-Cargo Doprava',
+              icon_url: 'https://cdn.discordapp.com/emojis/1140725956576686201.webp?size=96&quality=lossless'
+            }
+          };
+          try {
+            await fetch('https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ embeds: [embed] })
+            });
+            if(actionStatusMessage) {
+              actionStatusMessage.textContent = type === 'in' ? 'Příchod byl zaznamenán a odeslán na Discord.' : 'Odchod byl zaznamenán a odeslán na Discord.';
+              actionStatusMessage.style.color = type === 'in' ? '#43b581' : '#e53935';
+              setTimeout(() => actionStatusMessage.textContent = '', 4000);
+            }
+          } catch(e) {
+            if(actionStatusMessage) {
+              actionStatusMessage.textContent = 'Chyba při odesílání na Discord.';
+              actionStatusMessage.style.color = '#e53935';
+            }
+          }
+        }
+        if(empInBtn) empInBtn.onclick = () => sendDochazkaToDiscord('in');
+        if(empOutBtn) empOutBtn.onclick = () => sendDochazkaToDiscord('out');
+        // Docházka button script
+        var dochazkaBtn = document.getElementById('dochazkaBtn');
+        var dochazkaEmbed = document.getElementById('dochazkaEmbed');
+        if(dochazkaBtn && dochazkaEmbed) {
+          dochazkaBtn.addEventListener('click', function() {
+            dochazkaEmbed.style.display = dochazkaEmbed.style.display === 'block' ? 'none' : 'block';
           });
         }
       });
