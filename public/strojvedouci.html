@@ -66,36 +66,12 @@
         <section id="zamestnanciSection" class="section" style="margin-top: 32px; text-align: center;">
             <h2>Moje docházka</h2>
             <!-- Embed s docházkou je nyní nahoře, zde už není potřeba -->
-            <h3 style="margin-top:32px;">Status všech zaměstnanců</h3>
-            <table id="employeeStatusTable" class="employee-status-table" style="margin:0 auto;min-width:320px;">
-                <thead><tr><th>Jméno</th><th>Status</th></tr></thead>
-                <tbody></tbody>
-            </table>
         </section>
         <section id="vlakySection" class="section" style="margin-top: 32px; text-align: center;">
-            <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-                <input type="time" id="trainTimeInput" placeholder="HH:MM" style="width:160px;">
-                <select id="trainTypeFilter" style="width:160px; margin-top:6px;">
-                    <option value="">Všechny typy vlaků</option>
-                    <option value="EIP">EIP</option>
-                    <option value="EIJ">EIJ</option>
-                    <option value="IC">IC</option>
-                    <option value="EIE">EIE</option>
-                </select>
-                <button id="generateTrainBtn">Generuj vlak</button>
-                <div style="font-size:0.98rem;color:#888;margin-top:2px;">Zadejte čas nebo nechte prázdné pro aktuální čas</div>
-                <div style="font-size:0.95rem;color:#888;">Filtrovat podle typu vlaku</div>
-            </div>
+            <!-- Sekce generování vlaku byla odstraněna na přání uživatele -->
         </section>
         <section class="section" id="trainModalSection" style="display:none;">
-            <div id="trainDetail" class="train-modal"></div>
-            <div id="trainActionButtons" style="display:flex;gap:12px;justify-content:center;margin-top:16px;">
-                <button id="chooseOtherTrainBtn">Vybrat jiný spoj</button>
-                <button id="closeTrainModalBtn">Zavřít</button>
-                <select id="takeOverEmployeeSelect" style="display:none;padding:7px 12px;border-radius:7px;font-size:1em;margin-right:8px;"></select>
-                <button id="takeOverTrainBtn" class="employee-green" style="display:none;">Převzít vlak</button>
-                <button id="endRideBtn" class="duty-red" style="display:none;">Ukončit jízdu</button>
-            </div>
+            <!-- Sekce detailu vlaku a akce s vlaky byla odstraněna na přání uživatele -->
         </section>
     </main>
     <script>
