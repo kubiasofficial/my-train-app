@@ -84,150 +84,153 @@
             <button id="closeWorkModal" style="position:absolute;top:18px;right:18px;background:none;border:none;font-size:1.5em;cursor:pointer;">&times;</button>
           </div>
         </div>
+
       // --- Pracovat modal ---
-      const pracovatBtn = document.getElementById('pracovatBtn');
-      const workModalOverlay = document.getElementById('workModalOverlay');
-      const closeWorkModal = document.getElementById('closeWorkModal');
-      const serverList = document.getElementById('serverList');
-      const trainListSection = document.getElementById('trainListSection');
-      const trainList = document.getElementById('trainList');
-      const selectedTrainSection = document.getElementById('selectedTrainSection');
-      const selectedTrainInfo = document.getElementById('selectedTrainInfo');
-      const takeTrainBtn = document.getElementById('takeTrainBtn');
-      const endTrainBtn = document.getElementById('endTrainBtn');
-      let selectedServer = null;
-      let selectedTrain = null;
+      document.addEventListener('DOMContentLoaded', function() {
+        const pracovatBtn = document.getElementById('pracovatBtn');
+        const workModalOverlay = document.getElementById('workModalOverlay');
+        const closeWorkModal = document.getElementById('closeWorkModal');
+        const serverList = document.getElementById('serverList');
+        const trainListSection = document.getElementById('trainListSection');
+        const trainList = document.getElementById('trainList');
+        const selectedTrainSection = document.getElementById('selectedTrainSection');
+        const selectedTrainInfo = document.getElementById('selectedTrainInfo');
+        const takeTrainBtn = document.getElementById('takeTrainBtn');
+        const endTrainBtn = document.getElementById('endTrainBtn');
+        let selectedServer = null;
+        let selectedTrain = null;
 
-      if(pracovatBtn) {
-        pracovatBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          openWorkModal();
-        });
-      }
-      if(closeWorkModal) closeWorkModal.onclick = () => { workModalOverlay.style.display = 'none'; resetWorkModal(); };
-
-      function openWorkModal() {
-        workModalOverlay.style.display = 'flex';
-        resetWorkModal();
-        fetchServers();
-      }
-      function resetWorkModal() {
-        serverList.innerHTML = '';
-        trainListSection.style.display = 'none';
-        trainList.innerHTML = '';
-        selectedTrainSection.style.display = 'none';
-        selectedTrain = null;
-        selectedServer = null;
-      }
-
-      async function fetchServers() {
-        // Získání serverů z API
-        try {
-          const res = await fetch('https://simrail.live-map.workers.dev/cs/servers');
-          const data = await res.json();
-          renderServerList(data);
-        } catch(e) {
-          serverList.innerHTML = '<div style="color:#e53935;">Chyba při načítání serverů.</div>';
+        if(pracovatBtn) {
+          pracovatBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            openWorkModal();
+          });
         }
-      }
-      function renderServerList(servers) {
-        serverList.innerHTML = '';
-        servers.forEach(server => {
-          const btn = document.createElement('button');
-          btn.textContent = `${server.name} (${server.region})`;
-          btn.className = 'discord-login-btn';
-          btn.style.marginBottom = '0';
-          btn.onclick = () => selectServer(server);
-          serverList.appendChild(btn);
-        });
-      }
-      async function selectServer(server) {
-        selectedServer = server;
-        trainListSection.style.display = 'block';
-        trainList.innerHTML = '<div>Načítám vlaky...</div>';
-        selectedTrainSection.style.display = 'none';
-        try {
-          const res = await fetch(`https://simrail.live-map.workers.dev/cs/trains?server=${encodeURIComponent(server.id)}`);
-          const data = await res.json();
-          renderTrainList(data);
-        } catch(e) {
-          trainList.innerHTML = '<div style="color:#e53935;">Chyba při načítání vlaků.</div>';
+        if(closeWorkModal) closeWorkModal.onclick = () => { workModalOverlay.style.display = 'none'; resetWorkModal(); };
+
+        function openWorkModal() {
+          workModalOverlay.style.display = 'flex';
+          resetWorkModal();
+          fetchServers();
         }
-      }
-      function renderTrainList(trains) {
-        trainList.innerHTML = '';
-        trains.forEach(train => {
-          const div = document.createElement('div');
-          div.className = 'train-tile';
-          div.style = 'background:#f7f8fa;border-radius:12px;padding:14px 12px;margin-bottom:10px;box-shadow:0 2px 8px #0057b822;cursor:pointer;display:flex;align-items:center;justify-content:space-between;';
-          div.innerHTML = `
-            <div style="display:flex;align-items:center;gap:12px;">
-              <span style="font-size:1.3em;">🚆</span>
-              <div>
-                <div style="font-weight:600;">${train.number} ${train.name || ''}</div>
-                <div style="font-size:0.98em;color:#555;">${train.from} → ${train.to}</div>
-                <div style="font-size:0.93em;color:#888;">${train.status === 'active' ? 'Na mapě' : `Spawn za ${train.spawnIn} min (${train.spawnTime})`}</div>
+        function resetWorkModal() {
+          serverList.innerHTML = '';
+          trainListSection.style.display = 'none';
+          trainList.innerHTML = '';
+          selectedTrainSection.style.display = 'none';
+          selectedTrain = null;
+          selectedServer = null;
+        }
+
+        async function fetchServers() {
+          // Získání serverů z API
+          try {
+            const res = await fetch('https://simrail.live-map.workers.dev/cs/servers');
+            const data = await res.json();
+            renderServerList(data);
+          } catch(e) {
+            serverList.innerHTML = '<div style="color:#e53935;">Chyba při načítání serverů.</div>';
+          }
+        }
+        function renderServerList(servers) {
+          serverList.innerHTML = '';
+          servers.forEach(server => {
+            const btn = document.createElement('button');
+            btn.textContent = `${server.name} (${server.region})`;
+            btn.className = 'discord-login-btn';
+            btn.style.marginBottom = '0';
+            btn.onclick = () => selectServer(server);
+            serverList.appendChild(btn);
+          });
+        }
+        async function selectServer(server) {
+          selectedServer = server;
+          trainListSection.style.display = 'block';
+          trainList.innerHTML = '<div>Načítám vlaky...</div>';
+          selectedTrainSection.style.display = 'none';
+          try {
+            const res = await fetch(`https://simrail.live-map.workers.dev/cs/trains?server=${encodeURIComponent(server.id)}`);
+            const data = await res.json();
+            renderTrainList(data);
+          } catch(e) {
+            trainList.innerHTML = '<div style="color:#e53935;">Chyba při načítání vlaků.</div>';
+          }
+        }
+        function renderTrainList(trains) {
+          trainList.innerHTML = '';
+          trains.forEach(train => {
+            const div = document.createElement('div');
+            div.className = 'train-tile';
+            div.style = 'background:#f7f8fa;border-radius:12px;padding:14px 12px;margin-bottom:10px;box-shadow:0 2px 8px #0057b822;cursor:pointer;display:flex;align-items:center;justify-content:space-between;';
+            div.innerHTML = `
+              <div style="display:flex;align-items:center;gap:12px;">
+                <span style="font-size:1.3em;">🚆</span>
+                <div>
+                  <div style="font-weight:600;">${train.number} ${train.name || ''}</div>
+                  <div style="font-size:0.98em;color:#555;">${train.from} → ${train.to}</div>
+                  <div style="font-size:0.93em;color:#888;">${train.status === 'active' ? 'Na mapě' : `Spawn za ${train.spawnIn} min (${train.spawnTime})`}</div>
+                </div>
               </div>
-            </div>
-            <div style="font-size:0.95em;color:#0057b8;font-weight:600;">${train.type || ''}</div>
+              <div style="font-size:0.95em;color:#0057b8;font-weight:600;">${train.type || ''}</div>
+            `;
+            div.onclick = () => selectTrain(train);
+            trainList.appendChild(div);
+          });
+        }
+        function selectTrain(train) {
+          selectedTrain = train;
+          selectedTrainSection.style.display = 'block';
+          selectedTrainInfo.innerHTML = `
+            <div style="font-size:1.1em;font-weight:600;">${train.number} ${train.name || ''}</div>
+            <div style="font-size:0.98em;color:#555;">${train.from} → ${train.to}</div>
+            <div style="font-size:0.93em;color:#888;">${train.status === 'active' ? 'Na mapě' : `Spawn za ${train.spawnIn} min (${train.spawnTime})`}</div>
           `;
-          div.onclick = () => selectTrain(train);
-          trainList.appendChild(div);
-        });
-      }
-      function selectTrain(train) {
-        selectedTrain = train;
-        selectedTrainSection.style.display = 'block';
-        selectedTrainInfo.innerHTML = `
-          <div style="font-size:1.1em;font-weight:600;">${train.number} ${train.name || ''}</div>
-          <div style="font-size:0.98em;color:#555;">${train.from} → ${train.to}</div>
-          <div style="font-size:0.93em;color:#888;">${train.status === 'active' ? 'Na mapě' : `Spawn za ${train.spawnIn} min (${train.spawnTime})`}</div>
-        `;
-      }
-      if(takeTrainBtn) takeTrainBtn.onclick = async function() {
-        if(!selectedTrain || !selectedServer) return;
-        const userStr = localStorage.getItem('discordUser');
-        if(!userStr) return;
-        let user;
-        try { user = JSON.parse(userStr); } catch(e) { return; }
-        const webhookUrl = 'https://discord.com/api/webhooks/1390989690072727605/IwgaE5140eg1RVJuIgC8hmjGpi-IhC5pYCAzRJqstgtFVkuzQ8YadyR4TWhXC9UysbMv';
-        const embed = {
-          color: 0x0057b8,
-          title: '🚆 Převzetí vlaku',
-          description: `**${user.username}** si právě převzal vlak **${selectedTrain.number}** z **${selectedTrain.from}** do **${selectedTrain.to}** na serveru **${selectedServer.name}**.`,
-          timestamp: new Date().toISOString(),
-          footer: { text: 'Multi-Cargo Doprava' }
+        }
+        if(takeTrainBtn) takeTrainBtn.onclick = async function() {
+          if(!selectedTrain || !selectedServer) return;
+          const userStr = localStorage.getItem('discordUser');
+          if(!userStr) return;
+          let user;
+          try { user = JSON.parse(userStr); } catch(e) { return; }
+          const webhookUrl = 'https://discord.com/api/webhooks/1390989690072727605/IwgaE5140eg1RVJuIgC8hmjGpi-IhC5pYCAzRJqstgtFVkuzQ8YadyR4TWhXC9UysbMv';
+          const embed = {
+            color: 0x0057b8,
+            title: '🚆 Převzetí vlaku',
+            description: `**${user.username}** si právě převzal vlak **${selectedTrain.number}** z **${selectedTrain.from}** do **${selectedTrain.to}** na serveru **${selectedServer.name}**.`,
+            timestamp: new Date().toISOString(),
+            footer: { text: 'Multi-Cargo Doprava' }
+          };
+          await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ embeds: [embed] })
+          });
+          takeTrainBtn.disabled = true;
+          endTrainBtn.disabled = false;
         };
-        await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ embeds: [embed] })
-        });
-        takeTrainBtn.disabled = true;
-        endTrainBtn.disabled = false;
-      };
-      if(endTrainBtn) endTrainBtn.onclick = async function() {
-        if(!selectedTrain || !selectedServer) return;
-        const userStr = localStorage.getItem('discordUser');
-        if(!userStr) return;
-        let user;
-        try { user = JSON.parse(userStr); } catch(e) { return; }
-        const webhookUrl = 'https://discord.com/api/webhooks/1390989690072727605/IwgaE5140eg1RVJuIgC8hmjGpi-IhC5pYCAzRJqstgtFVkuzQ8YadyR4TWhXC9UysbMv';
-        const embed = {
-          color: 0xe53935,
-          title: '🛑 Ukončení jízdy',
-          description: `**${user.username}** právě ukončil jízdu vlaku **${selectedTrain.number}** z **${selectedTrain.from}** do **${selectedTrain.to}** na serveru **${selectedServer.name}**.`,
-          timestamp: new Date().toISOString(),
-          footer: { text: 'Multi-Cargo Doprava' }
+        if(endTrainBtn) endTrainBtn.onclick = async function() {
+          if(!selectedTrain || !selectedServer) return;
+          const userStr = localStorage.getItem('discordUser');
+          if(!userStr) return;
+          let user;
+          try { user = JSON.parse(userStr); } catch(e) { return; }
+          const webhookUrl = 'https://discord.com/api/webhooks/1390989690072727605/IwgaE5140eg1RVJuIgC8hmjGpi-IhC5pYCAzRJqstgtFVkuzQ8YadyR4TWhXC9UysbMv';
+          const embed = {
+            color: 0xe53935,
+            title: '🛑 Ukončení jízdy',
+            description: `**${user.username}** právě ukončil jízdu vlaku **${selectedTrain.number}** z **${selectedTrain.from}** do **${selectedTrain.to}** na serveru **${selectedServer.name}**.`,
+            timestamp: new Date().toISOString(),
+            footer: { text: 'Multi-Cargo Doprava' }
+          };
+          await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ embeds: [embed] })
+          });
+          endTrainBtn.disabled = true;
+          takeTrainBtn.disabled = false;
         };
-        await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ embeds: [embed] })
-        });
-        endTrainBtn.disabled = true;
-        takeTrainBtn.disabled = false;
-      };
+      });
         <section class="section" id="trainModalSection" style="display:none;">
             <!-- Sekce detailu vlaku a akce s vlaky byla odstraněna na přání uživatele -->
         </section>
