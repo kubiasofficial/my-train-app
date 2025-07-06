@@ -179,7 +179,11 @@
         if(dochazkaBtn && dochazkaEmbed) {
           dochazkaBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            dochazkaEmbed.style.display = dochazkaEmbed.style.display === 'block' ? 'none' : 'block';
+            if (dochazkaEmbed.style.display === 'block') {
+              dochazkaEmbed.style.display = 'none';
+            } else {
+              dochazkaEmbed.style.display = 'block';
+            }
           });
         }
         // --- Odeslání na Discord webhook ---
@@ -222,14 +226,6 @@
         }
         if(empInBtn) empInBtn.onclick = () => sendDochazkaToDiscord('in');
         if(empOutBtn) empOutBtn.onclick = () => sendDochazkaToDiscord('out');
-        // Docházka button script
-        var dochazkaBtn = document.getElementById('dochazkaBtn');
-        var dochazkaEmbed = document.getElementById('dochazkaEmbed');
-        if(dochazkaBtn && dochazkaEmbed) {
-          dochazkaBtn.addEventListener('click', function() {
-            dochazkaEmbed.style.display = dochazkaEmbed.style.display === 'block' ? 'none' : 'block';
-          });
-        }
       });
     </script>
     <footer class="footer">
