@@ -488,8 +488,75 @@
             }
           }
         }
-        if(empInBtn) empInBtn.onclick = () => sendDochazkaToDiscord('in');
-        if(empOutBtn) empOutBtn.onclick = () => sendDochazkaToDiscord('out');
+        // Docházka embed toggle
+        var dochazkaBtn = document.getElementById('dochazkaBtn');
+        var dochazkaEmbed = document.getElementById('dochazkaEmbed');
+        var dochazkaInBtn = document.getElementById('dochazkaInBtn');
+        var dochazkaOutBtn = document.getElementById('dochazkaOutBtn');
+        var dochazkaActionStatus = document.getElementById('dochazkaActionStatus');
+        var closeDochazkaEmbed = document.getElementById('closeDochazkaEmbed');
+
+        if (dochazkaBtn && dochazkaEmbed) {
+          dochazkaBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            dochazkaEmbed.style.display = 'block';
+            dochazkaActionStatus.textContent = '';
+          });
+        }
+        if (closeDochazkaEmbed) {
+          closeDochazkaEmbed.onclick = () => { dochazkaEmbed.style.display = 'none'; };
+        }
+        // Zavři embed kliknutím mimo něj
+        document.addEventListener('mousedown', function(e) {
+          if (dochazkaEmbed.style.display === 'block' && !dochazkaEmbed.contains(e.target) && e.target !== dochazkaBtn) {
+            dochazkaEmbed.style.display = 'none';
+          }
+        });
+
+        async function sendDochazkaToDiscordEmbed(type) {
+          const userStr = localStorage.getItem('discordUser');
+          if (!userStr) {
+            if (dochazkaActionStatus) {
+              dochazkaActionStatus.textContent = 'Nejste přihlášen přes Discord.';
+              dochazkaActionStatus.style.color = '#e53935';
+            }
+            return;
+          }
+          let user;
+          try { user = JSON.parse(userStr); } catch (e) { return; }
+          const webhookUrl = 'https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S';
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+          const statusText = type === 'in' ? 'Přišel do služby' : 'Odešel ze služby';
+          const color = type === 'in' ? 0x2ecc40 : 0xe53935;
+          const embed = {
+            color,
+            title: 'Docházka',
+            description: `**${user.username}** ${statusText} v ${timeStr}.`,
+            timestamp: now.toISOString(),
+            footer: { text: 'Multi-Cargo Doprava' }
+          };
+          try {
+            const resp = await fetch(webhookUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ embeds: [embed] })
+            });
+            if (resp.ok) {
+              dochazkaActionStatus.textContent = `Status úspěšně změněn: ${statusText}.`;
+              dochazkaActionStatus.style.color = '#2ecc40';
+            } else {
+              dochazkaActionStatus.textContent = 'Chyba při odesílání na Discord.';
+              dochazkaActionStatus.style.color = '#e53935';
+            }
+          } catch (e) {
+            dochazkaActionStatus.textContent = 'Chyba při odesílání na Discord.';
+            dochazkaActionStatus.style.color = '#e53935';
+          }
+        }
+
+        if (dochazkaInBtn) dochazkaInBtn.onclick = () => sendDochazkaToDiscordEmbed('in');
+        if (dochazkaOutBtn) dochazkaOutBtn.onclick = () => sendDochazkaToDiscordEmbed('out');
       });
       document.addEventListener('DOMContentLoaded', function() {
         const sluzbaBtn = document.getElementById('sluzbaBtn');
@@ -597,6 +664,20 @@
         <button id="empOutBtn" style="padding:7px 16px; border-radius:7px; border:none; background:#e53935; color:#fff; font-weight:600; cursor:pointer;">Odchod</button>
       </div>
       <div id="actionStatusMessage" style="min-height:18px; margin-top:10px; font-size:0.97em; text-align:center;"></div>
+    </div>
+
+    <!-- ODSTRAŇTE tento řádek, pokud už existuje někde v HTML -->
+    <!-- <div id="dochazkaEmbed" ...> ... </div> -->
+
+    <!-- PŘIDEJTE TENTO BLOK těsně před </body> (nebo na konec hlavního panelu, ale mimo modal a widget služby) -->
+    <div id="dochazkaEmbed" style="display:none; position:fixed; top:110px; left:50%; transform:translateX(-50%); background:#fff; border-radius:14px; box-shadow:0 4px 24px #0057b822; padding:28px 18px 22px 18px; z-index:3000; min-width:220px; max-width:96vw;">
+      <div style="font-size:1.18em; font-weight:600; margin-bottom:14px; text-align:center;">Moje docházka</div>
+      <div id="dochazkaActionStatus" style="min-height:22px; margin-bottom:10px; color:#0057b8; text-align:center;"></div>
+      <div style="display:flex; gap:18px; justify-content:center;">
+        <button id="dochazkaInBtn" style="padding:10px 22px; font-size:1.08em; border-radius:8px; border:none; background:#2ecc40; color:#fff; font-weight:600; cursor:pointer;">Příchod</button>
+        <button id="dochazkaOutBtn" style="padding:10px 22px; font-size:1.08em; border-radius:8px; border:none; background:#e53935; color:#fff; font-weight:600; cursor:pointer;">Odchod</button>
+      </div>
+      <button id="closeDochazkaEmbed" style="position:absolute;top:10px;right:16px;background:none;border:none;font-size:1.3em;cursor:pointer;">&times;</button>
     </div>
 </body>
 </html>
