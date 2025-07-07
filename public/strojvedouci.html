@@ -50,15 +50,6 @@
           <li><a href="#zamestnanci" class="rozcestnik-tile" onclick="document.getElementById('zamestnanciSection').scrollIntoView({behavior:'smooth'});return false;">👤 Zaměstnanci</a></li>
           <li><a href="#pracovat" class="rozcestnik-tile" id="pracovatBtn">💼 Pracovat</a></li>
         </ul>
-        <!-- Ujistěte se, že embed s docházkou obsahuje správná tlačítka: -->
-        <div id="dochazkaEmbed" style="margin: 0 auto; max-width: 340px; background: #fff; border-radius: 14px; box-shadow: 0 4px 24px #0057b822; padding: 28px 18px 22px 18px; margin-bottom: 32px; display: flex; flex-direction: column; align-items: center;">
-          <div style="font-size: 1.18em; font-weight: 600; margin-bottom: 14px;">Moje docházka</div>
-          <div id="actionStatusMessage" style="min-height: 22px; margin-bottom: 10px; color: #0057b8;"></div>
-          <div style="display: flex; gap: 18px;">
-            <button id="empInBtn" class="duty-green" style="padding: 10px 22px; font-size: 1.08em; border-radius: 8px; border: none; background: #2ecc40; color: #fff; font-weight: 600; cursor: pointer;">Příchod</button>
-            <button id="empOutBtn" class="duty-red" style="padding: 10px 22px; font-size: 1.08em; border-radius: 8px; border: none; background: #e53935; color: #fff; font-weight: 600; cursor: pointer;">Odchod</button>
-          </div>
-        </div>
       </div>
     </div>
     <main class="main-center-panel" style="margin: 0 auto; max-width: 700px;">
@@ -500,6 +491,76 @@
         if(empInBtn) empInBtn.onclick = () => sendDochazkaToDiscord('in');
         if(empOutBtn) empOutBtn.onclick = () => sendDochazkaToDiscord('out');
       });
+      document.addEventListener('DOMContentLoaded', function() {
+        const sluzbaBtn = document.getElementById('sluzbaBtn');
+        const sluzbaWidget = document.getElementById('sluzbaWidget');
+        const empInBtn = document.getElementById('empInBtn');
+        const empOutBtn = document.getElementById('empOutBtn');
+        const actionStatusMessage = document.getElementById('actionStatusMessage');
+
+        if (sluzbaBtn && sluzbaWidget) {
+          sluzbaBtn.onclick = () => {
+            sluzbaWidget.style.display = sluzbaWidget.style.display === 'none' ? 'block' : 'none';
+          };
+          // Kliknutí mimo widget ho zavře
+          document.addEventListener('click', function(e) {
+            if (sluzbaWidget.style.display === 'block' && !sluzbaWidget.contains(e.target) && e.target !== sluzbaBtn) {
+              sluzbaWidget.style.display = 'none';
+            }
+          });
+        }
+
+        async function sendDochazkaToDiscord(type) {
+          const userStr = localStorage.getItem('discordUser');
+          if (!userStr) {
+            if (actionStatusMessage) {
+              actionStatusMessage.textContent = 'Nejste přihlášen přes Discord.';
+              actionStatusMessage.style.color = '#e53935';
+            }
+            return;
+          }
+          let user;
+          try { user = JSON.parse(userStr); } catch (e) { return; }
+          const webhookUrl = 'https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S';
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+          const statusText = type === 'in' ? 'Přišel do služby' : 'Odešel ze služby';
+          const color = type === 'in' ? 0x2ecc40 : 0xe53935;
+          const embed = {
+            color,
+            title: 'Docházka',
+            description: `**${user.username}** ${statusText} v ${timeStr}.`,
+            timestamp: now.toISOString(),
+            footer: { text: 'Multi-Cargo Doprava' }
+          };
+          try {
+            const resp = await fetch(webhookUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ embeds: [embed] })
+            });
+            if (resp.ok) {
+              if (actionStatusMessage) {
+                actionStatusMessage.textContent = `Status úspěšně změněn: ${statusText}.`;
+                actionStatusMessage.style.color = '#2ecc40';
+              }
+            } else {
+              if (actionStatusMessage) {
+                actionStatusMessage.textContent = 'Chyba při odesílání na Discord.';
+                actionStatusMessage.style.color = '#e53935';
+              }
+            }
+          } catch (e) {
+            if (actionStatusMessage) {
+              actionStatusMessage.textContent = 'Chyba při odesílání na Discord.';
+              actionStatusMessage.style.color = '#e53935';
+            }
+          }
+        }
+
+        if (empInBtn) empInBtn.onclick = () => sendDochazkaToDiscord('in');
+        if (empOutBtn) empOutBtn.onclick = () => sendDochazkaToDiscord('out');
+      });
     </script>
     <footer class="footer">
         &copy; 2025 Multi-Cargo Doprava (MCD) &mdash; stránka strojvedoucích
@@ -523,6 +584,19 @@
         </div>
         <button id="closeWorkModal" style="position:absolute;top:18px;right:18px;background:none;border:none;font-size:1.5em;cursor:pointer;">&times;</button>
       </div>
+    </div>
+
+    <!-- Tlačítko "Služba" (můžeš ho umístit do rozcestníku nebo kam potřebuješ) -->
+    <button id="sluzbaBtn" class="rozcestnik-tile" style="margin-top:18px;">🕒 Služba</button>
+
+    <!-- Malý widget pro příchod/odchod, zobrazuje se až po kliknutí na tlačítko "Služba" -->
+    <div id="sluzbaWidget" style="display:none; position:fixed; top:90px; right:40px; background:#fff; border-radius:12px; box-shadow:0 4px 24px #0057b822; padding:22px 18px; z-index:2000; min-width:180px;">
+      <div style="font-weight:600; margin-bottom:10px; text-align:center;">Docházka</div>
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <button id="empInBtn" style="padding:7px 16px; border-radius:7px; border:none; background:#2ecc40; color:#fff; font-weight:600; cursor:pointer;">Příchod</button>
+        <button id="empOutBtn" style="padding:7px 16px; border-radius:7px; border:none; background:#e53935; color:#fff; font-weight:600; cursor:pointer;">Odchod</button>
+      </div>
+      <div id="actionStatusMessage" style="min-height:18px; margin-top:10px; font-size:0.97em; text-align:center;"></div>
     </div>
 </body>
 </html>
