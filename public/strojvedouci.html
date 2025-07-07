@@ -296,11 +296,20 @@
             closeTrainWidget.style.display = 'block';
             try {
               const res = await fetch('https://panel.simrail.eu:8084/trains-open?serverCode=int1');
-              const data = await res.json();
-              // Seřaď podle nejbližšího odjezdu (pokud není departureTimestamp, použij arrivalTimestamp)
-              const now = Date.now();
+              let data = await res.json();
+              // Pokud data nejsou pole, ale objekt s polem, získej pole
+              if (!Array.isArray(data)) {
+                // Zkus najít pole v objektu
+                if (Array.isArray(data.trains)) {
+                  data = data.trains;
+                } else if (Array.isArray(data.data)) {
+                  data = data.data;
+                } else {
+                  throw new Error('Neplatný formát dat z API');
+                }
+              }
               const sorted = data
-                .filter(t => (t.TrainData?.VDDelayedTimetableIndex !== undefined)) // filtruj jen vlaky s jízdním řádem
+                .filter(t => (t.TrainData?.VDDelayedTimetableIndex !== undefined))
                 .sort((a, b) => (a.TrainData.VDDelayedTimetableIndex ?? 9999) - (b.TrainData.VDDelayedTimetableIndex ?? 9999))
                 .slice(0, 4);
               trainListModern.innerHTML = '';
