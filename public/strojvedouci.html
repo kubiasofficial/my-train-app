@@ -70,152 +70,7 @@
     </main>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        // --- Pracovat modal ---
-        const pracovatBtn = document.getElementById('pracovatBtn');
-        const workModalOverlay = document.getElementById('workModalOverlay');
-        const closeWorkModal = document.getElementById('closeWorkModal');
-        const serverList = document.getElementById('serverList');
-        const trainListSection = document.getElementById('trainListSection');
-        const trainList = document.getElementById('trainList');
-        const selectedTrainSection = document.getElementById('selectedTrainSection');
-        const selectedTrainInfo = document.getElementById('selectedTrainInfo');
-        const takeTrainBtn = document.getElementById('takeTrainBtn');
-        const endTrainBtn = document.getElementById('endTrainBtn');
-        let selectedServer = null;
-        let selectedTrain = null;
-
-        if(pracovatBtn) {
-          pracovatBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            openWorkModal();
-          });
-        }
-        if(closeWorkModal) closeWorkModal.onclick = () => { workModalOverlay.style.display = 'none'; resetWorkModal(); };
-
-        function openWorkModal() {
-          workModalOverlay.style.display = 'flex';
-          resetWorkModal();
-          fetchServers();
-        }
-        function resetWorkModal() {
-          serverList.innerHTML = '';
-          trainListSection.style.display = 'none';
-          trainList.innerHTML = '';
-          selectedTrainSection.style.display = 'none';
-          selectedTrain = null;
-          selectedServer = null;
-        }
-
-        async function fetchServers() {
-          // Získání serverů z API
-          try {
-            const res = await fetch('https://simrail.live-map.workers.dev/cs/servers');
-            const data = await res.json();
-            renderServerList(data);
-          } catch(e) {
-            serverList.innerHTML = '<div style="color:#e53935;">Chyba při načítání serverů.</div>';
-          }
-        }
-        function renderServerList(servers) {
-          serverList.innerHTML = '';
-          servers.forEach(server => {
-            const btn = document.createElement('button');
-            btn.textContent = `${server.name} (${server.region})`;
-            btn.className = 'discord-login-btn';
-            btn.style.marginBottom = '0';
-            btn.onclick = () => selectServer(server);
-            serverList.appendChild(btn);
-          });
-        }
-        async function selectServer(server) {
-          selectedServer = server;
-          trainListSection.style.display = 'block';
-          trainList.innerHTML = '<div>Načítám vlaky...</div>';
-          selectedTrainSection.style.display = 'none';
-          try {
-            const res = await fetch(`https://simrail.live-map.workers.dev/cs/trains?server=${encodeURIComponent(server.id)}`);
-            const data = await res.json();
-            renderTrainList(data);
-          } catch(e) {
-            trainList.innerHTML = '<div style="color:#e53935;">Chyba při načítání vlaků.</div>';
-          }
-        }
-        function renderTrainList(trains) {
-          trainList.innerHTML = '';
-          trains.forEach(train => {
-            const div = document.createElement('div');
-            div.className = 'train-tile';
-            div.style = 'background:#f7f8fa;border-radius:12px;padding:14px 12px;margin-bottom:10px;box-shadow:0 2px 8px #0057b822;cursor:pointer;display:flex;align-items:center;justify-content:space-between;';
-            div.innerHTML = `
-              <div style="display:flex;align-items:center;gap:12px;">
-                <span style="font-size:1.3em;">🚆</span>
-                <div>
-                  <div style="font-weight:600;">${train.number} ${train.name || ''}</div>
-                  <div style="font-size:0.98em;color:#555;">${train.from} → ${train.to}</div>
-                  <div style="font-size:0.93em;color:#888;">${train.status === 'active' ? 'Na mapě' : `Spawn za ${train.spawnIn} min (${train.spawnTime})`}</div>
-                </div>
-              </div>
-              <div style="font-size:0.95em;color:#0057b8;font-weight:600;">${train.type || ''}</div>
-            `;
-            div.onclick = () => selectTrain(train);
-            trainList.appendChild(div);
-          });
-        }
-        function selectTrain(train) {
-          selectedTrain = train;
-          selectedTrainSection.style.display = 'block';
-          selectedTrainInfo.innerHTML = `
-            <div style="font-size:1.1em;font-weight:600;">${train.number} ${train.name || ''}</div>
-            <div style="font-size:0.98em;color:#555;">${train.from} → ${train.to}</div>
-            <div style="font-size:0.93em;color:#888;">${train.status === 'active' ? 'Na mapě' : `Spawn za ${train.spawnIn} min (${train.spawnTime})`}</div>
-          `;
-        }
-        if(takeTrainBtn) takeTrainBtn.onclick = async function() {
-          if(!selectedTrain || !selectedServer) return;
-          const userStr = localStorage.getItem('discordUser');
-          if(!userStr) return;
-          let user;
-          try { user = JSON.parse(userStr); } catch(e) { return; }
-          const webhookUrl = 'https://discord.com/api/webhooks/1390989690072727605/IwgaE5140eg1RVJuIgC8hmjGpi-IhC5pYCAzRJqstgtFVkuzQ8YadyR4TWhXC9UysbMv';
-          const embed = {
-            color: 0x0057b8,
-            title: '🚆 Převzetí vlaku',
-            description: `**${user.username}** si právě převzal vlak **${selectedTrain.number}** z **${selectedTrain.from}** do **${selectedTrain.to}** na serveru **${selectedServer.name}**.`,
-            timestamp: new Date().toISOString(),
-            footer: { text: 'Multi-Cargo Doprava' }
-          };
-          await fetch(webhookUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ embeds: [embed] })
-          });
-          takeTrainBtn.disabled = true;
-          endTrainBtn.disabled = false;
-        };
-        if(endTrainBtn) endTrainBtn.onclick = async function() {
-          if(!selectedTrain || !selectedServer) return;
-          const userStr = localStorage.getItem('discordUser');
-          if(!userStr) return;
-          let user;
-          try { user = JSON.parse(userStr); } catch(e) { return; }
-          const webhookUrl = 'https://discord.com/api/webhooks/1390989690072727605/IwgaE5140eg1RVJuIgC8hmjGpi-IhC5pYCAzRJqstgtFVkuzQ8YadyR4TWhXC9UysbMv';
-          const embed = {
-            color: 0xe53935,
-            title: '🛑 Ukončení jízdy',
-            description: `**${user.username}** právě ukončil jízdu vlaku **${selectedTrain.number}** z **${selectedTrain.from}** do **${selectedTrain.to}** na serveru **${selectedServer.name}**.`,
-            timestamp: new Date().toISOString(),
-            footer: { text: 'Multi-Cargo Doprava' }
-          };
-          await fetch(webhookUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ embeds: [embed] })
-          });
-          endTrainBtn.disabled = true;
-          takeTrainBtn.disabled = false;
-        };
-
-        // --- Globální přihlášení přes Discord (stejné jako na index.html) ---
+        // --- Discord login a user bar ---
         function isLoggedIn() {
           return localStorage.getItem('discordUser') !== null;
         }
@@ -241,11 +96,6 @@
         saveDiscordUserFromUrl();
         var userBar = document.getElementById('userProfileBar');
         var loginBtn = document.getElementById('discordLoginBtn');
-        var dochazkaBtn = document.getElementById('dochazkaBtn');
-        var dochazkaEmbed = document.getElementById('dochazkaEmbed');
-        var empInBtn = document.getElementById('empInBtn');
-        var empOutBtn = document.getElementById('empOutBtn');
-        var actionStatusMessage = document.getElementById('actionStatusMessage');
         if(isLoggedIn()) {
           showMainContent();
           // Zobrazit user bar
@@ -264,7 +114,6 @@
               `;
             }
           }
-          // Skrytí tlačítka Přihlásit se
           if(loginBtn) loginBtn.style.display = 'none';
         } else {
           showLogin();
@@ -276,147 +125,9 @@
           btn.addEventListener('click', function() {
             window.location.href = '/api/discord-login';
           });
-        }
-        // Rozcestník toggle skript
-        var toggle = document.querySelector('.rozcestnik-toggle');
-        var menu = document.querySelector('.rozcestnik-menu');
-        if(toggle && menu) {
-          toggle.addEventListener('click', function() {
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-          });
-          document.addEventListener('click', function(e) {
-            if (!toggle.contains(e.target) && !menu.contains(e.target)) {
-              menu.style.display = 'none';
-            }
-          });
-        }
-        // --- Docházka embed toggle ---
-        if(dochazkaBtn && dochazkaEmbed) {
-          dochazkaBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (dochazkaEmbed.style.display === 'block') {
-              dochazkaEmbed.style.display = 'none';
-            } else {
-              dochazkaEmbed.style.display = 'block';
-            }
-          });
-        }
-        // --- Odeslání na Discord webhook ---
-        async function sendDochazkaToDiscord(type) {
-          const userStr = localStorage.getItem('discordUser');
-          if (!userStr) {
-            if (actionStatusMessage) {
-              actionStatusMessage.textContent = 'Nejste přihlášen přes Discord.';
-              actionStatusMessage.style.color = '#e53935';
-            }
-            return;
-          }
-          let user;
-          try { user = JSON.parse(userStr); } catch (e) { return; }
-          const webhookUrl = 'https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S';
-          const now = new Date();
-          const timeStr = now.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
-          const statusText = type === 'in' ? 'Přišel do služby' : 'Odešel ze služby';
-          const color = type === 'in' ? 0x2ecc40 : 0xe53935;
-          const embed = {
-            color,
-            title: 'Docházka',
-            description: `**${user.username}** ${statusText} v ${timeStr}.`,
-            timestamp: now.toISOString(),
-            footer: { text: 'Multi-Cargo Doprava' }
-          };
-          try {
-            const resp = await fetch(webhookUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ embeds: [embed] })
-            });
-            if (resp.ok) {
-              if (actionStatusMessage) {
-                actionStatusMessage.textContent = `Status úspěšně změněn: ${statusText}.`;
-                actionStatusMessage.style.color = '#2ecc40';
-              }
-            } else {
-              if (actionStatusMessage) {
-                actionStatusMessage.textContent = 'Chyba při odesílání na Discord.';
-                actionStatusMessage.style.color = '#e53935';
-              }
-            }
-          } catch (e) {
-            if (actionStatusMessage) {
-              actionStatusMessage.textContent = 'Chyba při odesílání na Discord.';
-              actionStatusMessage.style.color = '#e53935';
-            }
-          }
         }
 
-        if (empInBtn) empInBtn.onclick = () => sendDochazkaToDiscord('in');
-        if (empOutBtn) empOutBtn.onclick = () => sendDochazkaToDiscord('out');
-      });
-      // Globální přihlášení přes Discord (stejné jako na index.html)
-      function isLoggedIn() {
-        return localStorage.getItem('discordUser') !== null;
-      }
-      function showMainContent() {
-        document.getElementById('loginOverlay').style.display = 'none';
-        document.body.style.overflow = '';
-      }
-      function showLogin() {
-        document.getElementById('loginOverlay').style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-      }
-      function saveDiscordUserFromUrl() {
-        const params = new URLSearchParams(window.location.search);
-        if(params.has('discordUser')) {
-          try {
-            const user = decodeURIComponent(params.get('discordUser'));
-            localStorage.setItem('discordUser', user);
-            window.history.replaceState({}, document.title, window.location.pathname);
-            showMainContent();
-          } catch(e) {}
-        }
-      }
-      document.addEventListener('DOMContentLoaded', function() {
-        saveDiscordUserFromUrl();
-        var userBar = document.getElementById('userProfileBar');
-        var loginBtn = document.getElementById('discordLoginBtn');
-        var dochazkaBtn = document.getElementById('dochazkaBtn');
-        var dochazkaEmbed = document.getElementById('dochazkaEmbed');
-        var empInBtn = document.getElementById('empInBtn');
-        var empOutBtn = document.getElementById('empOutBtn');
-        var actionStatusMessage = document.getElementById('actionStatusMessage');
-        if(isLoggedIn()) {
-          showMainContent();
-          // Zobrazit user bar
-          if(userBar) {
-            userBar.style.display = 'flex';
-            const userStr = localStorage.getItem('discordUser');
-            let user = null;
-            try { user = JSON.parse(userStr); } catch(e) {}
-            if(user) {
-              let avatarUrl = user.avatar
-                ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
-                : 'https://cdn.discordapp.com/embed/avatars/0.png';
-              userBar.innerHTML = `
-                <img src="${avatarUrl}" alt="avatar" style="width:38px;height:38px;border-radius:50%;box-shadow:0 2px 8px #0002;">
-                <span>${user.username}#${user.discriminator}</span>
-              `;
-            }
-          }
-          // Skrytí tlačítka Přihlásit se
-          if(loginBtn) loginBtn.style.display = 'none';
-        } else {
-          showLogin();
-          if(userBar) userBar.style.display = 'none';
-          if(loginBtn) loginBtn.style.display = 'inline-block';
-        }
-        var btn = document.getElementById('discordLoginBtn');
-        if(btn) {
-          btn.addEventListener('click', function() {
-            window.location.href = '/api/discord-login';
-          });
-        }
-        // Rozcestník toggle skript
+        // --- Rozcestník toggle ---
         var toggle = document.querySelector('.rozcestnik-toggle');
         var menu = document.querySelector('.rozcestnik-menu');
         if(toggle && menu) {
@@ -429,66 +140,8 @@
             }
           });
         }
-        // --- Docházka embed toggle ---
-        if(dochazkaBtn && dochazkaEmbed) {
-          dochazkaBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (dochazkaEmbed.style.display === 'block') {
-              dochazkaEmbed.style.display = 'none';
-            } else {
-              dochazkaEmbed.style.display = 'block';
-            }
-          });
-        }
-        // --- Odeslání na Discord webhook ---
-        async function sendDochazkaToDiscord(type) {
-          const userStr = localStorage.getItem('discordUser');
-          if (!userStr) {
-            if (actionStatusMessage) {
-              actionStatusMessage.textContent = 'Nejste přihlášen přes Discord.';
-              actionStatusMessage.style.color = '#e53935';
-            }
-            return;
-          }
-          let user;
-          try { user = JSON.parse(userStr); } catch (e) { return; }
-          const webhookUrl = 'https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S';
-          const now = new Date();
-          const timeStr = now.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
-          const statusText = type === 'in' ? 'Přišel do služby' : 'Odešel ze služby';
-          const color = type === 'in' ? 0x2ecc40 : 0xe53935;
-          const embed = {
-            color,
-            title: 'Docházka',
-            description: `**${user.username}** ${statusText} v ${timeStr}.`,
-            timestamp: now.toISOString(),
-            footer: { text: 'Multi-Cargo Doprava' }
-          };
-          try {
-            const resp = await fetch(webhookUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ embeds: [embed] })
-            });
-            if (resp.ok) {
-              if (actionStatusMessage) {
-                actionStatusMessage.textContent = `Status úspěšně změněn: ${statusText}.`;
-                actionStatusMessage.style.color = '#2ecc40';
-              }
-            } else {
-              if (actionStatusMessage) {
-                actionStatusMessage.textContent = 'Chyba při odesílání na Discord.';
-                actionStatusMessage.style.color = '#e53935';
-              }
-            }
-          } catch (e) {
-            if (actionStatusMessage) {
-              actionStatusMessage.textContent = 'Chyba při odesílání na Discord.';
-              actionStatusMessage.style.color = '#e53935';
-            }
-          }
-        }
-        // Docházka embed toggle
+
+        // --- Docházka embed ---
         var dochazkaBtn = document.getElementById('dochazkaBtn');
         var dochazkaEmbed = document.getElementById('dochazkaEmbed');
         var dochazkaInBtn = document.getElementById('dochazkaInBtn');
@@ -506,7 +159,6 @@
         if (closeDochazkaEmbed) {
           closeDochazkaEmbed.onclick = () => { dochazkaEmbed.style.display = 'none'; };
         }
-        // Zavři embed kliknutím mimo něj
         document.addEventListener('mousedown', function(e) {
           if (dochazkaEmbed.style.display === 'block' && !dochazkaEmbed.contains(e.target) && e.target !== dochazkaBtn) {
             dochazkaEmbed.style.display = 'none';
@@ -554,81 +206,10 @@
             dochazkaActionStatus.style.color = '#e53935';
           }
         }
-
         if (dochazkaInBtn) dochazkaInBtn.onclick = () => sendDochazkaToDiscordEmbed('in');
         if (dochazkaOutBtn) dochazkaOutBtn.onclick = () => sendDochazkaToDiscordEmbed('out');
-      });
-      document.addEventListener('DOMContentLoaded', function() {
-        const sluzbaBtn = document.getElementById('sluzbaBtn');
-        const sluzbaWidget = document.getElementById('sluzbaWidget');
-        const empInBtn = document.getElementById('empInBtn');
-        const empOutBtn = document.getElementById('empOutBtn');
-        const actionStatusMessage = document.getElementById('actionStatusMessage');
 
-        if (sluzbaBtn && sluzbaWidget) {
-          sluzbaBtn.onclick = () => {
-            sluzbaWidget.style.display = sluzbaWidget.style.display === 'none' ? 'block' : 'none';
-          };
-          // Kliknutí mimo widget ho zavře
-          document.addEventListener('click', function(e) {
-            if (sluzbaWidget.style.display === 'block' && !sluzbaWidget.contains(e.target) && e.target !== sluzbaBtn) {
-              sluzbaWidget.style.display = 'none';
-            }
-          });
-        }
-
-        async function sendDochazkaToDiscord(type) {
-          const userStr = localStorage.getItem('discordUser');
-          if (!userStr) {
-            if (actionStatusMessage) {
-              actionStatusMessage.textContent = 'Nejste přihlášen přes Discord.';
-              actionStatusMessage.style.color = '#e53935';
-            }
-            return;
-          }
-          let user;
-          try { user = JSON.parse(userStr); } catch (e) { return; }
-          const webhookUrl = 'https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S';
-          const now = new Date();
-          const timeStr = now.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
-          const statusText = type === 'in' ? 'Přišel do služby' : 'Odešel ze služby';
-          const color = type === 'in' ? 0x2ecc40 : 0xe53935;
-          const embed = {
-            color,
-            title: 'Docházka',
-            description: `**${user.username}** ${statusText} v ${timeStr}.`,
-            timestamp: now.toISOString(),
-            footer: { text: 'Multi-Cargo Doprava' }
-          };
-          try {
-            const resp = await fetch(webhookUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ embeds: [embed] })
-            });
-            if (resp.ok) {
-              if (actionStatusMessage) {
-                actionStatusMessage.textContent = `Status úspěšně změněn: ${statusText}.`;
-                actionStatusMessage.style.color = '#2ecc40';
-              }
-            } else {
-              if (actionStatusMessage) {
-                actionStatusMessage.textContent = 'Chyba při odesílání na Discord.';
-                actionStatusMessage.style.color = '#e53935';
-              }
-            }
-          } catch (e) {
-            if (actionStatusMessage) {
-              actionStatusMessage.textContent = 'Chyba při odesílání na Discord.';
-              actionStatusMessage.style.color = '#e53935';
-            }
-          }
-        }
-
-        if (empInBtn) empInBtn.onclick = () => sendDochazkaToDiscord('in');
-        if (empOutBtn) empOutBtn.onclick = () => sendDochazkaToDiscord('out');
-      });
-      document.addEventListener('DOMContentLoaded', function() {
+        // --- MODERNÍ WIDGET PRO VÝBĚR VLAKU ---
         const pracovatBtn = document.getElementById('pracovatBtn');
         const trainWidgetOverlay = document.getElementById('trainWidgetOverlay');
         const trainWidget = document.getElementById('trainWidget');
@@ -696,7 +277,6 @@
         }
 
         function renderTrainDetail(train) {
-          const now = Date.now();
           const arrival = new Date(train.arrivalTimestamp * 1000);
           const departure = new Date(train.departureTimestamp * 1000);
           trainDetailContent.innerHTML = `
@@ -719,7 +299,6 @@
             </div>
             <button id="currentTimeBtn" style="position:absolute;top:32px;right:32px;padding:10px 28px;border-radius:8px;border:2px solid #ff5733;background:#fff;color:#ff5733;font-weight:600;font-size:1.08em;cursor:pointer;">AKTUÁLNÍ ČAS</button>
           `;
-          // Křížek se zobrazí až po ukončení jízdy
           closeTrainDetailWidget.style.display = 'none';
           document.getElementById('currentTimeBtn').onclick = () => {
             alert('Aktuální čas serveru: ' + new Date().toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit',second:'2-digit'}));
@@ -728,22 +307,18 @@
 
         if (endRideBtn) {
           endRideBtn.onclick = () => {
-            // Odeslat na Discord ukončení
             sendTrainDiscord('end', selectedTrain);
             trainDetailWidgetOverlay.style.display = 'none';
             if (updateInterval) clearInterval(updateInterval);
             closeTrainDetailWidget.style.display = 'block';
           };
         }
-
-        // Křížek se objeví až po ukončení jízdy
         if (closeTrainDetailWidget) {
           closeTrainDetailWidget.onclick = () => {
             trainDetailWidgetOverlay.style.display = 'none';
             if (updateInterval) clearInterval(updateInterval);
           };
         }
-
         async function sendTrainDiscord(action, train) {
           const userStr = localStorage.getItem('discordUser');
           if (!userStr) return;
