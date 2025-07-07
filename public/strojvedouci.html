@@ -373,11 +373,22 @@
               <div style="color:#ff5733;">TYP<br><b>${train.TrainName || '-'}</b></div>
               <div style="color:#ff5733;">SERVER<br><b>${train.ServerCode || '-'}</b></div>
             </div>
-            <button id="currentTimeBtn" style="position:absolute;top:32px;right:32px;padding:10px 28px;border-radius:8px;border:2px solid #ff5733;background:#fff;color:#ff5733;font-weight:600;font-size:1.08em;cursor:pointer;">AKTUÁLNÍ ČAS</button>
+            <button id="currentTimeBtn" style="position:absolute;top:32px;right:32px;padding:10px 28px;border-radius:8px;border:2px solid #ff5733;background:#fff;color:#ff5733;font-weight:600;font-size:1.08em;cursor:pointer;">ČAS SERVERU</button>
+            <span id="serverTimeValue" style="position:absolute;top:80px;right:32px;font-size:1.1em;color:#0057b8;"></span>
           `;
           closeTrainDetailWidget.style.display = 'none';
-          document.getElementById('currentTimeBtn').onclick = () => {
-            alert('Aktuální čas serveru: ' + new Date().toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+          document.getElementById('currentTimeBtn').onclick = async () => {
+            // Získání času serveru SimRail (endpoint vrací { serverTime: "2025-07-07T12:34:56Z" })
+            try {
+              const res = await fetch('https://panel.simrail.eu:8084/server-time?serverCode=int1');
+              const data = await res.json();
+              let timeStr = data.serverTime
+                ? new Date(data.serverTime).toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit',second:'2-digit'})
+                : 'Nelze načíst čas';
+              document.getElementById('serverTimeValue').textContent = 'Server: ' + timeStr;
+            } catch (e) {
+              document.getElementById('serverTimeValue').textContent = 'Chyba při načítání času serveru';
+            }
           };
         }
 
