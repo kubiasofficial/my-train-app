@@ -318,7 +318,8 @@
                 trainListModern.appendChild(div);
               });
             } catch (e) {
-              trainListModern.innerHTML = '<div style="color:#e53935;">Chyba při načítání vlaků.</div>';
+              trainListModern.innerHTML = '<div style="color:#e53935;">Chyba při načítání vlaků.<br>' + e + '</div>';
+              console.error('Chyba při načítání vlaků:', e);
             }
           };
         }
