@@ -50,11 +50,14 @@
           <li><a href="#zamestnanci" class="rozcestnik-tile" onclick="document.getElementById('zamestnanciSection').scrollIntoView({behavior:'smooth'});return false;">👤 Zaměstnanci</a></li>
           <li><a href="#pracovat" class="rozcestnik-tile" id="pracovatBtn">💼 Pracovat</a></li>
         </ul>
-        <div id="dochazkaEmbed" style="display:none;max-width:340px;margin:24px auto 0 auto;padding:28px 24px 22px 24px;background:#fff;border:2.5px solid #0057b8;border-radius:18px;box-shadow:0 4px 24px #0057b822,0 1.5px 0 #fff;text-align:center;">
-          <h3 style="margin-top:0;margin-bottom:18px;">Moje docházka</h3>
-          <button class="employee-green" id="empInBtn" style="font-size:1.13em;padding:12px 32px;margin-right:18px;">🚦 Příchod</button>
-          <button class="duty-red" id="empOutBtn" style="font-size:1.13em;padding:12px 32px;">🏁 Odchod</button>
-          <div id="actionStatusMessage" style="margin-top:16px;font-size:1.08rem;font-weight:600;text-align:center;"></div>
+        <!-- Ujistěte se, že embed s docházkou obsahuje správná tlačítka: -->
+        <div id="dochazkaEmbed" style="margin: 0 auto; max-width: 340px; background: #fff; border-radius: 14px; box-shadow: 0 4px 24px #0057b822; padding: 28px 18px 22px 18px; margin-bottom: 32px; display: flex; flex-direction: column; align-items: center;">
+          <div style="font-size: 1.18em; font-weight: 600; margin-bottom: 14px;">Moje docházka</div>
+          <div id="actionStatusMessage" style="min-height: 22px; margin-bottom: 10px; color: #0057b8;"></div>
+          <div style="display: flex; gap: 18px;">
+            <button id="empInBtn" class="duty-green" style="padding: 10px 22px; font-size: 1.08em; border-radius: 8px; border: none; background: #2ecc40; color: #fff; font-weight: 600; cursor: pointer;">Příchod</button>
+            <button id="empOutBtn" class="duty-red" style="padding: 10px 22px; font-size: 1.08em; border-radius: 8px; border: none; background: #e53935; color: #fff; font-weight: 600; cursor: pointer;">Odchod</button>
+          </div>
         </div>
       </div>
     </div>
@@ -310,43 +313,54 @@
         // --- Odeslání na Discord webhook ---
         async function sendDochazkaToDiscord(type) {
           const userStr = localStorage.getItem('discordUser');
-          if (!userStr) return;
-          let user;
-          try { user = JSON.parse(userStr); } catch(e) { return; }
-          const now = new Date();
-          const hh = now.getHours().toString().padStart(2, '0');
-          const mm = now.getMinutes().toString().padStart(2, '0');
-          const time = `${hh}:${mm}`;
-          let embed = {
-            color: type === 'in' ? 0x43b581 : 0xe53935,
-            title: type === 'in' ? '🚦 Příchod do služby' : '🏁 Odchod ze služby',
-            description: `**${user.username}** ${type === 'in' ? 'přišel do služby' : 'odešel ze služby'} v **${time}**`,
-            timestamp: new Date().toISOString(),
-            footer: {
-              text: 'Multi-Cargo Doprava',
-              icon_url: 'https://cdn.discordapp.com/emojis/1140725956576686201.webp?size=96&quality=lossless'
+          if (!userStr) {
+            if (actionStatusMessage) {
+              actionStatusMessage.textContent = 'Nejste přihlášen přes Discord.';
+              actionStatusMessage.style.color = '#e53935';
             }
+            return;
+          }
+          let user;
+          try { user = JSON.parse(userStr); } catch (e) { return; }
+          const webhookUrl = 'https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S';
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+          const statusText = type === 'in' ? 'Přišel do služby' : 'Odešel ze služby';
+          const color = type === 'in' ? 0x2ecc40 : 0xe53935;
+          const embed = {
+            color,
+            title: 'Docházka',
+            description: `**${user.username}** ${statusText} v ${timeStr}.`,
+            timestamp: now.toISOString(),
+            footer: { text: 'Multi-Cargo Doprava' }
           };
           try {
-            await fetch('https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S', {
+            const resp = await fetch(webhookUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ embeds: [embed] })
             });
-            if(actionStatusMessage) {
-              actionStatusMessage.textContent = type === 'in' ? 'Příchod byl zaznamenán a odeslán na Discord.' : 'Odchod byl zaznamenán a odeslán na Discord.';
-              actionStatusMessage.style.color = type === 'in' ? '#43b581' : '#e53935';
-              setTimeout(() => actionStatusMessage.textContent = '', 4000);
+            if (resp.ok) {
+              if (actionStatusMessage) {
+                actionStatusMessage.textContent = `Status úspěšně změněn: ${statusText}.`;
+                actionStatusMessage.style.color = '#2ecc40';
+              }
+            } else {
+              if (actionStatusMessage) {
+                actionStatusMessage.textContent = 'Chyba při odesílání na Discord.';
+                actionStatusMessage.style.color = '#e53935';
+              }
             }
-          } catch(e) {
-            if(actionStatusMessage) {
+          } catch (e) {
+            if (actionStatusMessage) {
               actionStatusMessage.textContent = 'Chyba při odesílání na Discord.';
               actionStatusMessage.style.color = '#e53935';
             }
           }
         }
-        if(empInBtn) empInBtn.onclick = () => sendDochazkaToDiscord('in');
-        if(empOutBtn) empOutBtn.onclick = () => sendDochazkaToDiscord('out');
+
+        if (empInBtn) empInBtn.onclick = () => sendDochazkaToDiscord('in');
+        if (empOutBtn) empOutBtn.onclick = () => sendDochazkaToDiscord('out');
       });
       // Globální přihlášení přes Discord (stejné jako na index.html)
       function isLoggedIn() {
@@ -438,36 +452,46 @@
         // --- Odeslání na Discord webhook ---
         async function sendDochazkaToDiscord(type) {
           const userStr = localStorage.getItem('discordUser');
-          if (!userStr) return;
-          let user;
-          try { user = JSON.parse(userStr); } catch(e) { return; }
-          const now = new Date();
-          const hh = now.getHours().toString().padStart(2, '0');
-          const mm = now.getMinutes().toString().padStart(2, '0');
-          const time = `${hh}:${mm}`;
-          let embed = {
-            color: type === 'in' ? 0x43b581 : 0xe53935,
-            title: type === 'in' ? '🚦 Příchod do služby' : '🏁 Odchod ze služby',
-            description: `**${user.username}** ${type === 'in' ? 'přišel do služby' : 'odešel ze služby'} v **${time}**`,
-            timestamp: new Date().toISOString(),
-            footer: {
-              text: 'Multi-Cargo Doprava',
-              icon_url: 'https://cdn.discordapp.com/emojis/1140725956576686201.webp?size=96&quality=lossless'
+          if (!userStr) {
+            if (actionStatusMessage) {
+              actionStatusMessage.textContent = 'Nejste přihlášen přes Discord.';
+              actionStatusMessage.style.color = '#e53935';
             }
+            return;
+          }
+          let user;
+          try { user = JSON.parse(userStr); } catch (e) { return; }
+          const webhookUrl = 'https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S';
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+          const statusText = type === 'in' ? 'Přišel do služby' : 'Odešel ze služby';
+          const color = type === 'in' ? 0x2ecc40 : 0xe53935;
+          const embed = {
+            color,
+            title: 'Docházka',
+            description: `**${user.username}** ${statusText} v ${timeStr}.`,
+            timestamp: now.toISOString(),
+            footer: { text: 'Multi-Cargo Doprava' }
           };
           try {
-            await fetch('https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S', {
+            const resp = await fetch(webhookUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ embeds: [embed] })
             });
-            if(actionStatusMessage) {
-              actionStatusMessage.textContent = type === 'in' ? 'Příchod byl zaznamenán a odeslán na Discord.' : 'Odchod byl zaznamenán a odeslán na Discord.';
-              actionStatusMessage.style.color = type === 'in' ? '#43b581' : '#e53935';
-              setTimeout(() => actionStatusMessage.textContent = '', 4000);
+            if (resp.ok) {
+              if (actionStatusMessage) {
+                actionStatusMessage.textContent = `Status úspěšně změněn: ${statusText}.`;
+                actionStatusMessage.style.color = '#2ecc40';
+              }
+            } else {
+              if (actionStatusMessage) {
+                actionStatusMessage.textContent = 'Chyba při odesílání na Discord.';
+                actionStatusMessage.style.color = '#e53935';
+              }
             }
-          } catch(e) {
-            if(actionStatusMessage) {
+          } catch (e) {
+            if (actionStatusMessage) {
               actionStatusMessage.textContent = 'Chyba při odesílání na Discord.';
               actionStatusMessage.style.color = '#e53935';
             }
