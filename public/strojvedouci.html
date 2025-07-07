@@ -349,9 +349,26 @@
           renderTrainDetail(train);
           // Odeslat na Discord převzetí
           sendTrainDiscord('take', train);
-          // Aktualizace časů každých 10s
+          // Aktualizace času serveru každých 10s (pouze čas, ne celý detail!)
           if (updateInterval) clearInterval(updateInterval);
-          updateInterval = setInterval(() => renderTrainDetail(selectedTrain), 10000);
+          const updateServerTimeBtn = () => {
+            const btn = document.getElementById('currentTimeBtn');
+            if (!btn) return;
+            btn.textContent = 'Načítám čas...';
+            fetch('https://panel.simrail.eu:8084/server-time?serverCode=int1')
+              .then(res => res.json())
+              .then(data => {
+                let timeStr = data.serverTime
+                  ? new Date(data.serverTime).toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit',second:'2-digit'})
+                  : 'Nelze načíst čas';
+                btn.textContent = 'Server: ' + timeStr;
+              })
+              .catch(() => {
+                btn.textContent = 'Chyba při načítání času';
+              });
+          };
+          updateServerTimeBtn();
+          updateInterval = setInterval(updateServerTimeBtn, 10000);
         }
 
         function renderTrainDetail(train) {
@@ -377,20 +394,20 @@
           `;
           closeTrainDetailWidget.style.display = 'none';
           const currentTimeBtn = document.getElementById('currentTimeBtn');
-          async function updateServerTimeBtn() {
-            try {
-              const res = await fetch('https://panel.simrail.eu:8084/server-time?serverCode=int1');
-              const data = await res.json();
-              let timeStr = data.serverTime
-                ? new Date(data.serverTime).toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit',second:'2-digit'})
-                : 'Nelze načíst čas';
-              currentTimeBtn.textContent = 'Server: ' + timeStr;
-            } catch (e) {
-              currentTimeBtn.textContent = 'Chyba při načítání času';
-            }
-          }
-          updateServerTimeBtn();
-          currentTimeBtn.onclick = updateServerTimeBtn;
+          currentTimeBtn.onclick = () => {
+            currentTimeBtn.textContent = 'Načítám čas...';
+            fetch('https://panel.simrail.eu:8084/server-time?serverCode=int1')
+              .then(res => res.json())
+              .then(data => {
+                let timeStr = data.serverTime
+                  ? new Date(data.serverTime).toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit',second:'2-digit'})
+                  : 'Nelze načíst čas';
+                currentTimeBtn.textContent = 'Server: ' + timeStr;
+              })
+              .catch(() => {
+                currentTimeBtn.textContent = 'Chyba při načítání času';
+              });
+          };
         }
 
         if (endRideBtn) {
