@@ -392,11 +392,27 @@
             </div>
             <button id="timetableBtn" style="position:absolute;top:32px;right:32px;padding:10px 28px;border-radius:8px;border:2px solid #0057b8;background:#fff;color:#0057b8;font-weight:600;font-size:1.08em;cursor:pointer;">Jízdní řád</button>
           `;
-          closeTrainDetailWidget.style.display = 'none';
+          closeTrainDetailWidget.style.display = 'block';
           document.getElementById('timetableBtn').onclick = () => renderTimetableWidget(train);
+          // Oprava: funkčnost tlačítka "Ukončit jízdu"
+          if (endRideBtn) {
+            endRideBtn.onclick = async function() {
+              trainDetailWidgetOverlay.style.display = 'none';
+              closeTrainDetailWidget.style.display = 'none';
+              // Odeslat na Discord ukončení jízdy
+              await sendTrainDiscord('end', train);
+            };
+          }
+          // Oprava: zavírání detailu vlaku křížkem
+          if (closeTrainDetailWidget) {
+            closeTrainDetailWidget.onclick = () => {
+              trainDetailWidgetOverlay.style.display = 'none';
+              closeTrainDetailWidget.style.display = 'none';
+            };
+          }
         }
 
-        // Přidej tuto funkci do stejného <script> bloku:
+        // Opravená funkce pro widget jízdního řádu:
         function renderTimetableWidget(train) {
           // Pokud widget už existuje, smaž ho
           let old = document.getElementById('timetableWidgetOverlay');
@@ -405,16 +421,15 @@
           // Získání jízdního řádu z dat vlaku
           const timetable = (train.TrainData && Array.isArray(train.TrainData.VDTimetable)) ? train.TrainData.VDTimetable : [];
           const currentIndex = train.TrainData?.VDDelayedTimetableIndex ?? 0;
+          const isBetween = !!train.TrainData?.VDIsBetweenStations;
 
           // Vytvoření HTML pro jízdní řád
           let rows = '';
           for (let i = 0; i < timetable.length; i++) {
             const stop = timetable[i];
-            // Zjisti, jestli je aktuální stanice nebo mezi stanicemi
             let dot = '';
-            if (i === currentIndex) {
-              dot = `<span class="blinking-dot"></span>`;
-            } else if (i === currentIndex + 1 && train.TrainData?.VDIsBetweenStations) {
+            // Zelená tečka na aktuální stanici
+            if (!isBetween && i === currentIndex) {
               dot = `<span class="blinking-dot"></span>`;
             }
             rows += `
@@ -427,7 +442,7 @@
               </div>
             `;
             // Pokud je mezi stanicemi, zobraz blikající tečku mezi stanicemi
-            if (i === currentIndex && train.TrainData?.VDIsBetweenStations && i < timetable.length - 1) {
+            if (isBetween && i === currentIndex) {
               rows += `
                 <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;margin-left:18px;">
                   <span class="blinking-dot"></span>
