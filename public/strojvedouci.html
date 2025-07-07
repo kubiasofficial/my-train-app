@@ -390,40 +390,84 @@
               <div style="color:#ff5733;">TYP<br><b>${train.TrainName || '-'}</b></div>
               <div style="color:#ff5733;">SERVER<br><b>${train.ServerCode || '-'}</b></div>
             </div>
-            <button id="currentTimeBtn" style="position:absolute;top:32px;right:32px;padding:10px 28px;border-radius:8px;border:2px solid #ff5733;background:#fff;color:#ff5733;font-weight:600;font-size:1.08em;cursor:pointer;">Načítám čas...</button>
+            <button id="timetableBtn" style="position:absolute;top:32px;right:32px;padding:10px 28px;border-radius:8px;border:2px solid #0057b8;background:#fff;color:#0057b8;font-weight:600;font-size:1.08em;cursor:pointer;">Jízdní řád</button>
           `;
           closeTrainDetailWidget.style.display = 'none';
-          const currentTimeBtn = document.getElementById('currentTimeBtn');
-          currentTimeBtn.onclick = () => {
-            currentTimeBtn.textContent = 'Načítám čas...';
-            fetch('https://panel.simrail.eu:8084/server-time?serverCode=int1')
-              .then(res => res.json())
-              .then(data => {
-                let timeStr = data.serverTime
-                  ? new Date(data.serverTime).toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit',second:'2-digit'})
-                  : 'Nelze načíst čas';
-                currentTimeBtn.textContent = 'Server: ' + timeStr;
-              })
-              .catch(() => {
-                currentTimeBtn.textContent = 'Chyba při načítání času';
-              });
-          };
+          document.getElementById('timetableBtn').onclick = () => renderTimetableWidget(train);
         }
 
-        if (endRideBtn) {
-          endRideBtn.onclick = () => {
-            sendTrainDiscord('end', selectedTrain);
-            trainDetailWidgetOverlay.style.display = 'none';
-            if (updateInterval) clearInterval(updateInterval);
-            closeTrainDetailWidget.style.display = 'block';
-          };
+        // Přidej tuto funkci do stejného <script> bloku:
+        function renderTimetableWidget(train) {
+          // Pokud widget už existuje, smaž ho
+          let old = document.getElementById('timetableWidgetOverlay');
+          if (old) old.remove();
+
+          // Získání jízdního řádu z dat vlaku
+          const timetable = (train.TrainData && Array.isArray(train.TrainData.VDTimetable)) ? train.TrainData.VDTimetable : [];
+          const currentIndex = train.TrainData?.VDDelayedTimetableIndex ?? 0;
+
+          // Vytvoření HTML pro jízdní řád
+          let rows = '';
+          for (let i = 0; i < timetable.length; i++) {
+            const stop = timetable[i];
+            // Zjisti, jestli je aktuální stanice nebo mezi stanicemi
+            let dot = '';
+            if (i === currentIndex) {
+              dot = `<span class="blinking-dot"></span>`;
+            } else if (i === currentIndex + 1 && train.TrainData?.VDIsBetweenStations) {
+              dot = `<span class="blinking-dot"></span>`;
+            }
+            rows += `
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                ${dot}
+                <span style="font-size:1.12em;">${stop.StationName || stop.Name || '-'}</span>
+                <span style="color:#888;font-size:0.98em;margin-left:auto;">
+                  ${stop.DepartureTime ? 'Odj. ' + stop.DepartureTime : (stop.ArrivalTime ? 'Přij. ' + stop.ArrivalTime : '')}
+                </span>
+              </div>
+            `;
+            // Pokud je mezi stanicemi, zobraz blikající tečku mezi stanicemi
+            if (i === currentIndex && train.TrainData?.VDIsBetweenStations && i < timetable.length - 1) {
+              rows += `
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;margin-left:18px;">
+                  <span class="blinking-dot"></span>
+                  <span style="font-size:1em;color:#888;">Mezi stanicemi</span>
+                </div>
+              `;
+            }
+          }
+
+          // Vlož widget do DOM
+          const overlay = document.createElement('div');
+          overlay.id = 'timetableWidgetOverlay';
+          overlay.style = 'position:fixed;z-index:10002;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);display:flex;align-items:center;justify-content:center;';
+          overlay.innerHTML = `
+            <div style="background:#fff;padding:32px 28px 24px 28px;border-radius:22px;box-shadow:0 8px 32px #0057b8cc;min-width:320px;max-width:98vw;max-height:90vh;overflow-y:auto;position:relative;">
+              <h2 style="margin-top:0;margin-bottom:18px;font-size:1.5em;color:#0057b8;text-align:center;">Jízdní řád</h2>
+              <div>${rows}</div>
+              <button id="closeTimetableWidget" style="position:absolute;top:18px;right:28px;background:none;border:none;font-size:2.2em;cursor:pointer;color:#0057b8;">&times;</button>
+            </div>
+            <style>
+              .blinking-dot {
+                display:inline-block;
+                width:16px;
+                height:16px;
+                border-radius:50%;
+                background:#2ecc40;
+                margin-right:4px;
+                animation: blink 1s infinite;
+                box-shadow:0 0 8px #2ecc40;
+              }
+              @keyframes blink {
+                0%,100% { opacity: 1; }
+                50% { opacity: 0.2; }
+              }
+            </style>
+          `;
+          document.body.appendChild(overlay);
+          document.getElementById('closeTimetableWidget').onclick = () => overlay.remove();
         }
-        if (closeTrainDetailWidget) {
-          closeTrainDetailWidget.onclick = () => {
-            trainDetailWidgetOverlay.style.display = 'none';
-            if (updateInterval) clearInterval(updateInterval);
-          };
-        }
+
         async function sendTrainDiscord(action, train) {
           const userStr = localStorage.getItem('discordUser');
           if (!userStr) return;
