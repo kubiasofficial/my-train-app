@@ -68,6 +68,49 @@
             <!-- Sekce detailu vlaku a akce s vlaky byla odstraněna na přání uživatele -->
         </section>
     </main>
+    <!-- ODSTRANĚNO: workModalOverlay (starý modal výběru serveru) -->
+    <!-- ODSTRANĚNO: původní tlačítko a widget "Služba" -->
+
+    <!-- Docházka embed (ponechán pouze jeden funkční blok) -->
+    <div id="dochazkaEmbed" style="display:none; position:fixed; top:110px; left:50%; transform:translateX(-50%); background:#fff; border-radius:14px; box-shadow:0 4px 24px #0057b822; padding:28px 18px 22px 18px; z-index:3000; min-width:220px; max-width:96vw;">
+      <div style="font-size:1.18em; font-weight:600; margin-bottom:14px; text-align:center;">Moje docházka</div>
+      <div id="dochazkaActionStatus" style="min-height:22px; margin-bottom:10px; color:#0057b8; text-align:center;"></div>
+      <div style="display:flex; gap:18px; justify-content:center;">
+        <button id="dochazkaInBtn" style="padding:10px 22px; font-size:1.08em; border-radius:8px; border:none; background:#2ecc40; color:#fff; font-weight:600; cursor:pointer;">Příchod</button>
+        <button id="dochazkaOutBtn" style="padding:10px 22px; font-size:1.08em; border-radius:8px; border:none; background:#e53935; color:#fff; font-weight:600; cursor:pointer;">Odchod</button>
+      </div>
+      <button id="closeDochazkaEmbed" style="position:absolute;top:10px;right:16px;background:none;border:none;font-size:1.3em;cursor:pointer;">&times;</button>
+    </div>
+
+    <!-- NOVÉ: Tlačítko "Služba" a malý widget pro rychlou docházku -->
+    <button id="sluzbaBtn" class="rozcestnik-tile" style="margin-top:18px;position:fixed;bottom:32px;right:32px;z-index:2100;">🕒 Služba</button>
+    <div id="sluzbaWidget" style="display:none; position:fixed; bottom:80px; right:40px; background:#fff; border-radius:14px; box-shadow:0 4px 24px #0057b822; padding:22px 18px; z-index:2101; min-width:180px;">
+      <div style="font-weight:600; margin-bottom:10px; text-align:center;">Docházka</div>
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <button id="empInBtn" style="padding:7px 16px; border-radius:7px; border:none; background:#2ecc40; color:#fff; font-weight:600; cursor:pointer;">Příchod</button>
+        <button id="empOutBtn" style="padding:7px 16px; border-radius:7px; border:none; background:#e53935; color:#fff; font-weight:600; cursor:pointer;">Odchod</button>
+      </div>
+      <div id="actionStatusMessage" style="min-height:18px; margin-top:10px; font-size:0.97em; text-align:center;"></div>
+    </div>
+
+    <!-- Widget pro výběr vlaku -->
+    <div id="trainWidgetOverlay" style="display:none;position:fixed;z-index:10000;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);align-items:center;justify-content:center;">
+      <div id="trainWidget" style="background:#fff;padding:32px 28px 24px 28px;border-radius:22px;box-shadow:0 8px 32px #0057b8cc;min-width:340px;max-width:98vw;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;align-items:center;border:4px solid #0057b8;">
+        <h2 style="margin-top:0;margin-bottom:18px;font-size:2em;color:#0057b8;">Výběr vlaku</h2>
+        <div id="trainListModern" style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap;width:100%;"></div>
+        <button id="closeTrainWidget" style="display:none;position:absolute;top:18px;right:28px;background:none;border:none;font-size:2.2em;cursor:pointer;color:#0057b8;">&times;</button>
+      </div>
+    </div>
+
+    <!-- Widget pro detail vlaku -->
+    <div id="trainDetailWidgetOverlay" style="display:none;position:fixed;z-index:10001;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);align-items:center;justify-content:center;">
+      <div id="trainDetailWidget" style="background:#fff;padding:32px 28px 24px 28px;border-radius:22px;box-shadow:0 8px 32px #0057b8cc;min-width:340px;max-width:98vw;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;align-items:center;border:4px solid #0057b8;position:relative;">
+        <div id="trainDetailContent"></div>
+        <button id="endRideBtn" style="margin-top:32px;padding:12px 32px;border-radius:10px;border:2px solid #e53935;background:#fff;color:#e53935;font-weight:600;font-size:1.1em;cursor:pointer;">TLAČÍTKO UKONČIT JÍZDU</button>
+        <button id="closeTrainDetailWidget" style="display:none;position:absolute;top:18px;right:28px;background:none;border:none;font-size:2.2em;cursor:pointer;color:#0057b8;">&times;</button>
+      </div>
+    </div>
+
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         // --- Discord login a user bar ---
@@ -165,12 +208,30 @@
           }
         });
 
-        async function sendDochazkaToDiscordEmbed(type) {
+        // --- Funkce pro malý widget "Služba" ---
+        const sluzbaBtn = document.getElementById('sluzbaBtn');
+        const sluzbaWidget = document.getElementById('sluzbaWidget');
+        const empInBtn = document.getElementById('empInBtn');
+        const empOutBtn = document.getElementById('empOutBtn');
+        const actionStatusMessage = document.getElementById('actionStatusMessage');
+
+        if (sluzbaBtn && sluzbaWidget) {
+          sluzbaBtn.onclick = () => {
+            sluzbaWidget.style.display = sluzbaWidget.style.display === 'none' ? 'block' : 'none';
+          };
+          document.addEventListener('mousedown', function(e) {
+            if (sluzbaWidget.style.display === 'block' && !sluzbaWidget.contains(e.target) && e.target !== sluzbaBtn) {
+              sluzbaWidget.style.display = 'none';
+            }
+          });
+        }
+
+        async function sendDochazkaToDiscord(type, statusEl) {
           const userStr = localStorage.getItem('discordUser');
           if (!userStr) {
-            if (dochazkaActionStatus) {
-              dochazkaActionStatus.textContent = 'Nejste přihlášen přes Discord.';
-              dochazkaActionStatus.style.color = '#e53935';
+            if (statusEl) {
+              statusEl.textContent = 'Nejste přihlášen přes Discord.';
+              statusEl.style.color = '#e53935';
             }
             return;
           }
@@ -195,19 +256,24 @@
               body: JSON.stringify({ embeds: [embed] })
             });
             if (resp.ok) {
-              dochazkaActionStatus.textContent = `Status úspěšně změněn: ${statusText}.`;
-              dochazkaActionStatus.style.color = '#2ecc40';
+              statusEl.textContent = `Status úspěšně změněn: ${statusText}.`;
+              statusEl.style.color = '#2ecc40';
             } else {
-              dochazkaActionStatus.textContent = 'Chyba při odesílání na Discord.';
-              dochazkaActionStatus.style.color = '#e53935';
+              statusEl.textContent = 'Chyba při odesílání na Discord.';
+              statusEl.style.color = '#e53935';
             }
           } catch (e) {
-            dochazkaActionStatus.textContent = 'Chyba při odesílání na Discord.';
-            dochazkaActionStatus.style.color = '#e53935';
+            statusEl.textContent = 'Chyba při odesílání na Discord.';
+            statusEl.style.color = '#e53935';
           }
         }
-        if (dochazkaInBtn) dochazkaInBtn.onclick = () => sendDochazkaToDiscordEmbed('in');
-        if (dochazkaOutBtn) dochazkaOutBtn.onclick = () => sendDochazkaToDiscordEmbed('out');
+
+        if (empInBtn) empInBtn.onclick = () => sendDochazkaToDiscord('in', actionStatusMessage);
+        if (empOutBtn) empOutBtn.onclick = () => sendDochazkaToDiscord('out', actionStatusMessage);
+
+        // --- Docházka embed (velký) ---
+        if (dochazkaInBtn) dochazkaInBtn.onclick = () => sendDochazkaToDiscord('in', dochazkaActionStatus);
+        if (dochazkaOutBtn) dochazkaOutBtn.onclick = () => sendDochazkaToDiscord('out', dochazkaActionStatus);
 
         // --- MODERNÍ WIDGET PRO VÝBĚR VLAKU ---
         const pracovatBtn = document.getElementById('pracovatBtn');
@@ -356,7 +422,7 @@
     </footer>
 
     <!-- Modal pro výběr serveru a vlaku (přesunuto na konec body) -->
-    <div id="workModalOverlay" style="display:none;position:fixed;z-index:10000;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);align-items:center;justify-content:center;">
+    <!-- <div id="workModalOverlay" style="display:none;position:fixed;z-index:10000;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);align-items:center;justify-content:center;">
       <div id="workModal" style="background:#fff;padding:32px 28px 24px 28px;border-radius:18px;box-shadow:0 8px 32px #0008;min-width:340px;max-width:98vw;max-height:90vh;overflow-y:auto;position:relative;display:flex;flex-direction:column;align-items:center;">
         <h2 style="margin-top:0;margin-bottom:18px;font-size:1.35em;">Výběr serveru</h2>
         <div id="serverList" style="display:flex;flex-wrap:wrap;gap:12px 18px;margin-bottom:24px;justify-content:center;align-items:center;min-height:60px;font-size:1.13em;color:#0057b8;font-weight:600;">
@@ -373,51 +439,37 @@
         </div>
         <button id="closeWorkModal" style="position:absolute;top:18px;right:18px;background:none;border:none;font-size:1.5em;cursor:pointer;">&times;</button>
       </div>
-    </div>
+    </div> -->
 
     <!-- Tlačítko "Služba" (můžeš ho umístit do rozcestníku nebo kam potřebuješ) -->
-    <button id="sluzbaBtn" class="rozcestnik-tile" style="margin-top:18px;">🕒 Služba</button>
+    <!-- <button id="sluzbaBtn" class="rozcestnik-tile" style="margin-top:18px;">🕒 Služba</button> -->
 
     <!-- Malý widget pro příchod/odchod, zobrazuje se až po kliknutí na tlačítko "Služba" -->
-    <div id="sluzbaWidget" style="display:none; position:fixed; top:90px; right:40px; background:#fff; border-radius:12px; box-shadow:0 4px 24px #0057b822; padding:22px 18px; z-index:2000; min-width:180px;">
+    <!-- <div id="sluzbaWidget" style="display:none; position:fixed; top:90px; right:40px; background:#fff; border-radius:12px; box-shadow:0 4px 24px #0057b822; padding:22px 18px; z-index:2000; min-width:180px;">
       <div style="font-weight:600; margin-bottom:10px; text-align:center;">Docházka</div>
       <div style="display:flex; gap:10px; justify-content:center;">
         <button id="empInBtn" style="padding:7px 16px; border-radius:7px; border:none; background:#2ecc40; color:#fff; font-weight:600; cursor:pointer;">Příchod</button>
         <button id="empOutBtn" style="padding:7px 16px; border-radius:7px; border:none; background:#e53935; color:#fff; font-weight:600; cursor:pointer;">Odchod</button>
       </div>
       <div id="actionStatusMessage" style="min-height:18px; margin-top:10px; font-size:0.97em; text-align:center;"></div>
-    </div>
-
-    <!-- ODSTRAŇTE tento řádek, pokud už existuje někde v HTML -->
-    <!-- <div id="dochazkaEmbed" ...> ... </div> -->
-
-    <!-- PŘIDEJTE TENTO BLOK těsně před </body> (nebo na konec hlavního panelu, ale mimo modal a widget služby) -->
-    <div id="dochazkaEmbed" style="display:none; position:fixed; top:110px; left:50%; transform:translateX(-50%); background:#fff; border-radius:14px; box-shadow:0 4px 24px #0057b822; padding:28px 18px 22px 18px; z-index:3000; min-width:220px; max-width:96vw;">
-      <div style="font-size:1.18em; font-weight:600; margin-bottom:14px; text-align:center;">Moje docházka</div>
-      <div id="dochazkaActionStatus" style="min-height:22px; margin-bottom:10px; color:#0057b8; text-align:center;"></div>
-      <div style="display:flex; gap:18px; justify-content:center;">
-        <button id="dochazkaInBtn" style="padding:10px 22px; font-size:1.08em; border-radius:8px; border:none; background:#2ecc40; color:#fff; font-weight:600; cursor:pointer;">Příchod</button>
-        <button id="dochazkaOutBtn" style="padding:10px 22px; font-size:1.08em; border-radius:8px; border:none; background:#e53935; color:#fff; font-weight:600; cursor:pointer;">Odchod</button>
-      </div>
-      <button id="closeDochazkaEmbed" style="position:absolute;top:10px;right:16px;background:none;border:none;font-size:1.3em;cursor:pointer;">&times;</button>
-    </div>
+    </div> -->
 
     <!-- Widget pro výběr vlaku -->
-    <div id="trainWidgetOverlay" style="display:none;position:fixed;z-index:10000;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);align-items:center;justify-content:center;">
+    <!-- <div id="trainWidgetOverlay" style="display:none;position:fixed;z-index:10000;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);align-items:center;justify-content:center;">
       <div id="trainWidget" style="background:#fff;padding:32px 28px 24px 28px;border-radius:22px;box-shadow:0 8px 32px #0057b8cc;min-width:340px;max-width:98vw;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;align-items:center;border:4px solid #0057b8;">
         <h2 style="margin-top:0;margin-bottom:18px;font-size:2em;color:#0057b8;">Výběr vlaku</h2>
         <div id="trainListModern" style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap;width:100%;"></div>
         <button id="closeTrainWidget" style="display:none;position:absolute;top:18px;right:28px;background:none;border:none;font-size:2.2em;cursor:pointer;color:#0057b8;">&times;</button>
       </div>
-    </div>
+    </div> -->
 
     <!-- Widget pro detail vlaku -->
-    <div id="trainDetailWidgetOverlay" style="display:none;position:fixed;z-index:10001;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);align-items:center;justify-content:center;">
+    <!-- <div id="trainDetailWidgetOverlay" style="display:none;position:fixed;z-index:10001;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);align-items:center;justify-content:center;">
       <div id="trainDetailWidget" style="background:#fff;padding:32px 28px 24px 28px;border-radius:22px;box-shadow:0 8px 32px #0057b8cc;min-width:340px;max-width:98vw;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;align-items:center;border:4px solid #0057b8;position:relative;">
         <div id="trainDetailContent"></div>
         <button id="endRideBtn" style="margin-top:32px;padding:12px 32px;border-radius:10px;border:2px solid #e53935;background:#fff;color:#e53935;font-weight:600;font-size:1.1em;cursor:pointer;">TLAČÍTKO UKONČIT JÍZDU</button>
         <button id="closeTrainDetailWidget" style="display:none;position:absolute;top:18px;right:28px;background:none;border:none;font-size:2.2em;cursor:pointer;color:#0057b8;">&times;</button>
       </div>
-    </div>
+    </div> -->
 </body>
 </html>
