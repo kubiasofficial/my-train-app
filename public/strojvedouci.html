@@ -628,6 +628,153 @@
         if (empInBtn) empInBtn.onclick = () => sendDochazkaToDiscord('in');
         if (empOutBtn) empOutBtn.onclick = () => sendDochazkaToDiscord('out');
       });
+      document.addEventListener('DOMContentLoaded', function() {
+        const pracovatBtn = document.getElementById('pracovatBtn');
+        const trainWidgetOverlay = document.getElementById('trainWidgetOverlay');
+        const trainWidget = document.getElementById('trainWidget');
+        const trainListModern = document.getElementById('trainListModern');
+        const closeTrainWidget = document.getElementById('closeTrainWidget');
+        const trainDetailWidgetOverlay = document.getElementById('trainDetailWidgetOverlay');
+        const trainDetailWidget = document.getElementById('trainDetailWidget');
+        const trainDetailContent = document.getElementById('trainDetailContent');
+        const endRideBtn = document.getElementById('endRideBtn');
+        const closeTrainDetailWidget = document.getElementById('closeTrainDetailWidget');
+        let selectedTrain = null;
+        let updateInterval = null;
+
+        if (pracovatBtn) {
+          pracovatBtn.onclick = async function() {
+            trainWidgetOverlay.style.display = 'flex';
+            trainListModern.innerHTML = '<div style="color:#0057b8;">Načítám vlaky...</div>';
+            closeTrainWidget.style.display = 'block';
+            // Načti vlaky z API
+            try {
+              const res = await fetch('https://panel.simrail.eu:8084/trains-open?serverCode=int1');
+              const data = await res.json();
+              // Seřaď podle nejbližšího odjezdu a vezmi první 4
+              const now = Date.now();
+              const sorted = data
+                .filter(t => t.departureTimestamp * 1000 > now)
+                .sort((a, b) => a.departureTimestamp - b.departureTimestamp)
+                .slice(0, 4);
+              trainListModern.innerHTML = '';
+              sorted.forEach(train => {
+                const div = document.createElement('div');
+                div.style = 'background:#f7f8fa;border-radius:18px;padding:22px 18px;margin-bottom:10px;box-shadow:0 2px 8px #0057b822;display:flex;flex-direction:column;align-items:center;min-width:200px;max-width:220px;border:2px solid #0057b8;';
+                div.innerHTML = `
+                  <div style="font-size:2.5em;color:#ff5733;margin-bottom:8px;">🚆</div>
+                  <div style="font-size:1.5em;font-weight:600;color:#ff5733;margin-bottom:6px;">${train.trainNo}</div>
+                  <div style="font-size:1.1em;color:#ff5733;margin-bottom:10px;">${train.fromName} → ${train.toName}</div>
+                  <button class="takeTrainModernBtn" style="margin-top:10px;padding:10px 22px;border-radius:8px;border:2px solid #ff5733;background:#fff;color:#ff5733;font-weight:600;font-size:1.08em;cursor:pointer;">TLAČÍTKO PŘEVZÍT</button>
+                `;
+                div.querySelector('.takeTrainModernBtn').onclick = () => selectTrainModern(train);
+                trainListModern.appendChild(div);
+              });
+            } catch (e) {
+              trainListModern.innerHTML = '<div style="color:#e53935;">Chyba při načítání vlaků.</div>';
+            }
+          };
+        }
+
+        if (closeTrainWidget) {
+          closeTrainWidget.onclick = () => {
+            trainWidgetOverlay.style.display = 'none';
+          };
+        }
+
+        async function selectTrainModern(train) {
+          selectedTrain = train;
+          trainWidgetOverlay.style.display = 'none';
+          trainDetailWidgetOverlay.style.display = 'flex';
+          closeTrainDetailWidget.style.display = 'none';
+          renderTrainDetail(train);
+          // Odeslat na Discord převzetí
+          sendTrainDiscord('take', train);
+          // Aktualizace časů každých 10s
+          if (updateInterval) clearInterval(updateInterval);
+          updateInterval = setInterval(() => renderTrainDetail(selectedTrain), 10000);
+        }
+
+        function renderTrainDetail(train) {
+          const now = Date.now();
+          const arrival = new Date(train.arrivalTimestamp * 1000);
+          const departure = new Date(train.departureTimestamp * 1000);
+          trainDetailContent.innerHTML = `
+            <div style="display:flex;align-items:center;gap:18px;margin-bottom:18px;">
+              <div style="font-size:3em;color:#ff5733;">🚆</div>
+              <div>
+                <div style="font-size:2.2em;font-weight:600;color:#ff5733;">Váš Vlak</div>
+                <div style="font-size:1.3em;color:#ff5733;">${train.trainNo}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:32px;margin-bottom:18px;">
+              <div style="font-size:1.5em;color:#ff5733;">${train.fromName}</div>
+              <div style="font-size:2em;">→</div>
+              <div style="font-size:1.5em;color:#ff5733;">${train.toName}</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;width:100%;margin-bottom:18px;">
+              <div style="color:#ff5733;">ČAS PŘÍJEZDU<br><b>${arrival.toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit'})}</b></div>
+              <div style="color:#ff5733;">PŘÍŠTÍ ZASTÁVKA<br><b>${train.nextStationName || '-'}</b></div>
+              <div style="color:#ff5733;">ČAS ODJEZDU<br><b>${departure.toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit'})}</b></div>
+            </div>
+            <button id="currentTimeBtn" style="position:absolute;top:32px;right:32px;padding:10px 28px;border-radius:8px;border:2px solid #ff5733;background:#fff;color:#ff5733;font-weight:600;font-size:1.08em;cursor:pointer;">AKTUÁLNÍ ČAS</button>
+          `;
+          // Křížek se zobrazí až po ukončení jízdy
+          closeTrainDetailWidget.style.display = 'none';
+          document.getElementById('currentTimeBtn').onclick = () => {
+            alert('Aktuální čas serveru: ' + new Date().toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+          };
+        }
+
+        if (endRideBtn) {
+          endRideBtn.onclick = () => {
+            // Odeslat na Discord ukončení
+            sendTrainDiscord('end', selectedTrain);
+            trainDetailWidgetOverlay.style.display = 'none';
+            if (updateInterval) clearInterval(updateInterval);
+            closeTrainDetailWidget.style.display = 'block';
+          };
+        }
+
+        // Křížek se objeví až po ukončení jízdy
+        if (closeTrainDetailWidget) {
+          closeTrainDetailWidget.onclick = () => {
+            trainDetailWidgetOverlay.style.display = 'none';
+            if (updateInterval) clearInterval(updateInterval);
+          };
+        }
+
+        async function sendTrainDiscord(action, train) {
+          const userStr = localStorage.getItem('discordUser');
+          if (!userStr) return;
+          let user;
+          try { user = JSON.parse(userStr); } catch (e) { return; }
+          const webhookUrl = 'https://discord.com/api/webhooks/1390989690072727605/IwgaE5140eg1RVJuIgC8hmjGpi-IhC5pYCAzRJqstgtFVkuzQ8YadyR4TWhXC9UysbMv';
+          let embed;
+          if (action === 'take') {
+            embed = {
+              color: 0x0057b8,
+              title: '🚆 Převzetí vlaku',
+              description: `**${user.username}** si právě převzal vlak **${train.trainNo}** z **${train.fromName}** do **${train.toName}**.`,
+              timestamp: new Date().toISOString(),
+              footer: { text: 'Multi-Cargo Doprava' }
+            };
+          } else {
+            embed = {
+              color: 0xe53935,
+              title: '🛑 Ukončení jízdy',
+              description: `**${user.username}** právě ukončil jízdu vlaku **${train.trainNo}** z **${train.fromName}** do **${train.toName}**.`,
+              timestamp: new Date().toISOString(),
+              footer: { text: 'Multi-Cargo Doprava' }
+            };
+          }
+          await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ embeds: [embed] })
+          });
+        }
+      });
     </script>
     <footer class="footer">
         &copy; 2025 Multi-Cargo Doprava (MCD) &mdash; stránka strojvedoucích
@@ -678,6 +825,24 @@
         <button id="dochazkaOutBtn" style="padding:10px 22px; font-size:1.08em; border-radius:8px; border:none; background:#e53935; color:#fff; font-weight:600; cursor:pointer;">Odchod</button>
       </div>
       <button id="closeDochazkaEmbed" style="position:absolute;top:10px;right:16px;background:none;border:none;font-size:1.3em;cursor:pointer;">&times;</button>
+    </div>
+
+    <!-- Widget pro výběr vlaku -->
+    <div id="trainWidgetOverlay" style="display:none;position:fixed;z-index:10000;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);align-items:center;justify-content:center;">
+      <div id="trainWidget" style="background:#fff;padding:32px 28px 24px 28px;border-radius:22px;box-shadow:0 8px 32px #0057b8cc;min-width:340px;max-width:98vw;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;align-items:center;border:4px solid #0057b8;">
+        <h2 style="margin-top:0;margin-bottom:18px;font-size:2em;color:#0057b8;">Výběr vlaku</h2>
+        <div id="trainListModern" style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap;width:100%;"></div>
+        <button id="closeTrainWidget" style="display:none;position:absolute;top:18px;right:28px;background:none;border:none;font-size:2.2em;cursor:pointer;color:#0057b8;">&times;</button>
+      </div>
+    </div>
+
+    <!-- Widget pro detail vlaku -->
+    <div id="trainDetailWidgetOverlay" style="display:none;position:fixed;z-index:10001;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);align-items:center;justify-content:center;">
+      <div id="trainDetailWidget" style="background:#fff;padding:32px 28px 24px 28px;border-radius:22px;box-shadow:0 8px 32px #0057b8cc;min-width:340px;max-width:98vw;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;align-items:center;border:4px solid #0057b8;position:relative;">
+        <div id="trainDetailContent"></div>
+        <button id="endRideBtn" style="margin-top:32px;padding:12px 32px;border-radius:10px;border:2px solid #e53935;background:#fff;color:#e53935;font-weight:600;font-size:1.1em;cursor:pointer;">TLAČÍTKO UKONČIT JÍZDU</button>
+        <button id="closeTrainDetailWidget" style="display:none;position:absolute;top:18px;right:28px;background:none;border:none;font-size:2.2em;cursor:pointer;color:#0057b8;">&times;</button>
+      </div>
     </div>
 </body>
 </html>
