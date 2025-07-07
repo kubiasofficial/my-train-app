@@ -423,32 +423,38 @@
           const currentIndex = train.TrainData?.VDDelayedTimetableIndex ?? 0;
           const isBetween = !!train.TrainData?.VDIsBetweenStations;
 
-          // Vytvoření HTML pro jízdní řád
+          // Debug: vypiš do konzole, co je v jízdním řádu
+          console.log('Jízdní řád:', timetable);
+
           let rows = '';
-          for (let i = 0; i < timetable.length; i++) {
-            const stop = timetable[i];
-            let dot = '';
-            // Zelená tečka na aktuální stanici
-            if (!isBetween && i === currentIndex) {
-              dot = `<span class="blinking-dot"></span>`;
-            }
-            rows += `
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-                ${dot}
-                <span style="font-size:1.12em;">${stop.StationName || stop.Name || '-'}</span>
-                <span style="color:#888;font-size:0.98em;margin-left:auto;">
-                  ${stop.DepartureTime ? 'Odj. ' + stop.DepartureTime : (stop.ArrivalTime ? 'Přij. ' + stop.ArrivalTime : '')}
-                </span>
-              </div>
-            `;
-            // Pokud je mezi stanicemi, zobraz blikající tečku mezi stanicemi
-            if (isBetween && i === currentIndex) {
+          if (timetable.length === 0) {
+            rows = `<div style="color:#e53935;font-size:1.1em;text-align:center;margin:32px 0;">Jízdní řád není k dispozici.</div>`;
+          } else {
+            for (let i = 0; i < timetable.length; i++) {
+              const stop = timetable[i];
+              let dot = '';
+              // Zelená tečka na aktuální stanici
+              if (!isBetween && i === currentIndex) {
+                dot = `<span class="blinking-dot"></span>`;
+              }
               rows += `
-                <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;margin-left:18px;">
-                  <span class="blinking-dot"></span>
-                  <span style="font-size:1em;color:#888;">Mezi stanicemi</span>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                  ${dot}
+                  <span style="font-size:1.12em;">${stop.StationName || stop.Name || stop.stationName || stop.name || '-'}</span>
+                  <span style="color:#888;font-size:0.98em;margin-left:auto;">
+                    ${stop.DepartureTime || stop.departureTime ? 'Odj. ' + (stop.DepartureTime || stop.departureTime) : (stop.ArrivalTime || stop.arrivalTime ? 'Přij. ' + (stop.ArrivalTime || stop.arrivalTime) : '')}
+                  </span>
                 </div>
               `;
+              // Pokud je mezi stanicemi, zobraz blikající tečku mezi stanicemi
+              if (isBetween && i === currentIndex) {
+                rows += `
+                  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;margin-left:18px;">
+                    <span class="blinking-dot"></span>
+                    <span style="font-size:1em;color:#888;">Mezi stanicemi</span>
+                  </div>
+                `;
+              }
             }
           }
 
