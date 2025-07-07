@@ -671,6 +671,8 @@
                 rideStartTime = null;
                 rideUserId = null;
               }
+              // Smaž info o aktuálním vlaku
+              localStorage.removeItem('mcdCurrentTrain');
             };
           }
         })();
