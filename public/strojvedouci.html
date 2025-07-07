@@ -534,48 +534,44 @@
           }
 
           function openZamestnanciWidget() {
-            // Získej uživatele z localStorage
+            // Získání aktuálně přihlášeného uživatele
             let user = null;
             try { user = JSON.parse(localStorage.getItem('discordUser')); } catch(e) {}
-            // Statické údaje pro Kubias a Vašíček
-            const users = [
-              {
-                id: "417061947759001600",
-                name: "kubiasofficial",
-                avatar: "https://cdn.discordapp.com/avatars/417061947759001600/512.png"
-              },
-              {
-                id: "1350594297250185331",
-                name: "Vašíček_Andrejka",
-                avatar: "https://cdn.discordapp.com/avatars/1350594297250185331/512.png"
-              }
-            ];
 
-            // Pokud je přihlášený uživatel jiný, přidej ho také (ale nenech duplicity)
-            if (user && !users.find(u => u.id === user.id)) {
-              users.unshift({
-                id: user.id,
+            // Získání informací o převzatém vlaku z localStorage
+            let trainInfo = JSON.parse(localStorage.getItem('mcdCurrentTrain') || 'null');
+
+            // Připrav pole uživatelů (zatím jen aktuální uživatel)
+            let users = [];
+            if (user) {
+              users.push({
                 name: user.username,
-                avatar: user.avatar
-                  ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
-                  : 'https://cdn.discordapp.com/embed/avatars/0.png'
+                route: trainInfo ? `${trainInfo.StartStation} → ${trainInfo.EndStation}` : '-',
+                trainNo: trainInfo ? trainInfo.TrainNoLocal : '-'
               });
             }
 
-            let html = `<h2 style="margin-top:0;margin-bottom:18px;font-size:1.5em;color:#bfa13a;text-align:center;">Statistiky zaměstnanců</h2>`;
-            users.forEach(u => {
-              const stats = getStats(u.id);
-              html += `
-                <div style="display:flex;align-items:center;gap:18px;margin-bottom:18px;">
-                  <img src="${u.avatar}" alt="avatar" style="width:62px;height:62px;border-radius:50%;box-shadow:0 2px 8px #bfa13a44;border:3px solid #bfa13a;">
-                  <div>
-                    <div style="font-size:1.18em;font-weight:600;color:#bfa13a;">${u.name}</div>
-                    <div style="font-size:1.05em;">Počet odjetých tras: <b>${stats.rides}</b></div>
-                    <div style="font-size:1.05em;">Čas strávený na železnici: <b>${formatTime(stats.time)}</b></div>
-                  </div>
-                </div>
-              `;
-            });
+            let html = `<h2 style="margin-top:0;margin-bottom:18px;font-size:1.5em;color:#bfa13a;text-align:center;">Aktuálně přihlášení zaměstnanci</h2>`;
+            html += `
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="background:#f7f8fa;">
+                    <th style="padding:8px 6px;border-bottom:2px solid #bfa13a;text-align:left;">Zaměstnanec</th>
+                    <th style="padding:8px 6px;border-bottom:2px solid #bfa13a;text-align:left;">Trasa</th>
+                    <th style="padding:8px 6px;border-bottom:2px solid #bfa13a;text-align:left;">Číslo vlaku</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${users.map(u => `
+                    <tr>
+                      <td style="padding:7px 6px;border-bottom:1px solid #eee;">${u.name}</td>
+                      <td style="padding:7px 6px;border-bottom:1px solid #eee;">${u.route}</td>
+                      <td style="padding:7px 6px;border-bottom:1px solid #eee;">${u.trainNo}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            `;
 
             // Overlay se zlatým rámečkem a zaoblenými hranami
             if (zamestnanciOverlay) zamestnanciOverlay.remove();
@@ -614,6 +610,8 @@
               rideStartTime = Date.now();
               rideUserId = user.id;
             }
+            // Ulož aktuální vlak do localStorage
+            localStorage.setItem('mcdCurrentTrain', JSON.stringify(train));
           };
 
           // Ulož si původní funkci endRideBtn.onclick, pokud už existuje
