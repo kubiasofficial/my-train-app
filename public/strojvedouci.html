@@ -397,7 +397,7 @@
             embed = {
               color: 0x0057b8,
               title: '🚆 Převzetí vlaku',
-              description: `**${user.username}** si právě převzal vlak **${train.trainNo}** z **${train.fromName}** do **${train.toName}**.`,
+              description: `**${user.username}** si právě převzal vlak **${train.TrainNoLocal}** z **${train.StartStation}** do **${train.EndStation}**.`,
               timestamp: new Date().toISOString(),
               footer: { text: 'Multi-Cargo Doprava' }
             };
@@ -405,7 +405,7 @@
             embed = {
               color: 0xe53935,
               title: '🛑 Ukončení jízdy',
-              description: `**${user.username}** právě ukončil jízdu vlaku **${train.trainNo}** z **${train.fromName}** do **${train.toName}**.`,
+              description: `**${user.username}** právě ukončil jízdu vlaku **${train.TrainNoLocal}** z **${train.StartStation}** do **${train.EndStation}**.`,
               timestamp: new Date().toISOString(),
               footer: { text: 'Multi-Cargo Doprava' }
             };
