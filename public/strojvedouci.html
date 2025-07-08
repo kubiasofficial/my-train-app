@@ -45,50 +45,15 @@
         <h2>Strojvedoucí</h2>
         <p>Vyberte si akci:</p>
         <ul class="rozcestnik-list">
-// ...ostatní kód zůstává...
-// Funkce pro službu
-const sluzbaBtn = document.getElementById('sluzbaBtn');
-let veSluzbe = false;
-if (sluzbaBtn) {
-  sluzbaBtn.addEventListener('click', async function() {
-    veSluzbe = !veSluzbe;
-    let user = null;
-    try {
-      user = JSON.parse(localStorage.getItem('discordUser'));
-    } catch (e) {}
-    const username = user ? `${user.username}#${user.discriminator}` : 'Neznámý uživatel';
-    const action = veSluzbe ? 'PŘÍCHOD DO SLUŽBY' : 'ODCHOD ZE SLUŽBY';
-    const color = veSluzbe ? '#e0ffe0' : '';
-    sluzbaBtn.textContent = veSluzbe ? '🕒 Odchod ze služby' : '🕒 Příchod do služby';
-    sluzbaBtn.style.background = color;
-
-    // Odeslání na Discord webhook
-    const webhookUrl = 'https://discord.com/api/webhooks/1390989690072727605/IwgaE5140eg1RVJuIgC8hmjGpi-IhC5pYCAzRJqstgtFVkuzQ8YadyR4TWhXC9UysbMv';
-    const payload = {
-      embeds: [{
-        title: `🚦 ${action}`,
-        description: `Uživatel **${username}** právě provedl akci: **${action}**.`,
-        color: veSluzbe ? 65280 : 16711680, // zelená/červená
-        timestamp: new Date().toISOString()
-      }]
-    };
-    try {
-      await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    } catch (e) {
-      // případně zobrazit chybu
-      console.error('Nepodařilo se odeslat na Discord webhook:', e);
-    }
-  });
-}
-// ...ostatní kód zůstává...          <li>
+          <li>
             <button class="rozcestnik-tile" id="sluzbaBtn" style="margin-bottom:12px;">🕒 Příchod do služby</button>
           </li>
-          <li><a href="#zamestnanci" class="rozcestnik-tile" onclick="document.getElementById('zamestnanciSection').scrollIntoView({behavior:'smooth'});return false;">👤 Zaměstnanci</a></li>
-          <li><button class="rozcestnik-tile" id="pracovatBtn" style="margin: 24px auto 0 auto; display: block;">💼 Pracovat</button></li>
+          <li>
+            <a href="#zamestnanci" class="rozcestnik-tile" onclick="document.getElementById('zamestnanciSection').scrollIntoView({behavior:'smooth'});return false;">👤 Zaměstnanci</a>
+          </li>
+          <li>
+            <button class="rozcestnik-tile" id="pracovatBtn" style="margin: 24px auto 0 auto; display: block;">💼 Pracovat</button>
+          </li>
         </ul>
       </div>
     </div>
@@ -241,7 +206,7 @@ if (sluzbaBtn) {
               const sorted = data
                 .filter(t => (t.TrainData?.VDDelayedTimetableIndex !== undefined))
                 .sort((a, b) => (a.TrainData.VDDelayedTimetableIndex ?? 9999) - (b.TrainData.VDDelayedTimetableIndex ?? 9999))
-                .slice(0, 4);
+                .slice(0, 30); // Zobrazí až 30 vlaků místo 4!
               trainListModern.innerHTML = '';
               sorted.forEach(train => {
                 const div = document.createElement('div');
@@ -314,18 +279,40 @@ if (sluzbaBtn) {
         }
       }
 
-      // Funkce pro službu
+      // Funkce pro službu s webhookem
       const sluzbaBtn = document.getElementById('sluzbaBtn');
       let veSluzbe = false;
       if (sluzbaBtn) {
-        sluzbaBtn.addEventListener('click', function() {
+        sluzbaBtn.addEventListener('click', async function() {
           veSluzbe = !veSluzbe;
-          if (veSluzbe) {
-            sluzbaBtn.textContent = '🕒 Odchod ze služby';
-            sluzbaBtn.style.background = '#e0ffe0';
-          } else {
-            sluzbaBtn.textContent = '🕒 Příchod do služby';
-            sluzbaBtn.style.background = '';
+          let user = null;
+          try {
+            user = JSON.parse(localStorage.getItem('discordUser'));
+          } catch (e) {}
+          const username = user ? `${user.username}#${user.discriminator}` : 'Neznámý uživatel';
+          const action = veSluzbe ? 'PŘÍCHOD DO SLUŽBY' : 'ODCHOD ZE SLUŽBY';
+          const color = veSluzbe ? '#e0ffe0' : '';
+          sluzbaBtn.textContent = veSluzbe ? '🕒 Odchod ze služby' : '🕒 Příchod do služby';
+          sluzbaBtn.style.background = color;
+
+          // Odeslání na Discord webhook
+          const webhookUrl = 'https://discord.com/api/webhooks/1390989690072727605/IwgaE5140eg1RVJuIgC8hmjGpi-IhC5pYCAzRJqstgtFVkuzQ8YadyR4TWhXC9UysbMv';
+          const payload = {
+            embeds: [{
+              title: `🚦 ${action}`,
+              description: `Uživatel **${username}** právě provedl akci: **${action}**.`,
+              color: veSluzbe ? 65280 : 16711680, // zelená/červená
+              timestamp: new Date().toISOString()
+            }]
+          };
+          try {
+            await fetch(webhookUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+          } catch (e) {
+            console.error('Nepodařilo se odeslat na Discord webhook:', e);
           }
         });
       }
