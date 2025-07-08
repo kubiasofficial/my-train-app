@@ -280,7 +280,6 @@
         if (pracovatBtn) {
           pracovatBtn.onclick = function() {
             showServerSelectModal(async function(server) {
-              window.selectedServer = server;
               trainWidgetOverlay.style.display = 'flex';
               trainListModern.innerHTML = '<div style="color:#0057b8;">Načítám vlaky...</div>';
               closeTrainWidget.style.display = 'block';
