@@ -276,17 +276,45 @@
         let selectedTrain = null;
         let updateInterval = null;
 
-        if (pracovatBtn) {
-          pracovatBtn.onclick = function() {
+        // --- MODAL pro výběr serveru ---
+        function showServerSelectModal(onSelect) {
+          // Pokud už modal existuje, smaž ho
+          let old = document.getElementById('serverSelectModal');
+          if (old) old.remove();
+
+          const modal = document.createElement('div');
+          modal.id = 'serverSelectModal';
+          modal.style = 'position:fixed;z-index:10020;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);display:flex;align-items:center;justify-content:center;';
+          modal.innerHTML = `
+            <div style="background:#fff;padding:32px 28px 24px 28px;border-radius:22px;box-shadow:0 8px 32px #bfa13a88;min-width:320px;max-width:98vw;max-height:90vh;overflow-y:auto;position:relative;">
+              <h2 style="margin-top:0;margin-bottom:18px;font-size:1.35em;color:#0057b8;text-align:center;">Vyber server</h2>
+              <div style="display:flex;gap:18px;justify-content:center;">
+                <button class="serverBtn" data-server="INT1" style="padding:12px 28px;font-size:1.13em;border-radius:10px;border:2px solid #0057b8;background:#f7f8fa;color:#0057b8;font-weight:600;cursor:pointer;">INT1</button>
+                <button class="serverBtn" data-server="CZ1" style="padding:12px 28px;font-size:1.13em;border-radius:10px;border:2px solid #bfa13a;background:#f7f8fa;color:#bfa13a;font-weight:600;cursor:pointer;">CZ1</button>
+              </div>
+              <button id="closeServerSelectModal" style="position:absolute;top:14px;right:22px;background:none;border:none;font-size:2em;cursor:pointer;color:#0057b8;">&times;</button>
+            </div>
+          `;
+          document.body.appendChild(modal);
+
+          // Handler na výběr serveru
+          modal.querySelectorAll('.serverBtn').forEach(btn => {
+            btn.onclick = () => {
+              const server = btn.getAttribute('data-server');
+              modal.remove();
+              onSelect(server);
+            };
+          });
+          document.getElementById('closeServerSelectModal').onclick = () => modal.remove();
+        }
+
+        if (pracovatBtn && trainWidgetOverlay && trainListModern && closeTrainWidget) {
+          pracovatBtn.addEventListener('click', function() {
             showServerSelectModal(async function(server) {
               trainWidgetOverlay.style.display = 'flex';
               trainListModern.innerHTML = '<div style="color:#0057b8;">Načítám vlaky...</div>';
-              closeTrainWidget.style.display = 'block';
-
-              // Dynamicky zvol správné API podle serveru
-              let apiServerCode = server.toLowerCase(); // INT1 → int1, CZ1 → cz1
+              let apiServerCode = server.toLowerCase();
               let trainsApi = `https://panel.simrail.eu:8084/trains-open?serverCode=${apiServerCode}`;
-
               try {
                 const res = await fetch(trainsApi);
                 let data = await res.json();
@@ -309,6 +337,7 @@
                     <div style="font-size:1.1em;color:#ff5733;margin-bottom:10px;">${train.StartStation} → ${train.EndStation}</div>
                     <button class="takeTrainModernBtn" style="margin-top:10px;padding:10px 22px;border-radius:8px;border:2px solid #ff5733;background:#fff;color:#ff5733;font-weight:600;font-size:1.08em;cursor:pointer;">TLAČÍTKO PŘEVZÍT</button>
                   `;
+                  // Pokud máš funkci selectTrainModern, přidej ji zde:
                   div.querySelector('.takeTrainModernBtn').onclick = () => selectTrainModern(train);
                   trainListModern.appendChild(div);
                 });
@@ -317,17 +346,69 @@
                 }
               } catch (e) {
                 trainListModern.innerHTML = '<div style="color:#e53935;">Chyba při načítání vlaků.<br>' + e + '</div>';
-                console.error('Chyba při načítání vlaků:', e);
               }
             });
-          };
+          });
+          closeTrainWidget.addEventListener('click', function() {
+            trainWidgetOverlay.style.display = 'none';
+          });
         }
 
-        if (closeTrainWidget) {
-          closeTrainWidget.onclick = () => {
-            trainWidgetOverlay.style.display = 'none';
-          };
-        }
+        // (Removed duplicate block-scoped variable declarations for pracovatBtn and related variables above)
+        
+                if (pracovatBtn) {
+                  pracovatBtn.onclick = function() {
+                    showServerSelectModal(async function(server) {
+                      trainWidgetOverlay.style.display = 'flex';
+                      trainListModern.innerHTML = '<div style="color:#0057b8;">Načítám vlaky...</div>';
+                      closeTrainWidget.style.display = 'block';
+        
+                      // Dynamicky zvol správné API podle serveru
+                      let apiServerCode = server.toLowerCase(); // INT1 → int1, CZ1 → cz1
+                      let trainsApi = `https://panel.simrail.eu:8084/trains-open?serverCode=${apiServerCode}`;
+        
+                      try {
+                        const res = await fetch(trainsApi);
+                        let data = await res.json();
+                        if (!Array.isArray(data)) {
+                          if (Array.isArray(data.trains)) data = data.trains;
+                          else if (Array.isArray(data.data)) data = data.data;
+                          else throw new Error('Neplatný formát dat z API');
+                        }
+                        const sorted = data
+                          .filter(t => (t.TrainData?.VDDelayedTimetableIndex !== undefined))
+                          .sort((a, b) => (a.TrainData.VDDelayedTimetableIndex ?? 9999) - (b.TrainData.VDDelayedTimetableIndex ?? 9999))
+                          .slice(0, 4);
+                        trainListModern.innerHTML = '';
+                        sorted.forEach(train => {
+                          const div = document.createElement('div');
+                          div.style = 'background:#f7f8fa;border-radius:18px;padding:22px 18px;margin-bottom:10px;box-shadow:0 2px 8px #0057b822;display:flex;flex-direction:column;align-items:center;min-width:200px;max-width:220px;border:2px solid #0057b8;';
+                          div.innerHTML = `
+                            <div style="font-size:2.5em;color:#ff5733;margin-bottom:8px;">🚆</div>
+                            <div style="font-size:1.5em;font-weight:600;color:#ff5733;margin-bottom:6px;">${train.TrainNoLocal}</div>
+                            <div style="font-size:1.1em;color:#ff5733;margin-bottom:10px;">${train.StartStation} → ${train.EndStation}</div>
+                            <button class="takeTrainModernBtn" style="margin-top:10px;padding:10px 22px;border-radius:8px;border:2px solid #ff5733;background:#fff;color:#ff5733;font-weight:600;font-size:1.08em;cursor:pointer;">TLAČÍTKO PŘEVZÍT</button>
+                          `;
+                          // Pokud máš funkci selectTrainModern, přidej ji zde:
+                          div.querySelector('.takeTrainModernBtn').onclick = () => selectTrainModern(train);
+                          trainListModern.appendChild(div);
+                        });
+                        if (sorted.length === 0) {
+                          trainListModern.innerHTML = '<div style="color:#e53935;">Žádné vlaky k dispozici.</div>';
+                        }
+                      } catch (e) {
+                        trainListModern.innerHTML = '<div style="color:#e53935;">Chyba při načítání vlaků.<br>' + e + '</div>';
+                        console.error('Chyba při načítání vlaků:', e);
+                      }
+                    });
+                  };
+                }
+        
+                if (closeTrainWidget) {
+                  closeTrainWidget.onclick = () => {
+                    trainWidgetOverlay.style.display = 'none';
+                  };
+                }
 
         async function selectTrainModern(train) {
           selectedTrain = train;
@@ -772,31 +853,13 @@
     <!-- <button id="sluzbaBtn" class="rozcestnik-tile" style="margin-top:18px;">🕒 Služba</button> -->
 
     <!-- Malý widget pro příchod/odchod, zobrazuje se až po kliknutí na tlačítko "Služba" -->
-    <!-- <div id="sluzbaWidget" style="display:none; position:fixed; top:90px; right:40px; background:#fff; border-radius:12px; box-shadow:0 4px 24px #0057b822; padding:22px 18px; z-index:2000; min-width:180px;">
-      <div style="font-weight:600; margin-bottom:10px; text-align:center;">Docházka</div>
-      <div style="display:flex; gap:10px; justify-content:center;">
-        <button id="empInBtn" style="padding:7px 16px; border-radius:7px; border:none; background:#2ecc40; color:#fff; font-weight:600; cursor:pointer;">Příchod</button>
-        <button id="empOutBtn" style="padding:7px 16px; border-radius:7px; border:none; background:#e53935; color:#fff; font-weight:600; cursor:pointer;">Odchod</button>
+    <!-- <div id="sluzbaWidget" style="display:none; position:fixed; top:90px; right:40px; background:#fff; border-radius:12px; box-shadow:0 4px 24px #0057b822; padding:12px 16px; z-index:2101; min-width:160px;">
+      <div style="font-weight:600; margin-bottom:8px; text-align:center;">Rychlá docházka</div>
+      <div style="display:flex; gap:8px; justify-content:center;">
+        <button id="quickDochazkaInBtn" style="padding:8px 14px; border-radius:6px; border:none; background:#2ecc40; color:#fff; font-weight:600; cursor:pointer;">Příchod</button>
+        <button id="quickDochazkaOutBtn" style="padding:8px 14px; border-radius:6px; border:none; background:#e53935; color:#fff; font-weight:600; cursor:pointer;">Odchod</button>
       </div>
-      <div id="actionStatusMessage" style="min-height:18px; margin-top:10px; font-size:0.97em; text-align:center;"></div>
-    </div> -->
-
-    <!-- Widget pro výběr vlaku -->
-    <!-- <div id="trainWidgetOverlay" style="display:none;position:fixed;z-index:10000;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);align-items:center;justify-content:center;">
-      <div id="trainWidget" style="background:#fff;padding:32px 28px 24px 28px;border-radius:22px;box-shadow:0 8px 32px #0057b8cc;min-width:340px;max-width:98vw;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;align-items:center;border:4px solid #0057b8;">
-        <h2 style="margin-top:0;margin-bottom:18px;font-size:2em;color:#0057b8;">Výběr vlaku</h2>
-        <div id="trainListModern" style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap;width:100%;"></div>
-        <button id="closeTrainWidget" style="display:none;position:absolute;top:18px;right:28px;background:none;border:none;font-size:2.2em;cursor:pointer;color:#0057b8;">&times;</button>
-      </div>
-    </div> -->
-
-    <!-- Widget pro detail vlaku -->
-    <!-- <div id="trainDetailWidgetOverlay" style="display:none;position:fixed;z-index:10001;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);align-items:center;justify-content:center;">
-      <div id="trainDetailWidget" style="background:#fff;padding:32px 28px 24px 28px;border-radius:22px;box-shadow:0 8px 32px #0057b8cc;min-width:340px;max-width:98vw;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;align-items:center;border:4px solid #0057b8;position:relative;">
-        <div id="trainDetailContent"></div>
-        <button id="endRideBtn" style="margin-top:32px;padding:12px 32px;border-radius:10px;border:2px solid #e53935;background:#fff;color:#e53935;font-weight:600;font-size:1.1em;cursor:pointer;">TLAČÍTKO UKONČIT JÍZDU</button>
-        <button id="closeTrainDetailWidget" style="display:none;position:absolute;top:18px;right:28px;background:none;border:none;font-size:2.2em;cursor:pointer;color:#0057b8;">&times;</button>
-      </div>
+      <div id="quickActionStatus" style="min-height:18px; margin-top:8px; font-size:0.9em; text-align:center;"></div>
     </div> -->
 </body>
 </html>
