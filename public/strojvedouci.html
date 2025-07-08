@@ -45,6 +45,9 @@
         <h2>Strojvedoucí</h2>
         <p>Vyberte si akci:</p>
         <ul class="rozcestnik-list">
+          <li>
+            <button class="rozcestnik-tile" id="sluzbaBtn" style="margin-bottom:12px;">🕒 Příchod do služby</button>
+          </li>
           <li><a href="#zamestnanci" class="rozcestnik-tile" onclick="document.getElementById('zamestnanciSection').scrollIntoView({behavior:'smooth'});return false;">👤 Zaměstnanci</a></li>
           <li><button class="rozcestnik-tile" id="pracovatBtn" style="margin: 24px auto 0 auto; display: block;">💼 Pracovat</button></li>
         </ul>
@@ -270,6 +273,22 @@
             closeTrainDetailWidget.style.display = 'none';
           };
         }
+      }
+
+      // Funkce pro službu
+      const sluzbaBtn = document.getElementById('sluzbaBtn');
+      let veSluzbe = false;
+      if (sluzbaBtn) {
+        sluzbaBtn.addEventListener('click', function() {
+          veSluzbe = !veSluzbe;
+          if (veSluzbe) {
+            sluzbaBtn.textContent = '🕒 Odchod ze služby';
+            sluzbaBtn.style.background = '#e0ffe0';
+          } else {
+            sluzbaBtn.textContent = '🕒 Příchod do služby';
+            sluzbaBtn.style.background = '';
+          }
+        });
       }
     });
     </script>
