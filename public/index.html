@@ -69,6 +69,15 @@
         </div>
       </div>
     </div>
+    <!-- Widget pro službu -->
+<div id="sluzbaWidgetOverlay" style="display:none;position:fixed;z-index:2000;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.55);align-items:center;justify-content:center;">
+  <div id="sluzbaWidget" style="background:#f3f4f6;border-radius:22px;box-shadow:0 8px 32px #0002;padding:32px 28px;min-width:320px;max-width:98vw;display:flex;flex-direction:column;align-items:center;position:relative;">
+    <button id="closeSluzbaWidget" style="position:absolute;top:14px;right:22px;background:none;border:none;font-size:2em;cursor:pointer;color:#888;">&times;</button>
+    <h2 style="margin-bottom:22px;color:#23272a;">Služba</h2>
+    <button id="prichodBtn" style="margin-bottom:18px;padding:12px 32px;border-radius:10px;border:none;background:#6a8cff;color:#fff;font-weight:600;font-size:1.1em;cursor:pointer;">Příchod do služby</button>
+    <button id="odchodBtn" style="padding:12px 32px;border-radius:10px;border:none;background:#b9bbbe;color:#23272a;font-weight:600;font-size:1.1em;cursor:pointer;">Odchod ze služby</button>
+  </div>
+</div>
     <script>
       // Zjisti, jestli je uživatel přihlášen (session v localStorage)
       function isLoggedIn() {
@@ -147,6 +156,57 @@
               dynamicList.style.display = 'none';
             }
           });
+        }
+        // Otevření widgetu po kliknutí na jméno
+        const userBar = document.getElementById('userProfileBar');
+        const sluzbaWidgetOverlay = document.getElementById('sluzbaWidgetOverlay');
+        const closeSluzbaWidget = document.getElementById('closeSluzbaWidget');
+        if (userBar && sluzbaWidgetOverlay) {
+          userBar.addEventListener('click', function() {
+            sluzbaWidgetOverlay.style.display = 'flex';
+          });
+        }
+        if (closeSluzbaWidget && sluzbaWidgetOverlay) {
+          closeSluzbaWidget.onclick = () => sluzbaWidgetOverlay.style.display = 'none';
+        }
+
+        // Webhook funkce
+        async function sendWebhook(action) {
+          const userStr = localStorage.getItem('discordUser');
+          if (!userStr) return;
+          let user;
+          try { user = JSON.parse(userStr); } catch { return; }
+          const username = `${user.username}#${user.discriminator}`;
+          const webhookUrl = 'https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S';
+          const payload = {
+            embeds: [{
+              title: action === 'prichod' ? '🟢 Příchod do služby' : '🔴 Odchod ze služby',
+              description: `Uživatel **${username}** právě ${action === 'prichod' ? 'přišel do služby' : 'odešel ze služby'}.`,
+              color: action === 'prichod' ? 65280 : 16711680,
+              timestamp: new Date().toISOString()
+            }]
+          };
+          await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+
+        // Tlačítka ve widgetu
+        const prichodBtn = document.getElementById('prichodBtn');
+        const odchodBtn = document.getElementById('odchodBtn');
+        if (prichodBtn) {
+          prichodBtn.onclick = async () => {
+            await sendWebhook('prichod');
+            sluzbaWidgetOverlay.style.display = 'none';
+          };
+        }
+        if (odchodBtn) {
+          odchodBtn.onclick = async () => {
+            await sendWebhook('odchod');
+            sluzbaWidgetOverlay.style.display = 'none';
+          };
         }
       });
       window.addEventListener('storage', function(e) {
