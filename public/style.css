@@ -615,7 +615,25 @@ button:active, .button:active {
   margin: 0 9px 0 0;
 }
 #dochazkaEmbed button:last-child { margin-right: 0; }
-#dochazkaEmbed h3 {
-  margin-top: 0;
-  margin-bottom: 18px;
+
+#zamestnanciWidgetOverlay {
+  display: none;
+  position: fixed;
+  z-index: 3000;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(30,34,40,0.92);
+  align-items: center;
+  justify-content: center;
+}
+#zamestnanciWidget {
+  background: linear-gradient(120deg,#fffbe6 0%,#ffe9b3 100%);
+  border-radius: 28px;
+  box-shadow: 0 8px 32px #bfa13a88;
+  padding: 38px 32px 32px 32px;
+  min-width: 340px;
+  max-width: 98vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
 }

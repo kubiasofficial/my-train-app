@@ -74,8 +74,107 @@
         <button id="closeTrainDetailWidget" style="display:none;position:absolute;top:18px;right:28px;background:none;border:none;font-size:2.2em;cursor:pointer;color:#0057b8;">&times;</button>
       </div>
     </div>
+<!-- Widget pro zaměstnance -->
+<div id="zamestnanciWidgetOverlay" style="display:none;position:fixed;z-index:3000;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.92);align-items:center;justify-content:center;">
+  <div id="zamestnanciWidget" style="background:linear-gradient(120deg,#fffbe6 0%,#ffe9b3 100%);border-radius:28px;box-shadow:0 8px 32px #bfa13a88;padding:38px 32px 32px 32px;min-width:340px;max-width:98vw;max-height:90vh;overflow-y:auto;position:relative;">
+    <button id="closeZamestnanciWidget" style="position:absolute;top:18px;right:28px;background:none;border:none;font-size:2.2em;cursor:pointer;color:#bfa13a;">&times;</button>
+    <h2 style="color:#bfa13a;text-align:center;margin-bottom:18px;">Zaměstnanci</h2>
+    <div id="zamestnanciAktualne" style="margin-bottom:28px;">
+      <h3 style="color:#bfa13a;">Aktuálně v práci</h3>
+      <div id="zamestnanciAktualneList">Načítám...</div>
+    </div>
+    <div id="zamestnanciSkore">
+      <h3 style="color:#bfa13a;">Skóre</h3>
+      <div id="zamestnanciSkoreList">Načítám...</div>
+    </div>
+  </div>
+</div>
+    <section id="zamestnanciSection" style="margin: 40px auto; max-width: 600px; display: none;">
+      <h2>Zaměstnanci online</h2>
+      <div id="zamestnanciList">Načítám...</div>
+    </section>
 
-    <script>
+    <script type="module">
+import { supabase } from '/lib/supabaseClient.js';
+
+const zamestnanciBtn = document.querySelector('a[href="#zamestnanci"]');
+const zamestnanciWidgetOverlay = document.getElementById('zamestnanciWidgetOverlay');
+const zamestnanciWidget = document.getElementById('zamestnanciWidget');
+const closeZamestnanciWidget = document.getElementById('closeZamestnanciWidget');
+const zamestnanciAktualneList = document.getElementById('zamestnanciAktualneList');
+const zamestnanciSkoreList = document.getElementById('zamestnanciSkoreList');
+
+if (zamestnanciBtn && zamestnanciWidgetOverlay && zamestnanciAktualneList && zamestnanciSkoreList) {
+  zamestnanciBtn.addEventListener('click', async function(e) {
+    e.preventDefault();
+    zamestnanciWidgetOverlay.style.display = 'flex';
+
+    // 1. Načti aktuálně přihlášené zaměstnance a jejich vlaky
+    zamestnanciAktualneList.textContent = 'Načítám...';
+    let { data: online, error: err1 } = await supabase
+      .from('users_online')
+      .select('*')
+      .eq('online', true);
+    if (err1 || !online) online = [];
+
+    // 2. Načti skóre zaměstnanců
+    zamestnanciSkoreList.textContent = 'Načítám...';
+    let { data: score, error: err2 } = await supabase
+      .from('users_score')
+      .select('*');
+    if (err2 || !score) score = [];
+
+    // Výpis aktuálně v práci
+    if (online.length === 0) {
+      zamestnanciAktualneList.innerHTML = '<i>Nikdo není aktuálně ve službě.</i>';
+    } else {
+      zamestnanciAktualneList.innerHTML = `
+        <table style="width:100%;border-collapse:collapse;">
+          <tr style="background:#fffbe6;">
+            <th style="padding:6px 8px;border-bottom:1px solid #bfa13a;">Jméno</th>
+            <th style="padding:6px 8px;border-bottom:1px solid #bfa13a;">Vlak</th>
+            <th style="padding:6px 8px;border-bottom:1px solid #bfa13a;">Trasa</th>
+          </tr>
+          ${online.map(u => `
+            <tr>
+              <td style="padding:6px 8px;">${u.username}</td>
+              <td style="padding:6px 8px;">${u.train_no || '-'}</td>
+              <td style="padding:6px 8px;">${u.train_from || '-'} → ${u.train_to || '-'}</td>
+            </tr>
+          `).join('')}
+        </table>
+      `;
+    }
+
+    // Výpis skóre
+    if (score.length === 0) {
+      zamestnanciSkoreList.innerHTML = '<i>Žádná data o jízdách.</i>';
+    } else {
+      zamestnanciSkoreList.innerHTML = `
+        <table style="width:100%;border-collapse:collapse;">
+          <tr style="background:#fffbe6;">
+            <th style="padding:6px 8px;border-bottom:1px solid #bfa13a;">Jméno</th>
+            <th style="padding:6px 8px;border-bottom:1px solid #bfa13a;">Počet jízd</th>
+            <th style="padding:6px 8px;border-bottom:1px solid #bfa13a;">Čas ve službě</th>
+          </tr>
+          ${score.map(u => `
+            <tr>
+              <td style="padding:6px 8px;">${u.username}</td>
+              <td style="padding:6px 8px;">${u.rides_count || 0}</td>
+              <td style="padding:6px 8px;">${u.time_online || '0 min'}</td>
+            </tr>
+          `).join('')}
+        </table>
+      `;
+    }
+  });
+
+  // Zavření widgetu
+  if (closeZamestnanciWidget) {
+    closeZamestnanciWidget.onclick = () => zamestnanciWidgetOverlay.style.display = 'none';
+  }
+}
+
     document.addEventListener('DOMContentLoaded', function() {
       // Přihlášení přes Discord a zobrazení uživatele
       function isLoggedIn() {
@@ -265,6 +364,15 @@
         } catch (e) {
           console.error('Nepodařilo se odeslat na Discord webhook:', e);
         }
+
+        // Zápis do Supabase - aktualizace vlaku u uživatele
+        if (user) {
+          await supabase.from('users_online').update({
+            train_no: train.TrainNoLocal,
+            train_from: train.StartStation,
+            train_to: train.EndStation
+          }).eq('username', user.username);
+        }
       }
 
       // Zobraz detail vlaku
@@ -297,9 +405,24 @@
         }
         // Ukončení jízdy
         if (endRideBtn) {
-          endRideBtn.onclick = () => {
+          endRideBtn.onclick = async () => {
             trainDetailWidgetOverlay.style.display = 'none';
             closeTrainDetailWidget.style.display = 'none';
+
+            // Zápis do Supabase - zvýšení počtu jízd
+            let user = null;
+            try {
+              user = JSON.parse(localStorage.getItem('discordUser'));
+            } catch (e) {}
+            if (user) {
+              // Získání aktuálního počtu jízd
+              const { data } = await supabase.from('users_score').select('rides_count').eq('username', user.username).single();
+              const newCount = (data?.rides_count || 0) + 1;
+              await supabase.from('users_score').upsert({
+                username: user.username,
+                rides_count: newCount
+              });
+            }
           };
         }
       }
@@ -345,6 +468,42 @@
             });
           } catch (e) {
             console.error('Nepodařilo se odeslat na Discord webhook:', e);
+          }
+
+          // 1) PŘÍCHOD DO SLUŽBY
+          if (veSluzbe && user) {
+            await supabase.from('users_online').upsert({
+              username: user.username,
+              online: true,
+              created: new Date().toISOString()
+            });
+          }
+
+          // Zápis do Supabase - uživatel odchází ze služby
+          if (!veSluzbe && user) {
+            await supabase.from('users_online').update({ online: false }).eq('username', user.username);
+          }
+
+          // 4) UKONČENÍ SLUŽBY - ZÁPIS ČASU VE SLUŽBĚ
+          if (!veSluzbe && user) {
+            // Zjisti čas příchodu (ulož si ho při příchodu do služby do localStorage)
+            const startTime = localStorage.getItem('serviceStart');
+            if (startTime) {
+              const minutes = Math.floor((Date.now() - Number(startTime)) / 60000);
+              // Získání aktuálního času ve službě
+              const { data } = await supabase.from('users_score').select('time_online').eq('username', user.username).single();
+              const newTime = (data?.time_online || 0) + minutes;
+              await supabase.from('users_score').upsert({
+                username: user.username,
+                time_online: newTime
+              });
+              localStorage.removeItem('serviceStart');
+            }
+          }
+
+          // Při příchodu do služby si ulož čas do localStorage:
+          if (veSluzbe) {
+            localStorage.setItem('serviceStart', Date.now().toString());
           }
         });
       }
