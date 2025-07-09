@@ -88,7 +88,6 @@
     await sendWebhook('prichod');
     await updateStatus('ve službě');
     sluzbaWidgetOverlay.style.display = 'none';
-    renderStavWidget();
   };
 }
 if (odchodBtn) {
@@ -96,7 +95,6 @@ if (odchodBtn) {
     await sendWebhook('odchod');
     await updateStatus('mimo službu');
     sluzbaWidgetOverlay.style.display = 'none';
-    renderStavWidget();
   };
 }   <script type="module">
       import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -232,6 +230,7 @@ if (odchodBtn) {
         if (odchodBtn) {
           odchodBtn.onclick = async () => {
             await sendWebhook('odchod');
+            await updateStatus('mimo službu');
             sluzbaWidgetOverlay.style.display = 'none';
           };
         }
