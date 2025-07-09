@@ -1,12 +1,10 @@
 // lib/supabaseClient.js
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://mdlvszaufcchjnlvxlgo.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+const supabaseUrl = 'https://mdlvszaufcchjnlvxlgo.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
-
-import { supabase } from '/lib/supabaseClient.js';
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function updateStatus(status) {
   const userStr = localStorage.getItem('discordUser');
@@ -25,3 +23,5 @@ async function updateStatus(status) {
     updated_at: new Date().toISOString()
   }, { onConflict: ['discord_id'] });
 }
+
+
