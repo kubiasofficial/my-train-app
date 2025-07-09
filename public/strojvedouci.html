@@ -179,59 +179,74 @@ if (zamestnanciBtn && zamestnanciWidgetOverlay && zamestnanciAktualneList && zam
 document.addEventListener('DOMContentLoaded', function() {
   // Přihlášení přes Discord a zobrazení uživatele
   function isLoggedIn() {
-    return localStorage.getItem('discordUser') !== null;
+  try {
+    const userStr = localStorage.getItem('discordUser');
+    if (!userStr) return false;
+    const user = JSON.parse(userStr);
+    return user && user.username && user.id;
+  } catch {
+    // Pokud je v localStorage špatný JSON, smažeme ho
+    localStorage.removeItem('discordUser');
+    return false;
   }
-  function showMainContent() {
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.body.style.overflow = '';
+}
+
+function showMainContent() {
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+  // Zobrazit bar s uživatelem
+  const userBar = document.getElementById('userProfileBar');
+  const userStr = localStorage.getItem('discordUser');
+  let user = null;
+  try { user = JSON.parse(userStr); } catch {}
+  if (user && userBar) {
+    userBar.style.display = 'flex';
+    let avatarUrl = user.avatar
+      ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+      : 'https://cdn.discordapp.com/embed/avatars/0.png';
+    userBar.innerHTML = `
+      <img src="${avatarUrl}" alt="avatar" style="width:38px;height:38px;border-radius:50%;box-shadow:0 2px 8px #0002;">
+      <span>${user.username}#${user.discriminator}</span>
+    `;
   }
-  function showLogin() {
-    document.getElementById('loginOverlay').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+}
+
+function showLogin() {
+  document.getElementById('loginOverlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  // Skryj bar s uživatelem
+  const userBar = document.getElementById('userProfileBar');
+  if (userBar) userBar.style.display = 'none';
+}
+
+function saveDiscordUserFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  if(params.has('discordUser')) {
+    try {
+      const user = decodeURIComponent(params.get('discordUser'));
+      localStorage.setItem('discordUser', user);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      showMainContent();
+    } catch(e) {}
   }
-  function saveDiscordUserFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    if(params.has('discordUser')) {
-      try {
-        const user = decodeURIComponent(params.get('discordUser'));
-        localStorage.setItem('discordUser', user);
-        window.history.replaceState({}, document.title, window.location.pathname);
-        showMainContent();
-      } catch(e) {}
-    }
-  }
-  saveDiscordUserFromUrl();
-  var userBar = document.getElementById('userProfileBar');
-  var loginBtn = document.getElementById('discordLoginBtn');
-  if(isLoggedIn()) {
-    showMainContent();
-    if(userBar) {
-      userBar.style.display = 'flex';
-      const userStr = localStorage.getItem('discordUser');
-      let user = null;
-      try { user = JSON.parse(userStr); } catch(e) {}
-      if(user) {
-        let avatarUrl = user.avatar
-          ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
-          : 'https://cdn.discordapp.com/embed/avatars/0.png';
-        userBar.innerHTML = `
-          <img src="${avatarUrl}" alt="avatar" style="width:38px;height:38px;border-radius:50%;box-shadow:0 2px 8px #0002;">
-          <span>${user.username}#${user.discriminator}</span>
-        `;
-      }
-    }
-    if(loginBtn) loginBtn.style.display = 'none';
-  } else {
-    showLogin();
-    if(userBar) userBar.style.display = 'none';
-    if(loginBtn) loginBtn.style.display = 'inline-block';
-  }
-  var btn = document.getElementById('discordLoginBtn');
-  if(btn) {
-    btn.addEventListener('click', function() {
-      window.location.href = '/api/discord-login';
-    });
-  }
+}
+saveDiscordUserFromUrl();
+
+if(isLoggedIn()) {
+  showMainContent();
+  const loginBtn = document.getElementById('discordLoginBtn');
+  if(loginBtn) loginBtn.style.display = 'none';
+} else {
+  showLogin();
+  const loginBtn = document.getElementById('discordLoginBtn');
+  if(loginBtn) loginBtn.style.display = 'inline-block';
+}
+const btn = document.getElementById('discordLoginBtn');
+if(btn) {
+  btn.addEventListener('click', function() {
+    window.location.href = '/api/discord-login';
+  });
+}
 
   // Rozcestník toggle
   var toggle = document.querySelector('.rozcestnik-toggle');
