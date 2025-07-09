@@ -78,7 +78,33 @@
     <button id="odchodBtn" style="padding:12px 32px;border-radius:10px;border:none;background:#b9bbbe;color:#23272a;font-weight:600;font-size:1.1em;cursor:pointer;">Odchod ze služby</button>
   </div>
 </div>
-    <script>
+    <!-- Widget stav členů vpravo -->
+<div id="stavWidget" style="position:fixed;top:110px;right:24px;z-index:1001;background:#fff;border-radius:18px;box-shadow:0 2px 16px #0001;padding:22px 18px;min-width:260px;max-width:340px;">
+  <h3 style="margin-top:0;margin-bottom:14px;font-size:1.15em;">Stav členů</h3>
+  <div id="stavList">Načítám...</div>
+</div>
+  if (prichodBtn) {
+  prichodBtn.onclick = async () => {
+    await sendWebhook('prichod');
+    await updateStatus('ve službě');
+    sluzbaWidgetOverlay.style.display = 'none';
+    renderStavWidget();
+  };
+}
+if (odchodBtn) {
+  odchodBtn.onclick = async () => {
+    await sendWebhook('odchod');
+    await updateStatus('mimo službu');
+    sluzbaWidgetOverlay.style.display = 'none';
+    renderStavWidget();
+  };
+}   <script type="module">
+      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+      const supabase = createClient(
+        'https://mdlvszaufcchjnlvxlgo.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kbHZzemF1ZmNjaGpubHZ4bGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5OTI4NTksImV4cCI6MjA2NzU2ODg1OX0.JFH4A0csb89B4D3X1KEN_Of8rnyN_6x0cTxUqR1KdE0'
+      );
+
       // Zjisti, jestli je uživatel přihlášen (session v localStorage)
       function isLoggedIn() {
         return localStorage.getItem('discordUser') !== null;
@@ -212,6 +238,42 @@
       window.addEventListener('storage', function(e) {
         if (e.key === 'discordUser') renderUserProfile();
       });
+
+      // Uložení stavu do Supabase
+      async function updateStatus(status) {
+        const userStr = localStorage.getItem('discordUser');
+        if (!userStr) return;
+        let user;
+        try { user = JSON.parse(userStr); } catch { return; }
+        await supabase.from('users_status').upsert({
+          discord_id: user.id,
+          username: user.username + '#' + user.discriminator,
+          status: status,
+          updated_at: new Date().toISOString()
+        }, { onConflict: ['discord_id'] });
+      }
+
+      // Widget vpravo: seznam členů a jejich stav
+      async function renderStavWidget() {
+        const stavList = document.getElementById('stavList');
+        if (!stavList) return;
+        stavList.innerHTML = 'Načítám...';
+        const { data, error } = await supabase.from('users_status').select('*').order('username');
+        if (error || !data) {
+          stavList.innerHTML = 'Chyba při načítání.';
+          return;
+        }
+        stavList.innerHTML = data.map(u => `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <span style="font-weight:600;">${u.username}</span>
+            <span style="font-size:0.98em;color:${u.status === 've službě' ? '#43b581' : '#b9bbbe'};">
+              ${u.status === 've službě' ? '🟢 Ve službě' : '⚪ Mimo službu'}
+            </span>
+          </div>
+        `).join('');
+      }
+      document.addEventListener('DOMContentLoaded', renderStavWidget);
+      setInterval(renderStavWidget, 30000);
     </script>
     <footer class="footer">
         &copy; 2025 Multi-Cargo Doprava (MCD) &mdash; design & vývoj pro strojvedoucí
