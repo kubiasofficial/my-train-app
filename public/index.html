@@ -225,6 +225,7 @@ if (odchodBtn) {
         if (prichodBtn) {
           prichodBtn.onclick = async () => {
             await sendWebhook('prichod');
+            await updateStatus('ve službě');
             sluzbaWidgetOverlay.style.display = 'none';
           };
         }
