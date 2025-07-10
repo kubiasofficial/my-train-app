@@ -232,15 +232,18 @@
     if (!userStr) return;
     let user;
     try { user = JSON.parse(userStr); } catch { return; }
-        await supabase.from('users_status').upsert({
-          discord_id: user.id,
-          username: user.username,
-          status: status,
-          updated_at: new Date().toISOString()
-        }, { onConflict: ['discord_id'] }).then(({ error, data }) => {
-          // Optionally handle error or data here if needed
-        });
-      }
+    const { error, data } = await supabase.from('users_status').upsert({
+      discord_id: user.id,
+      username: user.username,
+      status: status,
+      updated_at: new Date().toISOString()
+    }, { onConflict: ['discord_id'] });
+    if (error) {
+      console.error('Chyba při zápisu do Supabase:', error);
+    } else {
+      console.log('Zápis do Supabase OK:', data);
+    }
+  }
       // End of script
       </script>
     </body>
