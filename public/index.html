@@ -3,253 +3,958 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dispečink strojvedoucího MCD</title>
-    <link rel="stylesheet" href="/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Dispečink strojvedoucího MCD - Železniční Dispečink</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-      body { font-family: 'Inter', Arial, sans-serif; background: #f7f8fa; color: #23272a; }
-      .header-logo-title { text-align: center; margin-top: 36px; }
-      .header-logo-title h1 { font-size: 2.2em; font-weight: 700; letter-spacing: -1px; }
-      .subtitle { color: #6b7280; font-size: 1.13em; margin-top: 6px; }
-      .animated-bar { height: 4px; background: linear-gradient(90deg, #6a8cff 0%, #a084ee 100%); border-radius: 2px; margin: 32px auto 0 auto; width: 90%; max-width: 700px; }
-      .main-rozcestnik { display: flex; flex-direction: column; align-items: center; margin-top: 48px; }
-      .header-button-container { position: fixed; top: 24px; left: 44px; z-index: 1000; width: 100%; max-width: 700px; }
-      .rozcestnik-toggle { background: #6a8cff; color: #fff; border: none; border-radius: 10px; padding: 13px 32px; font-size: 1.15em; font-weight: 600; box-shadow: 0 2px 12px #6a8cff22; cursor: pointer; transition: background 0.2s; position: absolute; top: -18px; left: 0; }
-      .rozcestnik-toggle:hover { background: #4f6edb; }
-      .rozcestnik-menu { background: #fff; border-radius: 14px; box-shadow: 0 4px 32px #0002; padding: 18px 0 10px 0; min-width: 220px; position: absolute; right: 0; top: 60px; display: none; z-index: 100; }
-      .rozcestnik-link { display: block; padding: 12px 32px; color: #23272a; text-decoration: none; font-weight: 600; border-radius: 8px; transition: background 0.18s; }
-      .rozcestnik-link:hover, .rozcestnik-link.active { background: #f0f4ff; color: #6a8cff; }
-      .rozcestnik-welcome { margin-top: 0; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-      .rozcestnik-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0; }
-      .rozcestnik-tile { display: block; padding: 16px 0; color: #23272a; text-decoration: none; font-size: 1.13em; font-weight: 600; border-radius: 10px; transition: background 0.18s, color 0.18s; text-align: center; }
-      .rozcestnik-tile:hover:not(.disabled) { background: #f0f4ff; color: #6a8cff; }
-      .rozcestnik-tile.disabled { color: #b9bbbe; cursor: not-allowed; }
-      #userProfileBar { position: fixed; top: 24px; right: 44px; z-index: 1000; display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 16px; box-shadow: 0 2px 16px #0001; padding: 7px 22px 7px 12px; min-width: 0; max-width: 320px; }
-      #userProfileBar img { width: 38px; height: 38px; border-radius: 50%; box-shadow: 0 2px 8px #0002; }
-      #userProfileBar span { color: #23272a; font-weight: 600; font-size: 1.08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
-      #loginOverlay { background: linear-gradient(120deg, #e0e7ff 0%, #f7f8fa 100%); }
-      #loginOverlay > div { background: #fff; box-shadow: 0 8px 32px #6a8cff22; }
-      .discord-login-btn { background: linear-gradient(90deg, #6a8cff 0%, #a084ee 100%); color: #fff; border: none; border-radius: 9px; font-weight: 600; font-size: 1.15em; padding: 12px 32px; box-shadow: 0 2px 8px #6a8cff22; cursor: pointer; transition: background 0.2s, box-shadow 0.2s; }
-      .discord-login-btn:hover { background: linear-gradient(90deg, #4f6edb 0%, #a084ee 100%); box-shadow: 0 4px 16px #6a8cff33; }
-      @media (max-width: 600px) {
-        #userProfileBar { right: 8px; top: 8px; padding: 5px 10px 5px 7px; }
-        .header-logo-title { margin-top: 18px; }
-        .animated-bar { margin-top: 18px; }
-      }
+        /* --- ZDE JE CELÝ NOVÝ TMAVÝ STYL VČETNĚ VLAKŮ --- */
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            margin: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        :root {
+            --accent-color: #5d88c9;
+            --accent-color-dark: #3a68a9;
+            --bg-dark-primary: #1a1a2e;
+            --bg-dark-secondary: #2b2b40;
+            --text-light: #e0e0e0;
+            --text-medium: #b0b0b0;
+            --text-dark: #888;
+            --train-body-color: #2c3a47;
+            --train-detail-color: #4a5d6f;
+            --train-light-color: #ffd700;
+            --train-red-light: #e74c3c;
+            --train-window-color: #1a1a2e;
+        }
+        .header-logo-title {
+            text-align: center;
+            margin-top: 36px;
+            position: relative;
+            z-index: 10;
+        }
+        .header-logo-title h1 {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 2.6em;
+            font-weight: 700;
+            letter-spacing: -1px;
+            color: var(--text-light);
+            text-shadow: 0 0 10px rgba(93, 136, 201, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+        .mcd-accent { color: var(--accent-color); position: relative; }
+        .railway-line {
+            width: 90%;
+            max-width: 900px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent 0%, var(--accent-color) 20%, var(--accent-color-dark) 80%, transparent 100%);
+            margin: 20px auto 40px auto;
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(93, 136, 201, 0.3);
+            z-index: 5;
+        }
+        .railway-line::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: lineShine 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        @keyframes lineShine {
+            0% { transform: translateX(0%); }
+            50% { transform: translateX(200%); }
+            100% { transform: translateX(0%); }
+        }
+        .subtitle { color: var(--text-medium); font-size: 1.13em; margin-top: 6px; }
+        .main-rozcestnik { display: flex; flex-direction: column; align-items: center; margin-top: 48px; }
+        .header-button-container {
+            position: fixed;
+            top: 24px;
+            left: 44px;
+            z-index: 1000;
+        }
+        .rozcestnik-toggle {
+            background: var(--accent-color);
+            color: var(--text-light);
+            border: none;
+            border-radius: 10px;
+            padding: 13px 32px;
+            font-size: 1.15em;
+            font-weight: 600;
+            box-shadow: 0 2px 12px rgba(93, 136, 201, 0.2);
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            position: relative;
+            top: 0;
+            left: 0;
+        }
+        .rozcestnik-toggle:hover {
+            background: var(--accent-color-dark);
+            box-shadow: 0 4px 18px rgba(93, 136, 201, 0.3);
+        }
+        .rozcestnik-menu {
+            background: var(--bg-dark-secondary);
+            border-radius: 14px;
+            box-shadow: 0 4px 32px rgba(0, 0, 0, 0.4);
+            padding: 18px 0 10px 0;
+            min-width: 220px;
+            position: absolute;
+            left: 0;
+            top: calc(100% + 15px);
+            display: none;
+            z-index: 999;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .rozcestnik-link {
+            display: block;
+            padding: 12px 32px;
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: background 0.18s, color 0.18s;
+        }
+        .rozcestnik-link:hover, .rozcestnik-link.active {
+            background: rgba(93, 136, 201, 0.1);
+            color: var(--accent-color);
+        }
+        .rozcestnik-welcome {
+            margin-top: 0;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .app-description-text {
+            color: var(--text-medium);
+            text-align: center;
+            max-width: 600px;
+            margin-bottom: 30px;
+        }
+        .rozcestnik-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .rozcestnik-tile {
+            display: block;
+            padding: 16px 24px;
+            color: var(--text-light);
+            background: var(--bg-dark-secondary);
+            text-decoration: none;
+            font-size: 1.13em;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: background 0.18s, color 0.18s, transform 0.18s;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            min-width: 280px;
+        }
+        .rozcestnik-tile:hover:not(.disabled) {
+            background: var(--accent-color);
+            color: var(--text-light);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(93, 136, 201, 0.4);
+        }
+        .rozcestnik-tile.disabled {
+            color: var(--text-dark);
+            background: #232336;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        #userProfileBar {
+            position: fixed;
+            top: 24px;
+            right: 44px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: var(--bg-dark-secondary);
+            border-radius: 16px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
+            padding: 7px 22px 7px 12px;
+            min-width: 0;
+            max-width: 320px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        #userProfileBar:hover {
+            background: #33334d;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        #userProfileBar img {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--accent-color);
+        }
+        #userProfileBar span {
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 1.08em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+        }
+        #loginOverlay {
+            background: rgba(10, 10, 20, 0.98);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+            pointer-events: none;
+        }
+        #loginOverlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        #loginOverlay > div {
+            background: var(--bg-dark-secondary);
+            border-radius: 18px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            padding: 40px 35px 30px 35px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 350px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        }
+        #loginOverlay.active > div {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        #loginOverlay img {
+            width: 72px;
+            height: 72px;
+            border-radius: 16px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+        #loginOverlay h2 {
+            color: var(--text-light);
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        #loginOverlay p {
+            color: var(--text-medium);
+            font-size: 1.08em;
+            margin-bottom: 22px;
+            text-align: center;
+        }
+        .discord-login-btn {
+            background: var(--accent-color);
+            color: var(--text-light);
+            border: none;
+            border-radius: 9px;
+            font-weight: 600;
+            font-size: 1.15em;
+            padding: 12px 32px;
+            box-shadow: 0 2px 8px rgba(93, 136, 201, 0.2);
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+        }
+        .discord-login-btn:hover {
+            background: var(--accent-color-dark);
+            box-shadow: 0 4px 16px rgba(93, 136, 201, 0.3);
+            transform: translateY(-1px);
+        }
+        #sluzbaWidgetOverlay {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(10, 10, 20, 0.7);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+        }
+        #sluzbaWidgetOverlay.active {
+            opacity: 1;
+        }
+        #sluzbaWidget {
+            background: var(--bg-dark-secondary);
+            border-radius: 22px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            padding: 32px 28px;
+            min-width: 320px;
+            max-width: 90vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        }
+        #sluzbaWidgetOverlay.active #sluzbaWidget {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        #closeSluzbaWidget {
+            position: absolute;
+            top: 14px;
+            right: 22px;
+            background: none;
+            border: none;
+            font-size: 2.2em;
+            cursor: pointer;
+            color: var(--text-dark);
+            transition: color 0.2s;
+        }
+        #closeSluzbaWidget:hover {
+            color: var(--text-light);
+        }
+        #sluzbaWidget h2 {
+            margin-bottom: 22px;
+            color: var(--text-light);
+        }
+        #prichodBtn, #odchodBtn {
+            padding: 12px 32px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+            width: 100%;
+            max-width: 250px;
+        }
+        #prichodBtn {
+            margin-bottom: 18px;
+            background: #43b581;
+            color: var(--text-light);
+            box-shadow: 0 2px 8px rgba(67, 181, 129, 0.2);
+        }
+        #prichodBtn:hover {
+            background: #36996d;
+            box-shadow: 0 4px 16px rgba(67, 181, 129, 0.3);
+            transform: translateY(-1px);
+        }
+        #odchodBtn {
+            background: #e04a5a;
+            color: var(--text-light);
+            box-shadow: 0 2px 8px rgba(224, 74, 90, 0.2);
+        }
+        #odchodBtn:hover {
+            background: #c93b4e;
+            box-shadow: 0 4px 16px rgba(224, 74, 90, 0.3);
+            transform: translateY(-1px);
+        }
+        #stavWidget {
+            position: fixed;
+            top: 110px;
+            right: 44px;
+            z-index: 1001;
+            background: var(--bg-dark-secondary);
+            border-radius: 18px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
+            padding: 22px 20px;
+            min-width: 260px;
+            max-width: 340px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        #stavWidget h3 {
+            margin-top: 0;
+            margin-bottom: 14px;
+            font-size: 1.3em;
+            color: var(--text-light);
+            text-align: center;
+        }
+        #stavList {
+            color: var(--text-light);
+            font-size: 1em;
+        }
+        #stavList > div {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+            padding: 6px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+        }
+        #stavList > div:last-child {
+            border-bottom: none;
+        }
+        #stavList span { font-weight: 600; }
+        .status-on-duty {
+            color: #43b581;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .status-on-duty::before {
+            content: '●';
+            font-size: 0.8em;
+            line-height: 1;
+        }
+        .status-off-duty {
+            color: #b0b0b0;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .status-off-duty::before {
+            content: '●';
+            font-size: 0.8em;
+            line-height: 1;
+        }
+        /* --- ANIMOVANÉ VLAKY --- */
+        .animated-train-track {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+            background: repeating-linear-gradient(to right, #1a1a2e 0px, #1a1a2e 20px, #252535 20px, #252535 22px);
+            border-top: 3px solid #333;
+        }
+        .track-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: #444;
+            opacity: 0.5;
+            bottom: 50px;
+            box-shadow: 0 0 5px rgba(255,255,255,0.05);
+        }
+        .track-line:nth-child(2) {
+            bottom: 80px;
+            animation: trackParallax 60s linear infinite;
+        }
+        @keyframes trackParallax {
+            0% { background-position: 0 0; }
+            100% { background-position: -100vw 0; }
+        }
+        .train-container {
+            position: absolute;
+            display: flex;
+            align-items: flex-end;
+            height: 100px;
+            transform-origin: center bottom;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
+        }
+        .train-container:nth-child(3) {
+            bottom: 45px;
+            animation: moveTrain 40s linear infinite;
+            animation-delay: -5s;
+            opacity: 0.9;
+            transform: scale(0.9);
+        }
+        .train-container:nth-child(4) {
+            bottom: 75px;
+            animation: moveTrain 55s linear infinite;
+            animation-delay: -20s;
+            opacity: 0.7;
+            transform: scale(0.8);
+        }
+        .train-container:nth-child(5) {
+            bottom: 40px;
+            animation: moveTrain 30s linear infinite reverse;
+            animation-delay: -10s;
+            opacity: 0.95;
+            transform: scale(1.1);
+        }
+        @keyframes moveTrain {
+            0% { transform: translateX(-150%); }
+            100% { transform: translateX(110vw); }
+        }
+        .locomotive {
+            position: relative;
+            width: 150px;
+            height: 60px;
+            background-color: var(--train-body-color);
+            border-radius: 5px 10px 5px 5px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+        }
+        .locomotive::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 5px;
+            width: calc(100% - 10px);
+            height: 15px;
+            background: linear-gradient(to bottom, #3a4b5d, #2c3a47);
+            border-radius: 5px 5px 0 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .locomotive .window-cab {
+            width: 30px;
+            height: 40px;
+            background-color: rgba(0,0,0,0.7);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+            margin-right: 15px;
+            position: relative;
+        }
+        .locomotive .window-cab::after {
+            content: '';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 15px;
+            height: 1px;
+            background: rgba(255,255,255,0.3);
+            transform: rotate(45deg);
+            transform-origin: top right;
+        }
+        .locomotive .headlight {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-color: var(--train-light-color);
+            border-radius: 50%;
+            box-shadow: 0 0 15px 8px var(--train-light-color);
+            top: 25px;
+            right: -5px;
+            z-index: 2;
+            animation: lightPulse 3s infinite alternate;
+        }
+        .locomotive .tail-light {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: var(--train-red-light);
+            border-radius: 50%;
+            box-shadow: 0 0 8px 4px var(--train-red-light);
+            top: 45px;
+            left: -3px;
+            z-index: 2;
+            animation: lightPulse 2s infinite alternate;
+        }
+        @keyframes lightPulse {
+            0% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+        .wagon {
+            width: 100px;
+            height: 50px;
+            background-color: var(--train-body-color);
+            border-radius: 5px;
+            margin-left: 5px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .wagon-window {
+            width: 15px;
+            height: 30px;
+            background-color: var(--train-window-color);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 2px;
+            box-shadow: inset 0 0 3px rgba(0,0,0,0.5);
+        }
+        .bogie {
+            position: absolute;
+            height: 15px;
+            width: 40px;
+            background-color: #1a1a2e;
+            border-radius: 3px;
+            bottom: -15px;
+            left: 10px;
+            z-index: -1;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.4);
+        }
+        .bogie::before, .bogie::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #0d0d1a;
+            border-radius: 50%;
+            border: 1px solid #333;
+            top: 3px;
+        }
+        .bogie::before { left: 5px; }
+        .bogie::after { right: 5px; }
+        .wagon .bogie { left: 5px; }
+        .wagon .bogie:nth-child(2) { right: 5px; left: auto; }
+        .locomotive .bogie { left: 10px; }
+        .locomotive .bogie:nth-child(2) { right: 10px; left: auto; }
+        @media (max-width: 768px) {
+            .header-button-container { left: 15px; }
+            #userProfileBar { right: 15px; padding: 5px 15px 5px 8px; }
+            #userProfileBar span { max-width: 120px; }
+            .header-logo-title { margin-top: 80px; }
+            .header-logo-title h1 { font-size: 2em; }
+            .subtitle { font-size: 1em; }
+            .railway-line { margin: 15px auto 30px auto; }
+            #stavWidget { right: 15px; min-width: 200px; max-width: 90vw; }
+            .rozcestnik-menu { left: 15px; }
+            .animated-train-track { height: 100px; }
+            .locomotive { width: 120px; height: 50px; }
+            .locomotive .headlight, .locomotive .tail-light { width: 12px; height: 12px; }
+            .locomotive .window-cab { width: 25px; height: 35px; }
+            .wagon { width: 80px; height: 40px; }
+            .wagon-window { width: 12px; height: 25px; }
+            .bogie { height: 12px; width: 30px; bottom: -12px; }
+            .bogie::before, .bogie::after { width: 6px; height: 6px; }
+        }
+        @media (max-width: 480px) {
+            .header-logo-title h1 { font-size: 1.8em; gap: 10px; }
+            .railway-line { height: 3px; }
+            .discord-login-btn, #prichodBtn, #odchodBtn { font-size: 1em; padding: 10px 20px; }
+            #loginOverlay > div, #sluzbaWidget { min-width: unset; width: 90%; padding: 25px 20px; }
+            #stavWidget { top: auto; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 320px; }
+            .header-button-container, #userProfileBar { top: 10px; left: 10px; right: 10px; width: auto; max-width: unset; justify-content: space-between; padding: 5px 10px; }
+            #userProfileBar span { display: none; }
+            .rozcestnik-toggle { padding: 10px 18px; font-size: 1em; }
+            .rozcestnik-menu { left: 10px; top: 60px; }
+            .animated-train-track { display: none; }
+        }
     </style>
 </head>
 <body>
-    <div id="loginOverlay" style="position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.97);display:flex;align-items:center;justify-content:center;flex-direction:column;">
-      <div style="background:#23272a;padding:36px 32px 28px 32px;border-radius:18px;box-shadow:0 8px 32px #0008;display:flex;flex-direction:column;align-items:center;min-width:320px;">
-        <img src="/logo.webp" alt="Logo" style="width:72px;height:72px;border-radius:16px;margin-bottom:18px;box-shadow:0 2px 8px #0006;">
-        <h2 style="color:#fff;font-size:1.5em;margin-bottom:10px;">Přihlášení do MCD</h2>
-        <p style="color:#b9bbbe;font-size:1.08em;margin-bottom:22px;text-align:center;">Pro pokračování se přihlašte přes Discord.</p>
-        <button id="discordLoginBtn" class="discord-login-btn" style="font-size:1.15em;padding:12px 32px;border-radius:9px;box-shadow:0 2px 8px #0004;">🔑 Přihlásit se přes Discord</button>
-      </div>
+    <div id="loginOverlay">
+        <div>
+            <img src="/logo.webp" alt="Logo">
+            <h2>Přihlášení do MCD</h2>
+            <p>Pro pokračování se přihlašte přes Discord.</p>
+            <button id="discordLoginBtn" class="discord-login-btn">🔑 Přihlásit se přes Discord</button>
+        </div>
     </div>
     <div id="mainContent" style="display:none;">
-      <div id="userProfileBar"></div>
-      <header class="header-logo-title">
-          <h1>Dispečink strojvedoucího <span class="mcd-accent">MCD</span></h1>
-      </header>
-      <div class="animated-bar"></div>
-      <div class="main-rozcestnik">
-        <div class="header-button-container" style="position:fixed;top:24px;left:44px;z-index:1000;">
-          <button class="rozcestnik-toggle open-hub-button">☰ Otevřít rozcestník</button>
-          <div class="rozcestnik-menu" style="display:none;">
-            
-            <a href="/index.html" class="rozcestnik-link">🏠 Dispečink</a>
-            
-          </div>
+        <div id="userProfileBar"></div>
+        <header class="header-logo-title">
+            <h1>Dispečink strojvedoucího <span class="mcd-accent">MCD</span></h1>
+        </header>
+        <div class="railway-line"></div>
+        <div class="main-rozcestnik">
+            <div class="header-button-container">
+                <button class="rozcestnik-toggle open-hub-button">☰ Otevřít rozcestník</button>
+                <div class="rozcestnik-menu">
+                    <a href="/index.html" class="rozcestnik-link active">🏠 Dispečink</a>
+                    <a href='/strojvedouci.html' class='rozcestnik-link'>👤 Strojvedoucí</a>
+                </div>
+            </div>
+            <div class="rozcestnik-welcome">
+                <h2>Vítejte v Multi-Cargo Doprava</h2>
+                <p class="app-description-text">Multi-Cargo Doprava — moderní nástroj pro výběr a správu vlaků.</p>
+                <ul class="rozcestnik-list" id="dynamicRozcestnikList" style="display:none;"></ul>
+            </div>
         </div>
-        <div class="rozcestnik-welcome">
-          <h2>Vítejte v Multi-Cargo Doprava</h2>
-          <p class="app-description-text">Multi-Cargo Doprava — moderní nástroj pro výběr a správu vlaků</p>
-          <ul class="rozcestnik-list" id="dynamicRozcestnikList" style="display:none;"></ul>
-        </div>
-      </div>
     </div>
-    <!-- Widget pro službu -->
-<div id="sluzbaWidgetOverlay" style="display:none;position:fixed;z-index:2000;top:0;left:0;width:100vw;height:100vh;background:rgba(30,34,40,0.55);align-items:center;justify-content:center;">
-  <div id="sluzbaWidget" style="background:#f3f4f6;border-radius:22px;box-shadow:0 8px 32px #0002;padding:32px 28px;min-width:320px;max-width:98vw;display:flex;flex-direction:column;align-items:center;position:relative;">
-    <button id="closeSluzbaWidget" style="position:absolute;top:14px;right:22px;background:none;border:none;font-size:2em;cursor:pointer;color:#888;">&times;</button>
-    <h2 style="margin-bottom:22px;color:#23272a;">Služba</h2>
-    <button id="prichodBtn" style="margin-bottom:18px;padding:12px 32px;border-radius:10px;border:none;background:#6a8cff;color:#fff;font-weight:600;font-size:1.1em;cursor:pointer;">Příchod do služby</button>
-    <button id="odchodBtn" style="padding:12px 32px;border-radius:10px;border:none;background:#b9bbbe;color:#23272a;font-weight:600;font-size:1.1em;cursor:pointer;">Odchod ze služby</button>
-  </div>
-</div>
-    <!-- Widget stav členů vpravo -->
-<div id="stavWidget" style="position:fixed;top:110px;right:24px;z-index:1001;background:#fff;border-radius:18px;box-shadow:0 2px 16px #0001;padding:22px 18px;min-width:260px;max-width:340px;">
-  <h3 style="margin-top:0;margin-bottom:14px;font-size:1.15em;">Stav členů</h3>
-  <div id="stavList">Načítám...</div>
-</div>
-  <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-  const supabase = createClient(
-    'https://mdlvszaufcchjnlvxlgo.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kbHZzemF1ZmNjaGpubHZ4bGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5OTI4NTksImV4cCI6MjA2NzU2ODg1OX0.JFH4A0csb89B4D3X1KEN_Of8rnyN_6x0cTxUqR1KdE0'
-  );
-
-  // Zjisti, jestli je uživatel přihlášen (session v localStorage)
-  function isLoggedIn() {
-    return localStorage.getItem('discordUser') !== null;
-  }
-  function showMainContent() {
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('mainContent').style.display = '';
-  }
-  function showLogin() {
-    document.getElementById('loginOverlay').style.display = 'flex';
-    document.getElementById('mainContent').style.display = 'none';
-  }
-  function saveDiscordUserFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    if(params.has('discordUser')) {
-      try {
-        const user = decodeURIComponent(params.get('discordUser'));
-        localStorage.setItem('discordUser', user);
-        // Odstranit query param z URL (bez reloadu)
-        window.history.replaceState({}, document.title, window.location.pathname);
-        showMainContent();
-      } catch(e) {}
-    }
-  }
-  function renderUserProfile() {
-    const bar = document.getElementById('userProfileBar');
-    if (!bar) return;
-    const userStr = localStorage.getItem('discordUser');
-    if (!userStr) { bar.innerHTML = ''; return; }
-    let user;
-    try { user = JSON.parse(userStr); } catch(e) { bar.innerHTML = ''; return; }
-    let avatarUrl = user.avatar
-      ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
-      : 'https://cdn.discordapp.com/embed/avatars/0.png';
-    bar.innerHTML = `
-      <img src="${avatarUrl}" alt="avatar" style="width:38px;height:38px;border-radius:50%;box-shadow:0 2px 8px #0002;">
-      <span>${user.username}#${user.discriminator}</span>
-    `;
-  }
-  document.addEventListener('DOMContentLoaded', function() {
-    saveDiscordUserFromUrl();
-    if(isLoggedIn()) {
-      showMainContent();
-      renderUserProfile();
-    } else {
-      showLogin();
-    }
-    var btn = document.getElementById('discordLoginBtn');
-    if(btn) {
-      btn.addEventListener('click', function() {
-        window.location.href = '/api/discord-login';
-      });
-    }
-    // Dynamické zobrazení rozcestníku
-    var rozcestnikToggle = document.querySelector('.rozcestnik-toggle');
-    var rozcestnikMenu = document.querySelector('.rozcestnik-menu');
-    var dynamicList = document.getElementById('dynamicRozcestnikList');
-    if(rozcestnikToggle && rozcestnikMenu && dynamicList) {
-      rozcestnikToggle.addEventListener('click', function() {
-        rozcestnikMenu.style.display = rozcestnikMenu.style.display === 'block' ? 'none' : 'block';
-        // Dynamicky zobrazit volby až po otevření rozcestníku
-        if(dynamicList.style.display === 'none') {
-          dynamicList.innerHTML = `
-            <li><a href='/strojvedouci.html' class='rozcestnik-tile'>👤 Strojvedoucí</a></li>
-            <li><a href='#' class='rozcestnik-tile disabled'>🚄 Výběr vlaku (přes stránku Strojvedoucí)</a></li>
-          `;
-          dynamicList.style.display = 'flex';
-        } else {
-          dynamicList.style.display = 'none';
+    <!-- Animované vlaky -->
+    <div class="animated-train-track">
+        <div class="track-line"></div>
+        <div class="track-line"></div>
+        <div class="train-container">
+            <div class="locomotive">
+                <div class="window-cab"></div>
+                <div class="headlight"></div>
+                <div class="tail-light"></div>
+                <div class="bogie"></div>
+                <div class="bogie"></div>
+            </div>
+            <div class="wagon">
+                <div class="wagon-window"></div>
+                <div class="wagon-window"></div>
+                <div class="bogie"></div>
+                <div class="bogie"></div>
+            </div>
+            <div class="wagon">
+                <div class="wagon-window"></div>
+                <div class="wagon-window"></div>
+                <div class="bogie"></div>
+                <div class="bogie"></div>
+            </div>
+            <div class="wagon">
+                <div class="wagon-window"></div>
+                <div class="wagon-window"></div>
+                <div class="bogie"></div>
+                <div class="bogie"></div>
+            </div>
+        </div>
+        <div class="train-container">
+            <div class="locomotive">
+                <div class="window-cab"></div>
+                <div class="headlight"></div>
+                <div class="tail-light"></div>
+                <div class="bogie"></div>
+                <div class="bogie"></div>
+            </div>
+            <div class="wagon">
+                <div class="wagon-window"></div>
+                <div class="bogie"></div>
+                <div class="bogie"></div>
+            </div>
+        </div>
+        <div class="train-container">
+            <div class="locomotive">
+                <div class="window-cab"></div>
+                <div class="headlight"></div>
+                <div class="tail-light"></div>
+                <div class="bogie"></div>
+                <div class="bogie"></div>
+            </div>
+            <div class="wagon">
+                <div class="wagon-window"></div>
+                <div class="wagon-window"></div>
+                <div class="bogie"></div>
+                <div class="bogie"></div>
+            </div>
+        </div>
+    </div>
+    <div id="sluzbaWidgetOverlay">
+        <div id="sluzbaWidget">
+            <button id="closeSluzbaWidget">&times;</button>
+            <h2>Služba</h2>
+            <button id="prichodBtn">Příchod do služby</button>
+            <button id="odchodBtn">Odchod ze služby</button>
+        </div>
+    </div>
+    <div id="stavWidget">
+        <h3>Stav členů</h3>
+        <div id="stavList">Načítám...</div>
+    </div>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const supabase = createClient(
+            'https://mdlvszaufcchjnlvxlgo.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kbHZzemF1ZmNjaGpubHZ4bGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5OTI4NTksImV4cCI6MjA2NzU2ODg1OX0.JFH4A0csb89B4D3X1KEN_Of8rnyN_6x0cTxUqR1KdE0'
+        );
+        function isLoggedIn() {
+            return localStorage.getItem('discordUser') !== null;
         }
-      });
-      document.addEventListener('click', function(e) {
-        if (!rozcestnikToggle.contains(e.target) && !rozcestnikMenu.contains(e.target)) {
-          rozcestnikMenu.style.display = 'none';
-          dynamicList.style.display = 'none';
+        function showMainContent() {
+            const loginOverlay = document.getElementById('loginOverlay');
+            const mainContent = document.getElementById('mainContent');
+            loginOverlay.classList.remove('active');
+            loginOverlay.addEventListener('transitionend', () => {
+                loginOverlay.style.display = 'none';
+                mainContent.style.display = 'block';
+            }, { once: true });
         }
-      });
-    }
-    // Otevření widgetu po kliknutí na jméno
-    const userBar = document.getElementById('userProfileBar');
-    const sluzbaWidgetOverlay = document.getElementById('sluzbaWidgetOverlay');
-    const closeSluzbaWidget = document.getElementById('closeSluzbaWidget');
-    if (userBar && sluzbaWidgetOverlay) {
-      userBar.addEventListener('click', function() {
-        sluzbaWidgetOverlay.style.display = 'flex';
-      });
-    }
-    if (closeSluzbaWidget && sluzbaWidgetOverlay) {
-      closeSluzbaWidget.onclick = () => sluzbaWidgetOverlay.style.display = 'none';
-    }
-
-    // Tlačítka ve widgetu
-    const prichodBtn = document.getElementById('prichodBtn');
-    const odchodBtn = document.getElementById('odchodBtn');
-    if (prichodBtn) {
-      prichodBtn.onclick = async () => {
-        await sendWebhook('prichod'); // nebo zakomentuj tento řádek
-        await updateStatus('ve službě');
-        sluzbaWidgetOverlay.style.display = 'none';
-        renderStavWidget();
-      };
-    }
-    if (odchodBtn) {
-      odchodBtn.onclick = async () => {
-        await sendWebhook('odchod'); // nebo zakomentuj tento řádek
-        await updateStatus('mimo službu');
-        sluzbaWidgetOverlay.style.display = 'none';
-        renderStavWidget();
-      };
-    }
-    renderStavWidget();
-  });
-  window.addEventListener('storage', function(e) {
-    if (e.key === 'discordUser') renderUserProfile();
-  });
-
-  // Uložení stavu do Supabase
-  async function updateStatus(status) {
-    const userStr = localStorage.getItem('discordUser');
-    if (!userStr) return;
-    let user;
-    try { user = JSON.parse(userStr); } catch { return; }
-    const { error, data } = await supabase.from('users_status').upsert({
-      discord_id: user.id,
-      username: user.username,
-      status: status,
-      updated_at: new Date().toISOString()
-    }, { onConflict: ['discord_id'] });
-    if (error) {
-      console.error('Chyba při zápisu do Supabase:', error);
-    } else {
-      console.log('Zápis do Supabase OK:', data);
-    }
-  }
-
-  // Widget stav členů
-  async function renderStavWidget() {
-    const stavList = document.getElementById('stavList');
-    if (!stavList) return;
-    stavList.innerHTML = 'Načítám...';
-    const { data, error } = await supabase.from('users_status').select('*').order('username');
-    if (error || !data) {
-      stavList.innerHTML = 'Chyba při načítání.';
-      return;
-    }
-    stavList.innerHTML = data.map(u => `
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-        <span style="font-weight:600;">${u.username}</span>
-        <span style="font-size:0.98em;color:${u.status === 've službě' ? '#43b581' : '#b9bbbe'};">
-          ${u.status === 've službě' ? '🟢 Ve službě' : '⚪ Mimo službu'}
-        </span>
-      </div>
-    `).join('');
-  }
-      // End of script
-      function sendWebhook() {
-  // Prázdná funkce, aby kód nespadl
-  return Promise.resolve();
-}
+        function showLogin() {
+            const loginOverlay = document.getElementById('loginOverlay');
+            const mainContent = document.getElementById('mainContent');
+            loginOverlay.style.display = 'flex';
+            mainContent.style.display = 'none';
+            setTimeout(() => {
+                loginOverlay.classList.add('active');
+            }, 10);
+        }
+        function saveDiscordUserFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('discordUser')) {
+                try {
+                    const user = decodeURIComponent(params.get('discordUser'));
+                    localStorage.setItem('discordUser', user);
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    showMainContent();
+                } catch (e) {
+                    console.error("Chyba při parsování discordUser z URL:", e);
+                }
+            }
+        }
+        function renderUserProfile() {
+            const bar = document.getElementById('userProfileBar');
+            if (!bar) return;
+            const userStr = localStorage.getItem('discordUser');
+            if (!userStr) {
+                bar.innerHTML = '';
+                return;
+            }
+            let user;
+            try {
+                user = JSON.parse(userStr);
+            } catch (e) {
+                console.error("Chyba při parsování dat uživatele z localStorage:", e);
+                bar.innerHTML = '';
+                return;
+            }
+            let avatarUrl = user.avatar
+                ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+                : 'https://cdn.discordapp.com/embed/avatars/0.png';
+            bar.innerHTML = `
+                <img src="${avatarUrl}" alt="avatar">
+                <span>${user.username}#${user.discriminator}</span>
+            `;
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            saveDiscordUserFromUrl();
+            if (isLoggedIn()) {
+                showMainContent();
+                renderUserProfile();
+            } else {
+                showLogin();
+            }
+            const discordLoginBtn = document.getElementById('discordLoginBtn');
+            if (discordLoginBtn) {
+                discordLoginBtn.addEventListener('click', function() {
+                    window.location.href = '/api/discord-login';
+                });
+            }
+            const rozcestnikToggle = document.querySelector('.rozcestnik-toggle');
+            const rozcestnikMenu = document.querySelector('.rozcestnik-menu');
+            const dynamicList = document.getElementById('dynamicRozcestnikList');
+            if (rozcestnikToggle && rozcestnikMenu && dynamicList) {
+                rozcestnikToggle.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                    const isDisplayed = rozcestnikMenu.style.display === 'block';
+                    rozcestnikMenu.style.display = isDisplayed ? 'none' : 'block';
+                    if (!isDisplayed) {
+                        dynamicList.innerHTML = `
+                            <li><a href='/strojvedouci.html' class='rozcestnik-tile'>👤 Strojvedoucí</a></li>
+                            <li><a href='#' class='rozcestnik-tile disabled'>🚄 Výběr vlaku (přes stránku Strojvedoucí)</a></li>
+                        `;
+                        dynamicList.style.display = 'flex';
+                    } else {
+                        dynamicList.style.display = 'none';
+                    }
+                });
+                document.addEventListener('click', function(e) {
+                    if (!rozcestnikToggle.contains(e.target) && !rozcestnikMenu.contains(e.target)) {
+                        rozcestnikMenu.style.display = 'none';
+                        dynamicList.style.display = 'none';
+                    }
+                });
+            }
+            const userBar = document.getElementById('userProfileBar');
+            const sluzbaWidgetOverlay = document.getElementById('sluzbaWidgetOverlay');
+            const closeSluzbaWidget = document.getElementById('closeSluzbaWidget');
+            if (userBar && sluzbaWidgetOverlay) {
+                userBar.addEventListener('click', function() {
+                    sluzbaWidgetOverlay.style.display = 'flex';
+                    setTimeout(() => {
+                        sluzbaWidgetOverlay.classList.add('active');
+                    }, 10);
+                });
+            }
+            if (closeSluzbaWidget && sluzbaWidgetOverlay) {
+                closeSluzbaWidget.onclick = () => {
+                    sluzbaWidgetOverlay.classList.remove('active');
+                    sluzbaWidgetOverlay.addEventListener('transitionend', () => {
+                        sluzbaWidgetOverlay.style.display = 'none';
+                    }, { once: true });
+                };
+            }
+            const prichodBtn = document.getElementById('prichodBtn');
+            const odchodBtn = document.getElementById('odchodBtn');
+            if (prichodBtn) {
+                prichodBtn.onclick = async () => {
+                    await sendWebhook('prichod');
+                    await updateStatus('ve službě');
+                    sluzbaWidgetOverlay.classList.remove('active');
+                    sluzbaWidgetOverlay.addEventListener('transitionend', () => {
+                        sluzbaWidgetOverlay.style.display = 'none';
+                    }, { once: true });
+                    renderStavWidget();
+                };
+            }
+            if (odchodBtn) {
+                odchodBtn.onclick = async () => {
+                    await sendWebhook('odchod');
+                    await updateStatus('mimo službu');
+                    sluzbaWidgetOverlay.classList.remove('active');
+                    sluzbaWidgetOverlay.addEventListener('transitionend', () => {
+                        sluzbaWidgetOverlay.style.display = 'none';
+                    }, { once: true });
+                    renderStavWidget();
+                };
+            }
+            renderStavWidget();
+        });
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'discordUser') renderUserProfile();
+        });
+        async function updateStatus(status) {
+            const userStr = localStorage.getItem('discordUser');
+            if (!userStr) {
+                console.warn("Uživatel není přihlášen, nelze aktualizovat stav.");
+                return;
+            }
+            let user;
+            try {
+                user = JSON.parse(userStr);
+            } catch {
+                console.error("Chyba při parsování dat uživatele z localStorage.");
+                return;
+            }
+            const { error, data } = await supabase.from('users_status').upsert({
+                discord_id: user.id,
+                username: user.username,
+                status: status,
+                updated_at: new Date().toISOString()
+            }, { onConflict: ['discord_id'] });
+            if (error) {
+                console.error('Chyba při zápisu do Supabase:', error);
+            } else {
+                console.log('Zápis do Supabase OK:', data);
+            }
+        }
+        async function renderStavWidget() {
+            const stavList = document.getElementById('stavList');
+            if (!stavList) return;
+            stavList.innerHTML = 'Načítám...';
+            const { data, error } = await supabase.from('users_status').select('*').order('username');
+            if (error || !data) {
+                stavList.innerHTML = 'Chyba při načítání.';
+                console.error("Chyba při načítání dat o stavu:", error);
+                return;
+            }
+            stavList.innerHTML = data.map(u => `
+                <div>
+                    <span>${u.username}</span>
+                    <span class="${u.status === 've službě' ? 'status-on-duty' : 'status-off-duty'}">
+                        ${u.status === 've službě' ? 'Ve službě' : 'Mimo službu'}
+                    </span>
+                </div>
+            `).join('');
+        }
+        function sendWebhook() {
+            return Promise.resolve();
+        }
     </script>
-    </body>
-    </html>
-
+</body>
+</html>
