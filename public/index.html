@@ -181,29 +181,6 @@
       closeSluzbaWidget.onclick = () => sluzbaWidgetOverlay.style.display = 'none';
     }
 
-    // Webhook funkce
-    async function sendWebhook(action) {
-      const userStr = localStorage.getItem('discordUser');
-      if (!userStr) return;
-      let user;
-      try { user = JSON.parse(userStr); } catch { return; }
-      const username = `${user.username}#${user.discriminator}`;
-      const webhookUrl = 'https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S';
-      const payload = {
-        embeds: [{
-          title: action === 'prichod' ? '🟢 Příchod do služby' : '🔴 Odchod ze služby',
-          description: `Uživatel **${username}** právě ${action === 'prichod' ? 'přišel do služby' : 'odešel ze služby'}.`,
-          color: action === 'prichod' ? 65280 : 16711680,
-          timestamp: new Date().toISOString()
-        }]
-      };
-      await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    }
-
     // Tlačítka ve widgetu
     const prichodBtn = document.getElementById('prichodBtn');
     const odchodBtn = document.getElementById('odchodBtn');
@@ -212,6 +189,7 @@
         await sendWebhook('prichod');
         await updateStatus('ve službě');
         sluzbaWidgetOverlay.style.display = 'none';
+        renderStavWidget();
       };
     }
     if (odchodBtn) {
@@ -219,8 +197,10 @@
         await sendWebhook('odchod');
         await updateStatus('mimo službu');
         sluzbaWidgetOverlay.style.display = 'none';
+        renderStavWidget();
       };
     }
+    renderStavWidget();
   });
   window.addEventListener('storage', function(e) {
     if (e.key === 'discordUser') renderUserProfile();
@@ -244,24 +224,26 @@
       console.log('Zápis do Supabase OK:', data);
     }
   }
-      async function renderStavWidget() {
-  const stavList = document.getElementById('stavList');
-  if (!stavList) return;
-  stavList.innerHTML = 'Načítám...';
-  const { data, error } = await supabase.from('users_status').select('*').order('username');
-  if (error || !data) {
-    stavList.innerHTML = 'Chyba při načítání.';
-    return;
+
+  // Widget stav členů
+  async function renderStavWidget() {
+    const stavList = document.getElementById('stavList');
+    if (!stavList) return;
+    stavList.innerHTML = 'Načítám...';
+    const { data, error } = await supabase.from('users_status').select('*').order('username');
+    if (error || !data) {
+      stavList.innerHTML = 'Chyba při načítání.';
+      return;
+    }
+    stavList.innerHTML = data.map(u => `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="font-weight:600;">${u.username}</span>
+        <span style="font-size:0.98em;color:${u.status === 've službě' ? '#43b581' : '#b9bbbe'};">
+          ${u.status === 've službě' ? '🟢 Ve službě' : '⚪ Mimo službu'}
+        </span>
+      </div>
+    `).join('');
   }
-  stavList.innerHTML = data.map(u => `
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-      <span style="font-weight:600;">${u.username}</span>
-      <span style="font-size:0.98em;color:${u.status === 've službě' ? '#43b581' : '#b9bbbe'};">
-        ${u.status === 've službě' ? '🟢 Ve službě' : '⚪ Mimo službu'}
-      </span>
-    </div>
-  `).join('');
-}
       // End of script
       </script>
     </body>
