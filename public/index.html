@@ -186,7 +186,7 @@
     const odchodBtn = document.getElementById('odchodBtn');
     if (prichodBtn) {
       prichodBtn.onclick = async () => {
-        await sendWebhook('prichod');
+        await sendWebhook('prichod'); // nebo zakomentuj tento řádek
         await updateStatus('ve službě');
         sluzbaWidgetOverlay.style.display = 'none';
         renderStavWidget();
@@ -194,7 +194,7 @@
     }
     if (odchodBtn) {
       odchodBtn.onclick = async () => {
-        await sendWebhook('odchod');
+        await sendWebhook('odchod'); // nebo zakomentuj tento řádek
         await updateStatus('mimo službu');
         sluzbaWidgetOverlay.style.display = 'none';
         renderStavWidget();
@@ -245,7 +245,11 @@
     `).join('');
   }
       // End of script
-      </script>
+      function sendWebhook() {
+  // Prázdná funkce, aby kód nespadl
+  return Promise.resolve();
+}
+    </script>
     </body>
     </html>
 
