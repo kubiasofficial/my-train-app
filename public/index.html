@@ -83,202 +83,166 @@
   <h3 style="margin-top:0;margin-bottom:14px;font-size:1.15em;">Stav členů</h3>
   <div id="stavList">Načítám...</div>
 </div>
-  if (prichodBtn) {
-  prichodBtn.onclick = async () => {
-    await sendWebhook('prichod');
-    await updateStatus('ve službě');
-    sluzbaWidgetOverlay.style.display = 'none';
-  };
-}
-if (odchodBtn) {
-  odchodBtn.onclick = async () => {
-    await sendWebhook('odchod');
-    await updateStatus('mimo službu');
-    sluzbaWidgetOverlay.style.display = 'none';
-  };
-}   <script type="module">
-      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-      const supabase = createClient(
-        'https://mdlvszaufcchjnlvxlgo.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kbHZzemF1ZmNjaGpubHZ4bGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5OTI4NTksImV4cCI6MjA2NzU2ODg1OX0.JFH4A0csb89B4D3X1KEN_Of8rnyN_6x0cTxUqR1KdE0'
-      );
+  <script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  const supabase = createClient(
+    'https://mdlvszaufcchjnlvxlgo.supabase.co',
+    'tvuj_anon_key'
+  );
 
-      // Zjisti, jestli je uživatel přihlášen (session v localStorage)
-      function isLoggedIn() {
-        return localStorage.getItem('discordUser') !== null;
-      }
-      function showMainContent() {
-        document.getElementById('loginOverlay').style.display = 'none';
-        document.getElementById('mainContent').style.display = '';
-      }
-      function showLogin() {
-        document.getElementById('loginOverlay').style.display = 'flex';
-        document.getElementById('mainContent').style.display = 'none';
-      }
-      function saveDiscordUserFromUrl() {
-        const params = new URLSearchParams(window.location.search);
-        if(params.has('discordUser')) {
-          try {
-            const user = decodeURIComponent(params.get('discordUser'));
-            localStorage.setItem('discordUser', user);
-            // Odstranit query param z URL (bez reloadu)
-            window.history.replaceState({}, document.title, window.location.pathname);
-            showMainContent();
-          } catch(e) {}
-        }
-      }
-      function renderUserProfile() {
-        const bar = document.getElementById('userProfileBar');
-        if (!bar) return;
-        const userStr = localStorage.getItem('discordUser');
-        if (!userStr) { bar.innerHTML = ''; return; }
-        let user;
-        try { user = JSON.parse(userStr); } catch(e) { bar.innerHTML = ''; return; }
-        let avatarUrl = user.avatar
-          ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
-          : 'https://cdn.discordapp.com/embed/avatars/0.png';
-        bar.innerHTML = `
-          <img src="${avatarUrl}" alt="avatar" style="width:38px;height:38px;border-radius:50%;box-shadow:0 2px 8px #0002;">
-          <span>${user.username}#${user.discriminator}</span>
-        `;
-      }
-      document.addEventListener('DOMContentLoaded', function() {
-        saveDiscordUserFromUrl();
-        if(isLoggedIn()) {
-          showMainContent();
-          renderUserProfile();
+  // Zjisti, jestli je uživatel přihlášen (session v localStorage)
+  function isLoggedIn() {
+    return localStorage.getItem('discordUser') !== null;
+  }
+  function showMainContent() {
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('mainContent').style.display = '';
+  }
+  function showLogin() {
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('mainContent').style.display = 'none';
+  }
+  function saveDiscordUserFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    if(params.has('discordUser')) {
+      try {
+        const user = decodeURIComponent(params.get('discordUser'));
+        localStorage.setItem('discordUser', user);
+        // Odstranit query param z URL (bez reloadu)
+        window.history.replaceState({}, document.title, window.location.pathname);
+        showMainContent();
+      } catch(e) {}
+    }
+  }
+  function renderUserProfile() {
+    const bar = document.getElementById('userProfileBar');
+    if (!bar) return;
+    const userStr = localStorage.getItem('discordUser');
+    if (!userStr) { bar.innerHTML = ''; return; }
+    let user;
+    try { user = JSON.parse(userStr); } catch(e) { bar.innerHTML = ''; return; }
+    let avatarUrl = user.avatar
+      ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+      : 'https://cdn.discordapp.com/embed/avatars/0.png';
+    bar.innerHTML = `
+      <img src="${avatarUrl}" alt="avatar" style="width:38px;height:38px;border-radius:50%;box-shadow:0 2px 8px #0002;">
+      <span>${user.username}#${user.discriminator}</span>
+    `;
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    saveDiscordUserFromUrl();
+    if(isLoggedIn()) {
+      showMainContent();
+      renderUserProfile();
+    } else {
+      showLogin();
+    }
+    var btn = document.getElementById('discordLoginBtn');
+    if(btn) {
+      btn.addEventListener('click', function() {
+        window.location.href = '/api/discord-login';
+      });
+    }
+    // Dynamické zobrazení rozcestníku
+    var rozcestnikToggle = document.querySelector('.rozcestnik-toggle');
+    var rozcestnikMenu = document.querySelector('.rozcestnik-menu');
+    var dynamicList = document.getElementById('dynamicRozcestnikList');
+    if(rozcestnikToggle && rozcestnikMenu && dynamicList) {
+      rozcestnikToggle.addEventListener('click', function() {
+        rozcestnikMenu.style.display = rozcestnikMenu.style.display === 'block' ? 'none' : 'block';
+        // Dynamicky zobrazit volby až po otevření rozcestníku
+        if(dynamicList.style.display === 'none') {
+          dynamicList.innerHTML = `
+            <li><a href='/strojvedouci.html' class='rozcestnik-tile'>👤 Strojvedoucí</a></li>
+            <li><a href='#' class='rozcestnik-tile disabled'>🚄 Výběr vlaku (přes stránku Strojvedoucí)</a></li>
+          `;
+          dynamicList.style.display = 'flex';
         } else {
-          showLogin();
-        }
-        var btn = document.getElementById('discordLoginBtn');
-        if(btn) {
-          btn.addEventListener('click', function() {
-            window.location.href = '/api/discord-login';
-          });
-        }
-        // Dynamické zobrazení rozcestníku
-        var rozcestnikToggle = document.querySelector('.rozcestnik-toggle');
-        var rozcestnikMenu = document.querySelector('.rozcestnik-menu');
-        var dynamicList = document.getElementById('dynamicRozcestnikList');
-        if(rozcestnikToggle && rozcestnikMenu && dynamicList) {
-          rozcestnikToggle.addEventListener('click', function() {
-            rozcestnikMenu.style.display = rozcestnikMenu.style.display === 'block' ? 'none' : 'block';
-            // Dynamicky zobrazit volby až po otevření rozcestníku
-            if(dynamicList.style.display === 'none') {
-              dynamicList.innerHTML = `
-                <li><a href='/strojvedouci.html' class='rozcestnik-tile'>👤 Strojvedoucí</a></li>
-                <li><a href='#' class='rozcestnik-tile disabled'>🚄 Výběr vlaku (přes stránku Strojvedoucí)</a></li>
-              `;
-              dynamicList.style.display = 'flex';
-            } else {
-              dynamicList.style.display = 'none';
-            }
-          });
-          document.addEventListener('click', function(e) {
-            if (!rozcestnikToggle.contains(e.target) && !rozcestnikMenu.contains(e.target)) {
-              rozcestnikMenu.style.display = 'none';
-              dynamicList.style.display = 'none';
-            }
-          });
-        }
-        // Otevření widgetu po kliknutí na jméno
-        const userBar = document.getElementById('userProfileBar');
-        const sluzbaWidgetOverlay = document.getElementById('sluzbaWidgetOverlay');
-        const closeSluzbaWidget = document.getElementById('closeSluzbaWidget');
-        if (userBar && sluzbaWidgetOverlay) {
-          userBar.addEventListener('click', function() {
-            sluzbaWidgetOverlay.style.display = 'flex';
-          });
-        }
-        if (closeSluzbaWidget && sluzbaWidgetOverlay) {
-          closeSluzbaWidget.onclick = () => sluzbaWidgetOverlay.style.display = 'none';
-        }
-
-        // Webhook funkce
-        async function sendWebhook(action) {
-          const userStr = localStorage.getItem('discordUser');
-          if (!userStr) return;
-          let user;
-          try { user = JSON.parse(userStr); } catch { return; }
-          const username = `${user.username}#${user.discriminator}`;
-          const webhookUrl = 'https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S';
-          const payload = {
-            embeds: [{
-              title: action === 'prichod' ? '🟢 Příchod do služby' : '🔴 Odchod ze služby',
-              description: `Uživatel **${username}** právě ${action === 'prichod' ? 'přišel do služby' : 'odešel ze služby'}.`,
-              color: action === 'prichod' ? 65280 : 16711680,
-              timestamp: new Date().toISOString()
-            }]
-          };
-          await fetch(webhookUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-        }
-
-        // Tlačítka ve widgetu
-        const prichodBtn = document.getElementById('prichodBtn');
-        const odchodBtn = document.getElementById('odchodBtn');
-        if (prichodBtn) {
-          prichodBtn.onclick = async () => {
-            await sendWebhook('prichod');
-            await updateStatus('ve službě');
-            sluzbaWidgetOverlay.style.display = 'none';
-          };
-        }
-        if (odchodBtn) {
-          odchodBtn.onclick = async () => {
-            await sendWebhook('odchod');
-            await updateStatus('mimo službu');
-            sluzbaWidgetOverlay.style.display = 'none';
-          };
+          dynamicList.style.display = 'none';
         }
       });
-      window.addEventListener('storage', function(e) {
-        if (e.key === 'discordUser') renderUserProfile();
+      document.addEventListener('click', function(e) {
+        if (!rozcestnikToggle.contains(e.target) && !rozcestnikMenu.contains(e.target)) {
+          rozcestnikMenu.style.display = 'none';
+          dynamicList.style.display = 'none';
+        }
       });
+    }
+    // Otevření widgetu po kliknutí na jméno
+    const userBar = document.getElementById('userProfileBar');
+    const sluzbaWidgetOverlay = document.getElementById('sluzbaWidgetOverlay');
+    const closeSluzbaWidget = document.getElementById('closeSluzbaWidget');
+    if (userBar && sluzbaWidgetOverlay) {
+      userBar.addEventListener('click', function() {
+        sluzbaWidgetOverlay.style.display = 'flex';
+      });
+    }
+    if (closeSluzbaWidget && sluzbaWidgetOverlay) {
+      closeSluzbaWidget.onclick = () => sluzbaWidgetOverlay.style.display = 'none';
+    }
 
-      // Uložení stavu do Supabase
-      async function updateStatus(status) {
-        const userStr = localStorage.getItem('discordUser');
-        if (!userStr) return;
-        let user;
-        try { user = JSON.parse(userStr); } catch { return; }
+    // Webhook funkce
+    async function sendWebhook(action) {
+      const userStr = localStorage.getItem('discordUser');
+      if (!userStr) return;
+      let user;
+      try { user = JSON.parse(userStr); } catch { return; }
+      const username = `${user.username}#${user.discriminator}`;
+      const webhookUrl = 'https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S';
+      const payload = {
+        embeds: [{
+          title: action === 'prichod' ? '🟢 Příchod do služby' : '🔴 Odchod ze služby',
+          description: `Uživatel **${username}** právě ${action === 'prichod' ? 'přišel do služby' : 'odešel ze služby'}.`,
+          color: action === 'prichod' ? 65280 : 16711680,
+          timestamp: new Date().toISOString()
+        }]
+      };
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    // Tlačítka ve widgetu
+    const prichodBtn = document.getElementById('prichodBtn');
+    const odchodBtn = document.getElementById('odchodBtn');
+    if (prichodBtn) {
+      prichodBtn.onclick = async () => {
+        await sendWebhook('prichod');
+        await updateStatus('ve službě');
+        sluzbaWidgetOverlay.style.display = 'none';
+      };
+    }
+    if (odchodBtn) {
+      odchodBtn.onclick = async () => {
+        await sendWebhook('odchod');
+        await updateStatus('mimo službu');
+        sluzbaWidgetOverlay.style.display = 'none';
+      };
+    }
+  });
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'discordUser') renderUserProfile();
+  });
+
+  // Uložení stavu do Supabase
+  async function updateStatus(status) {
+    const userStr = localStorage.getItem('discordUser');
+    if (!userStr) return;
+    let user;
+    try { user = JSON.parse(userStr); } catch { return; }
         await supabase.from('users_status').upsert({
           discord_id: user.id,
-          username: user.username + '#' + user.discriminator,
+          username: user.username,
           status: status,
           updated_at: new Date().toISOString()
-        }, { onConflict: ['discord_id'] });
+        }, { onConflict: ['discord_id'] }).then(({ error, data }) => {
+          // Optionally handle error or data here if needed
+        });
       }
-
-      // Widget vpravo: seznam členů a jejich stav
-      async function renderStavWidget() {
-        const stavList = document.getElementById('stavList');
-        if (!stavList) return;
-        stavList.innerHTML = 'Načítám...';
-        const { data, error } = await supabase.from('users_status').select('*').order('username');
-        if (error || !data) {
-          stavList.innerHTML = 'Chyba při načítání.';
-          return;
-        }
-        stavList.innerHTML = data.map(u => `
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-            <span style="font-weight:600;">${u.username}</span>
-            <span style="font-size:0.98em;color:${u.status === 've službě' ? '#43b581' : '#b9bbbe'};">
-              ${u.status === 've službě' ? '🟢 Ve službě' : '⚪ Mimo službu'}
-            </span>
-          </div>
-        `).join('');
-      }
-      document.addEventListener('DOMContentLoaded', renderStavWidget);
-      setInterval(renderStavWidget, 5000);
-    </script>
-    <footer class="footer">
-        &copy; 2025 Multi-Cargo Doprava (MCD) &mdash; design & vývoj pro strojvedoucí
-    </footer>
-    <script src="/script.js"></script>
-</body>
-</html>
+      // End of script
+      </script>
+    </body>
+    </html>
 
