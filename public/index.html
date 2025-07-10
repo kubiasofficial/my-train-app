@@ -244,6 +244,24 @@
       console.log('Zápis do Supabase OK:', data);
     }
   }
+      async function renderStavWidget() {
+  const stavList = document.getElementById('stavList');
+  if (!stavList) return;
+  stavList.innerHTML = 'Načítám...';
+  const { data, error } = await supabase.from('users_status').select('*').order('username');
+  if (error || !data) {
+    stavList.innerHTML = 'Chyba při načítání.';
+    return;
+  }
+  stavList.innerHTML = data.map(u => `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <span style="font-weight:600;">${u.username}</span>
+      <span style="font-size:0.98em;color:${u.status === 've službě' ? '#43b581' : '#b9bbbe'};">
+        ${u.status === 've službě' ? '🟢 Ve službě' : '⚪ Mimo službu'}
+      </span>
+    </div>
+  `).join('');
+}
       // End of script
       </script>
     </body>
