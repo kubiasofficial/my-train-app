@@ -232,10 +232,7 @@
     if (!userStr) return;
     let user;
     try { user = JSON.parse(userStr); } catch { return; }
-    const supabase = createClient(
-      'https://mdlvszaufcchjnlvxlgo.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kbHZzemF1ZmNjaGpubHZ4bGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5OTI4NTksImV4cCI6MjA2NzU2ODg1OX0.JFH4A0csb89B4D3X1KEN_Of8rnyN_6x0cTxUqR1KdE0'
-    );    const { error, data } = await supabase.from('users_status').upsert({
+    const { error, data } = await supabase.from('users_status').upsert({
       discord_id: user.id,
       username: user.username,
       status: status,
