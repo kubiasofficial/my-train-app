@@ -21,18 +21,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const settingsMessage = document.getElementById('settingsMessage');
     const settingsForm = document.getElementById('settingsForm');
 
+    // Formulář pro přidělování zakázek a tabulka aktivních zakázek
+    const assignOrderForm = document.querySelector('#pridelovani-vlaku form');
+    const activeOrdersTableBody = document.querySelector('#pridelovani-vlaku .data-table tbody');
+    const pridelenoRidiciSelect = document.getElementById('prideleno-ridici');
+
     // Discord Webhook URL - Zde je vaše URL pro odesílání zpráv
     const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S';
 
     // --- MANUÁLNÍ DATABÁZE UŽIVATELŮ A HESEL (VŠE V PROHLÍŽEČI) ---
     // POZOR: Toto je nebezpečné pro reálné aplikace, hesla jsou v kódu!
     const users = {
-        'dispecer': { password: 'dispecerheslo', role: 'dispatcher', name: 'Dispečer Hlavní' }, // Upraveno jméno
-        'strojvedouci': { password: 'strojvedouciheslo', role: 'driver', name: 'Václav Novák' }, // Změněno jméno na Václav Novák
-        'admin': { password: 'adminheslo', role: 'dispatcher', name: 'Admin Systému' }, // Upraveno jméno
-        'vaclav': { password: '1809', role: 'driver', name: 'Václav Novák' }, // Ponecháno
-        'kubiasofficial': { password: '2811', role: 'driver', name: 'Kubias Official' } // Ponecháno
+        'dispecer': { password: 'dispecerheslo', role: 'dispatcher', name: 'Dispečer Hlavní' },
+        'strojvedouci': { password: 'strojvedouciheslo', role: 'driver', name: 'Václav Novák' },
+        'admin': { password: 'adminheslo', role: 'dispatcher', name: 'Admin Systému' },
+        'vaclav': { password: '1809', role: 'driver', name: 'Václav Novák' },
+        'kubiasofficial': { password: '2811', role: 'driver', name: 'Kubias Official' }
     };
+
+    // Pole pro ukládání aktivních zakázek (pouze v paměti prohlížeče)
+    let activeOrders = [];
 
     let isWorking = false; // Simulace stavu docházky
 
@@ -124,15 +132,14 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMessage.classList.remove('show');
     }
 
-    // Funkce pro načítání dat ze SimRail API
+    // Funkce pro načítání dat ze SimRail API přes náš proxy server
     async function fetchSimRailData() {
         const serverCode = 'CZ-1'; // Váš požadovaný server
-        const trainPositionsEndpoint = `https://panel.simrail.eu:8084/train-positions-open?serverCode=${serverCode}`;
-        const timeEndpoint = `https://api1.aws.simrail.eu:8082/api/getTime?serverCode=${serverCode}`;
 
         // Získání počtu vlaků online
         try {
-            const response = await fetch(trainPositionsEndpoint);
+            // Změna: Voláme náš vlastní proxy endpoint na Renderu
+            const response = await fetch(`/api/simrail-proxy?endpoint=train-positions-open&serverCode=${serverCode}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -143,8 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 trainsOnlineValueElement.textContent = onlineTrainsCount;
             }
         } catch (error) {
-            console.error('Chyba při načítání pozic vlaků ze SimRail API:', error);
-            // Můžete zde aktualizovat UI, např. zobrazit "N/A" nebo chybovou zprávu
+            console.error('Chyba při načítání pozic vlaků ze SimRail API přes proxy:', error);
             const trainsOnlineValueElement = document.querySelector('#prehled .card:nth-child(1) .value');
             if (trainsOnlineValueElement) {
                 trainsOnlineValueElement.textContent = 'N/A';
@@ -153,27 +159,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Získání aktuálního herního času (pokud je potřeba zobrazit)
         try {
-            const response = await fetch(timeEndpoint);
+            // Změna: Voláme náš vlastní proxy endpoint na Renderu
+            const response = await fetch(`/api/simrail-proxy?endpoint=getTime&serverCode=${serverCode}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            // Předpokládáme, že API vrací objekt s klíčem 'time' nebo podobně
-            // Příklad: { "time": "2025-07-11T17:30:00Z" }
             // Zde byste museli upravit podle skutečné struktury odpovědi
             // const gameTimeElement = document.getElementById('game-time'); // Pokud máte takový element
             // if (gameTimeElement && data.time) {
             //     gameTimeElement.textContent = new Date(data.time).toLocaleTimeString('cs-CZ');
             // }
         } catch (error) {
-            console.error('Chyba při načítání herního času ze SimRail API:', error);
+            console.error('Chyba při načítání herního času ze SimRail API přes proxy:', error);
+        }
+    }
+
+
+    // Funkce pro dynamické vykreslení tabulky aktivních zakázek
+    function renderActiveOrders() {
+        activeOrdersTableBody.innerHTML = ''; // Vyčistí tabulku před přidáním nových řádků
+
+        if (activeOrders.length === 0) {
+            const noOrdersRow = document.createElement('tr');
+            noOrdersRow.innerHTML = `<td colspan="6" style="text-align: center; padding: 20px; color: var(--muted-text);">Žádné aktivní zakázky.</td>`;
+            activeOrdersTableBody.appendChild(noOrdersRow);
+            return;
         }
 
-        // POZNÁMKA K CORS:
-        // Přímé volání externích API z prohlížeče může narazit na CORS (Cross-Origin Resource Sharing) omezení.
-        // Pokud se objeví chyby typu "Access-Control-Allow-Origin", budete potřebovat proxy server.
-        // Pro Vercel by se to dalo řešit pomocí Vercel Serverless Function jako proxy,
-        // ale to by znamenalo návrat k "backendu" pro API volání.
+        activeOrders.forEach(order => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${order.id}</td>
+                <td>${order.naklad}</td>
+                <td>${order.puvod} - ${order.cil}</td>
+                <td>${order.prideleno}</td>
+                <td class="status-badge ${order.stav.toLowerCase().replace(' ', '-')}">${order.stav}</td>
+                <td><button class="btn" style="background-color: #f6ad55; padding: 5px 10px;"><i class="fas fa-edit"></i></button> <button class="btn" style="background-color: #e53e3e; padding: 5px 10px;"><i class="fas fa-times"></i></button></td>
+            `;
+            activeOrdersTableBody.appendChild(row);
+        });
+    }
+
+    // Funkce pro aktualizaci možností v selectu "Přiřadit strojvedoucímu"
+    function updateDriverSelectOptions() {
+        pridelenoRidiciSelect.innerHTML = '<option value="">Vyberte strojvedoucího</option>';
+        for (const username in users) {
+            if (users[username].role === 'driver') {
+                const option = document.createElement('option');
+                option.value = users[username].name;
+                option.textContent = users[username].name;
+                pridelenoRidiciSelect.appendChild(option);
+            }
+        }
     }
 
 
@@ -232,8 +270,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Nastaví interval pro pravidelné načítání dat (např. každých 30 sekund)
             // POZOR: Příliš časté volání API může vést k zablokování!
             setInterval(fetchSimRailData, 30000);
+            updateDriverSelectOptions(); // Aktualizuje možnosti pro přidělování zakázek
+            renderActiveOrders(); // Vykreslí aktivní zakázky
         } else {
             showSection('moje-zakazky');
+            // Zde by se načítaly zakázky pro konkrétního strojvedoucího
+            // a vykreslovaly by se do tabulky #moje-zakazky .data-table tbody
         }
 
         updateDochazkaStatus();
@@ -274,6 +316,45 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentTime = new Date().toLocaleString('cs-CZ');
         sendDiscordMessage(`**${userName}** se právě **odhlásil z práce** v **${currentTime}**.`);
     });
+
+    // NOVÝ EVENT LISTENER PRO ODESLÁNÍ FORMULÁŘE PŘIDĚLOVÁNÍ ZAKÁZEK
+    if (assignOrderForm) {
+        assignOrderForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const zakazkaId = document.getElementById('zakazka-id').value;
+            const typNakladu = document.getElementById('typ-nakladu').value;
+            const puvod = document.getElementById('puvod').value;
+            const cil = document.getElementById('cil').value;
+            const pridelenoRidici = document.getElementById('prideleno-ridici').value;
+            const poznamkyDispecer = document.getElementById('poznamky-dispecer').value;
+
+            // Základní validace
+            if (!zakazkaId || !typNakladu || !puvod || !cil || !pridelenoRidici) {
+                alert('Prosím, vyplňte všechna povinná pole pro zakázku.'); // Použijte vlastní modal pro lepší UX
+                return;
+            }
+
+            const newOrder = {
+                id: zakazkaId,
+                naklad: typNakladu,
+                puvod: puvod,
+                cil: cil,
+                prideleno: pridelenoRidici,
+                stav: 'Přiřazeno', // Počáteční stav
+                poznamky: poznamkyDispecer
+            };
+
+            activeOrders.push(newOrder); // Přidá novou zakázku do pole
+            renderActiveOrders(); // Znovu vykreslí tabulku
+
+            // Vyčistí formulář
+            assignOrderForm.reset();
+            // Můžete přidat zprávu o úspěchu
+            alert('Zakázka úspěšně přidělena!'); // Použijte vlastní modal pro lepší UX
+        });
+    }
+
 
     // EVENT LISTENER PRO ZMĚNU ROLE V NASTAVENÍ
     if (nastaveniRoleSelect) {
@@ -319,4 +400,8 @@ document.addEventListener('DOMContentLoaded', () => {
         loginView.style.display = 'flex';
         dashboardView.style.display = 'none';
     }
+
+    // Inicializační volání pro vykreslení tabulek při načtení stránky,
+    // pokud je uživatel již přihlášen (např. po refresh)
+    // Toto je již voláno v renderDashboard(), takže zde není nutné duplikovat.
 });
