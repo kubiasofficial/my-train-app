@@ -21,14 +21,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const settingsMessage = document.getElementById('settingsMessage');
     const settingsForm = document.getElementById('settingsForm');
 
+    // Discord Webhook URL - Zde je vaše URL pro odesílání zpráv
+    const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S';
+
     // --- MANUÁLNÍ DATABÁZE UŽIVATELŮ A HESEL (VŠE V PROHLÍŽEČI) ---
     // POZOR: Toto je nebezpečné pro reálné aplikace, hesla jsou v kódu!
     const users = {
-        'dispecer': { password: 'dispecerheslo', role: 'dispatcher', name: 'Eva Dvořáková' },
-        'strojvedouci': { password: 'strojvedouciheslo', role: 'driver', name: 'Jana Nováková' },
-        'admin': { password: 'adminheslo', role: 'dispatcher', name: 'Petr Král' },
-        'vaclav': { password: '1809', role: 'driver', name: 'Václav Novák' },
-        'kubiasofficial': { password: '2811', role: 'driver', name: 'Kubias Official' }
+        'dispecer': { password: 'dispecerheslo', role: 'dispatcher', name: 'Dispečer Hlavní' }, // Upraveno jméno
+        'strojvedouci': { password: 'strojvedouciheslo', role: 'driver', name: 'Václav Novák' }, // Změněno jméno na Václav Novák
+        'admin': { password: 'adminheslo', role: 'dispatcher', name: 'Admin Systému' }, // Upraveno jméno
+        'vaclav': { password: '1809', role: 'driver', name: 'Václav Novák' }, // Ponecháno
+        'kubiasofficial': { password: '2811', role: 'driver', name: 'Kubias Official' } // Ponecháno
     };
 
     let isWorking = false; // Simulace stavu docházky
@@ -72,6 +75,25 @@ document.addEventListener('DOMContentLoaded', () => {
             dochazkaStatusText.classList.add('status-inactive');
             checkInBtn.style.display = 'inline-flex';
             checkOutBtn.style.display = 'none';
+        }
+    }
+
+    // Funkce pro odeslání zprávy na Discord webhook
+    async function sendDiscordMessage(message) {
+        try {
+            const response = await fetch(DISCORD_WEBHOOK_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content: message }),
+            });
+
+            if (!response.ok) {
+                console.error('Chyba při odesílání zprávy na Discord:', response.status, response.statusText);
+            }
+        } catch (error) {
+            console.error('Chyba sítě při odesílání zprávy na Discord:', error);
         }
     }
 
@@ -139,7 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Předpokládáme, že API vrací objekt s klíčem 'time' nebo podobně
             // Příklad: { "time": "2025-07-11T17:30:00Z" }
             // Zde byste museli upravit podle skutečné struktury odpovědi
-            // Pro jednoduchost, pokud API vrací jen čas, můžeme ho zobrazit
             // const gameTimeElement = document.getElementById('game-time'); // Pokud máte takový element
             // if (gameTimeElement && data.time) {
             //     gameTimeElement.textContent = new Date(data.time).toLocaleTimeString('cs-CZ');
@@ -236,14 +257,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Event listener pro tlačítko "Příchod do práce"
     checkInBtn.addEventListener('click', () => {
         isWorking = true;
         updateDochazkaStatus();
+        const userName = localStorage.getItem('currentUserName') || 'Neznámý uživatel';
+        const currentTime = new Date().toLocaleString('cs-CZ');
+        sendDiscordMessage(`**${userName}** se právě **přihlásil do práce** v **${currentTime}**.`);
     });
 
+    // Event listener pro tlačítko "Odchod z práce"
     checkOutBtn.addEventListener('click', () => {
         isWorking = false;
         updateDochazkaStatus();
+        const userName = localStorage.getItem('currentUserName') || 'Neznámý uživatel';
+        const currentTime = new Date().toLocaleString('cs-CZ');
+        sendDiscordMessage(`**${userName}** se právě **odhlásil z práce** v **${currentTime}**.`);
     });
 
     // EVENT LISTENER PRO ZMĚNU ROLE V NASTAVENÍ
