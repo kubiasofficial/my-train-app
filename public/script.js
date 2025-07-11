@@ -21,10 +21,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const settingsMessage = document.getElementById('settingsMessage');
     const settingsForm = document.getElementById('settingsForm');
 
-    // Formulář pro přidělování zakázek a tabulka aktivních zakázek
+    // Formulář pro přidělování zakázek a tabulka aktivních zakázek (pro dispečera)
     const assignOrderForm = document.querySelector('#pridelovani-vlaku form');
     const activeOrdersTableBody = document.querySelector('#pridelovani-vlaku .data-table tbody');
     const pridelenoRidiciSelect = document.getElementById('prideleno-ridici');
+
+    // Tabulka pro moje zakázky (pro strojvedoucího)
+    const myOrdersTableBody = document.querySelector('#moje-zakazky .data-table tbody');
 
     // Discord Webhook URL - Zde je vaše URL pro odesílání zpráv
     const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S';
@@ -40,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Pole pro ukládání aktivních zakázek (pouze v paměti prohlížeče)
+    // V reálné aplikaci by toto bylo uloženo v databázi.
     let activeOrders = [];
 
     let isWorking = false; // Simulace stavu docházky
@@ -132,14 +136,15 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMessage.classList.remove('show');
     }
 
-    // Funkce pro načítání dat ze SimRail API přes náš proxy server
+    // Funkce pro načítání dat ze SimRail API (přímé volání)
     async function fetchSimRailData() {
         const serverCode = 'CZ-1'; // Váš požadovaný server
+        const trainPositionsEndpoint = `https://panel.simrail.eu:8084/train-positions-open?serverCode=${serverCode}`;
+        const timeEndpoint = `https://api1.aws.simrail.eu:8082/api/getTime?serverCode=${serverCode}`;
 
         // Získání počtu vlaků online
         try {
-            // Změna: Voláme náš vlastní proxy endpoint na Renderu
-            const response = await fetch(`/api/simrail-proxy?endpoint=train-positions-open&serverCode=${serverCode}`);
+            const response = await fetch(trainPositionsEndpoint);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -150,7 +155,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 trainsOnlineValueElement.textContent = onlineTrainsCount;
             }
         } catch (error) {
-            console.error('Chyba při načítání pozic vlaků ze SimRail API přes proxy:', error);
+            console.error('Chyba při načítání pozic vlaků ze SimRail API:', error);
+            // Můžete zde aktualizovat UI, např. zobrazit "N/A" nebo chybovou zprávu
             const trainsOnlineValueElement = document.querySelector('#prehled .card:nth-child(1) .value');
             if (trainsOnlineValueElement) {
                 trainsOnlineValueElement.textContent = 'N/A';
@@ -159,24 +165,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Získání aktuálního herního času (pokud je potřeba zobrazit)
         try {
-            // Změna: Voláme náš vlastní proxy endpoint na Renderu
-            const response = await fetch(`/api/simrail-proxy?endpoint=getTime&serverCode=${serverCode}`);
+            const response = await fetch(timeEndpoint);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
+            // Předpokládáme, že API vrací objekt s klíčem 'time' nebo podobně
+            // Příklad: { "time": "2025-07-11T17:30:00Z" }
             // Zde byste museli upravit podle skutečné struktury odpovědi
             // const gameTimeElement = document.getElementById('game-time'); // Pokud máte takový element
             // if (gameTimeElement && data.time) {
             //     gameTimeElement.textContent = new Date(data.time).toLocaleTimeString('cs-CZ');
             // }
         } catch (error) {
-            console.error('Chyba při načítání herního času ze SimRail API přes proxy:', error);
+            console.error('Chyba při načítání herního času ze SimRail API:', error);
         }
+
+        // POZNÁMKA K CORS:
+        // Přímé volání externích API z prohlížeče může narazit na CORS (Cross-Origin Resource Sharing) omezení.
+        // Pokud se objeví chyby typu "Access-Control-Allow-Origin", budete potřebovat proxy server.
+        // Pro Vercel by se to dalo řešit pomocí Vercel Serverless Function jako proxy,
+        // ale to by znamenalo návrat k "backendu" pro API volání.
     }
 
 
-    // Funkce pro dynamické vykreslení tabulky aktivních zakázek
+    // Funkce pro dynamické vykreslení tabulky aktivních zakázek (pro dispečera)
     function renderActiveOrders() {
         activeOrdersTableBody.innerHTML = ''; // Vyčistí tabulku před přidáním nových řádků
 
@@ -200,6 +213,84 @@ document.addEventListener('DOMContentLoaded', () => {
             activeOrdersTableBody.appendChild(row);
         });
     }
+
+    // Funkce pro dynamické vykreslení tabulky "Moje aktuální zakázky" (pro strojvedoucího)
+    function renderMyOrders() {
+        myOrdersTableBody.innerHTML = ''; // Vyčistí tabulku před přidáním nových řádků
+        const currentUserName = localStorage.getItem('currentUserName');
+
+        const myOrders = activeOrders.filter(order => order.prideleno === currentUserName);
+
+        if (myOrders.length === 0) {
+            const noOrdersRow = document.createElement('tr');
+            noOrdersRow.innerHTML = `<td colspan="3" style="text-align: center; padding: 20px; color: var(--muted-text);">Nemáte žádné přidělené zakázky.</td>`;
+            myOrdersTableBody.appendChild(noOrdersRow);
+            return;
+        }
+
+        myOrders.forEach(order => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>Zakázka ${order.id} - ${order.prideleno}</td>
+                <td class="status-badge ${order.stav.toLowerCase().replace(' ', '-')}">${order.stav}</td>
+                <td>
+                    ${order.stav === 'Přiřazeno' ? `<button class="btn take-order-btn" data-order-id="${order.id}" style="background-color: var(--primary-color); margin-right: 5px;"><i class="fas fa-play-circle"></i> Převzít</button>` : ''}
+                    ${order.stav === 'V provozu' ? `<button class="btn complete-order-btn" data-order-id="${order.id}" style="background-color: var(--success-color);"><i class="fas fa-check-circle"></i> Dokončit</button>` : ''}
+                </td>
+            `;
+            myOrdersTableBody.appendChild(row);
+        });
+
+        // Přidání event listenerů pro nově vytvořená tlačítka
+        document.querySelectorAll('.take-order-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const orderId = e.target.dataset.orderId;
+                handleTakeOrder(orderId);
+            });
+        });
+
+        document.querySelectorAll('.complete-order-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const orderId = e.target.dataset.orderId;
+                handleCompleteOrder(orderId);
+            });
+        });
+    }
+
+    // Funkce pro zpracování převzetí zakázky
+    function handleTakeOrder(orderId) {
+        const orderIndex = activeOrders.findIndex(order => order.id === orderId);
+        if (orderIndex !== -1) {
+            // Zkontrolujte, zda je uživatel přidělený k této zakázce
+            const currentUserName = localStorage.getItem('currentUserName');
+            if (activeOrders[orderIndex].prideleno === currentUserName) {
+                activeOrders[orderIndex].stav = 'V provozu';
+                alert(`Zakázka ${orderId} byla převzata.`); // Použijte vlastní modal
+                renderActiveOrders(); // Aktualizovat tabulku dispečera
+                renderMyOrders(); // Aktualizovat tabulku strojvedoucího
+            } else {
+                alert('Tuto zakázku nemůžete převzít, protože vám nebyla přidělena.'); // Použijte vlastní modal
+            }
+        }
+    }
+
+    // Funkce pro zpracování dokončení zakázky
+    function handleCompleteOrder(orderId) {
+        const orderIndex = activeOrders.findIndex(order => order.id === orderId);
+        if (orderIndex !== -1) {
+            // Zkontrolujte, zda je uživatel přidělený k této zakázce
+            const currentUserName = localStorage.getItem('currentUserName');
+            if (activeOrders[orderIndex].prideleno === currentUserName) {
+                activeOrders[orderIndex].stav = 'Dokončeno';
+                alert(`Zakázka ${orderId} byla dokončena.`); // Použijte vlastní modal
+                renderActiveOrders(); // Aktualizovat tabulku dispečera
+                renderMyOrders(); // Aktualizovat tabulku strojvedoucího
+            } else {
+                alert('Tuto zakázku nemůžete dokončit, protože vám nebyla přidělena.'); // Použijte vlastní modal
+            }
+        }
+    }
+
 
     // Funkce pro aktualizaci možností v selectu "Přiřadit strojvedoucímu"
     function updateDriverSelectOptions() {
@@ -271,11 +362,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // POZOR: Příliš časté volání API může vést k zablokování!
             setInterval(fetchSimRailData, 30000);
             updateDriverSelectOptions(); // Aktualizuje možnosti pro přidělování zakázek
-            renderActiveOrders(); // Vykreslí aktivní zakázky
+            renderActiveOrders(); // Vykreslí aktivní zakázky pro dispečera
         } else {
             showSection('moje-zakazky');
-            // Zde by se načítaly zakázky pro konkrétního strojvedoucího
-            // a vykreslovaly by se do tabulky #moje-zakazky .data-table tbody
+            renderMyOrders(); // Vykreslí zakázky pro přihlášeného strojvedoucího
         }
 
         updateDochazkaStatus();
@@ -346,7 +436,8 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             activeOrders.push(newOrder); // Přidá novou zakázku do pole
-            renderActiveOrders(); // Znovu vykreslí tabulku
+            renderActiveOrders(); // Znovu vykreslí tabulku pro dispečera
+            renderMyOrders(); // Znovu vykreslí tabulku pro strojvedoucího (pokud je aktivní)
 
             // Vyčistí formulář
             assignOrderForm.reset();

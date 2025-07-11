@@ -807,9 +807,7 @@
                             <label for="prideleno-ridici">Přiřadit strojvedoucímu:</label>
                             <select id="prideleno-ridici">
                                 <option value="">Vyberte strojvedoucího</option>
-                                <!-- Zde by byly dynamicky načtení aktivní strojvedoucí -->
-                                <option value="Václav Novák">Václav Novák</option>
-                                <option value="Kubias Official">Kubias Official</option>
+                                <!-- Zde budou dynamicky načtení aktivní strojvedoucí -->
                             </select>
                         </div>
                         <div class="form-group">
@@ -845,14 +843,11 @@
             <!-- Obsah sekce Moji zakázky - Pouze pro Strojvedoucího -->
             <section id="moje-zakazky" class="content-section">
                 <div class="card">
-                    <h3><i class="fas fa-clipboard-list"></i> Moje aktuální zakázky</h3>
+                    <h3><i class="fas fa-clipboard-list"></i> Název přidělené zakázky</h3>
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>ID Zakázky</th>
-                                <th>Náklad</th>
-                                <th>Původ</th>
-                                <th>Cíl</th>
+                                <th>Zakázka</th>
                                 <th>Stav</th>
                                 <th>Akce</th>
                             </tr>
