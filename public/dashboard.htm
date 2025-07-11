@@ -1,0 +1,447 @@
+document.addEventListener('DOMContentLoaded', () => {
+    // Dashboard elementy
+    const dashboardView = document.getElementById('dashboard-view');
+    const timeElement = document.getElementById('current-time');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const contentSections = document.querySelectorAll('.content-section');
+    const userRoleElement = document.getElementById('user-role');
+    const currentUsernameElement = document.getElementById('current-username');
+    const logoutBtn = document.getElementById('logout-btn');
+    const checkInBtn = document.getElementById('check-in-btn');
+    const checkOutBtn = document.getElementById('check-out-btn');
+    const dochazkaStatusText = document.getElementById('dochazka-status-text');
+    const nastaveniUsernameInput = document.getElementById('nastaveni-username');
+    const nastaveniRoleSelect = document.getElementById('nastaveni-role');
+    const settingsMessage = document.getElementById('settingsMessage');
+    const settingsForm = document.getElementById('settingsForm');
+
+    // Formulář pro přidělování zakázek a tabulka aktivních zakázek (pro dispečera)
+    const assignOrderForm = document.querySelector('#pridelovani-vlaku form');
+    const activeOrdersTableBody = document.querySelector('#pridelovani-vlaku .data-table tbody');
+    const pridelenoRidiciSelect = document.getElementById('prideleno-ridici');
+
+    // Tabulka pro moje zakázky (pro strojvedoucího)
+    const myOrdersTableBody = document.querySelector('#moje-zakazky .data-table tbody');
+
+    // Specifické Discord webhooky pro každého člena
+    const DISCORD_WEBHOOKS = {
+        'Václav Novák': 'https://discord.com/api/webhooks/1393281378711375893/NY_mgWJYiN55TKEh4GgPiFcKi5VIQuYegk1DkfAaWtKmn_4e2GK2QQL88yLsljW2REmF',
+        'Kubias Official': 'https://discord.com/api/webhooks/1393281502090887319/4wn_5xu9jf7KmigYHU1MwHP18K93wz_J-5rBqKyY4mipHF9sSeRP5KL4G-jk782MhviG'
+    };
+
+    // --- MANUÁLNÍ DATABÁZE UŽIVATELŮ A HESEL (POUZE PRO DEMO!) ---
+    const users = {
+        'dispecer': { password: 'dispecerheslo', role: 'dispatcher', name: 'Eva Dvořáková' },
+        'strojvedouci': { password: 'strojvedouciheslo', role: 'driver', name: 'Jana Nováková' },
+        'admin': { password: 'adminheslo', role: 'dispatcher', name: 'Petr Král' },
+        'vaclav': { password: '1809', role: 'driver', name: 'Václav Novák' },
+        'kubiasofficial': { password: '2811', role: 'driver', name: 'Kubias Official' }
+    };
+
+    // Pole pro ukládání aktivních zakázek (pouze v paměti prohlížeče)
+    let activeOrders = []; // Toto pole se po refreshy stránky vymaže!
+
+    let isWorking = false; // Simulace stavu docházky
+
+    // Funkce pro aktualizaci času
+    function updateTime() {
+        const now = new Date();
+        timeElement.textContent = now.toLocaleString('cs-CZ', { dateStyle: 'full', timeStyle: 'medium' });
+    }
+
+    // Funkce pro zobrazení konkrétní sekce dashboardu
+    function showSection(id) {
+        contentSections.forEach(section => {
+            section.classList.remove('active');
+        });
+        const activeSection = document.getElementById(id);
+        if (activeSection) {
+            activeSection.classList.add('active');
+        }
+
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+        });
+        const correspondingNavLink = document.querySelector(`[href="#${id}"]`);
+        if (correspondingNavLink) {
+             correspondingNavLink.classList.add('active');
+        }
+    }
+
+    // Funkce pro aktualizaci stavu docházky
+    function updateDochazkaStatus() {
+        if (isWorking) {
+            dochazkaStatusText.textContent = 'Jste v práci';
+            dochazkaStatusText.classList.remove('status-inactive');
+            dochazkaStatusText.classList.add('status-active');
+            checkInBtn.style.display = 'none';
+            checkOutBtn.style.display = 'inline-flex';
+        } else {
+            dochazkaStatusText.textContent = 'Jste mimo práci';
+            dochazkaStatusText.classList.remove('status-active');
+            dochazkaStatusText.classList.add('status-inactive');
+            checkInBtn.style.display = 'inline-flex';
+            checkOutBtn.style.display = 'none';
+        }
+    }
+
+    // Funkce pro odeslání zprávy na Discord webhook
+    async function sendDiscordMessage(webhookUrl, message) {
+        try {
+            const response = await fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content: message }),
+            });
+
+            if (!response.ok) {
+                console.error('Chyba při odesílání zprávy na Discord:', response.status, response.statusText);
+            }
+        } catch (error) {
+            console.error('Chyba sítě při odesílání zprávy na Discord:', error);
+        }
+    }
+
+    // Funkce pro odhlášení
+    function logout() {
+        localStorage.removeItem('currentUserRole');
+        localStorage.removeItem('currentUserName');
+        window.location.href = 'index.html'; // Přesměruje zpět na přihlášení
+    }
+
+    // Funkce pro dynamické vykreslení tabulky aktivních zakázek (pro dispečera)
+    function renderActiveOrders() {
+        activeOrdersTableBody.innerHTML = '';
+
+        if (activeOrders.length === 0) {
+            const noOrdersRow = document.createElement('tr');
+            noOrdersRow.innerHTML = `<td colspan="6" style="text-align: center; padding: 20px; color: var(--muted-text);">Žádné aktivní zakázky.</td>`;
+            activeOrdersTableBody.appendChild(noOrdersRow);
+            return;
+        }
+
+        activeOrders.forEach(order => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${order.id}</td>
+                <td>${order.naklad}</td>
+                <td>${order.puvod} - ${order.cil}</td>
+                <td>${order.prideleno}</td>
+                <td class="status-badge ${order.stav.toLowerCase().replace(' ', '-')}">${order.stav}</td>
+                <td>
+                    <button class="btn edit-order-btn" data-order-id="${order.id}" style="background-color: #f6ad55; padding: 5px 10px; margin-right: 5px;"><i class="fas fa-edit"></i></button>
+                    <button class="btn delete-order-btn" data-order-id="${order.id}" style="background-color: #e53e3e; padding: 5px 10px;"><i class="fas fa-times"></i></button>
+                </td>
+            `;
+            activeOrdersTableBody.appendChild(row);
+        });
+
+        document.querySelectorAll('.edit-order-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const orderId = e.target.dataset.orderId;
+                handleEditOrder(orderId);
+            });
+        });
+
+        document.querySelectorAll('.delete-order-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const orderId = e.target.dataset.orderId;
+                handleDeleteOrder(orderId);
+            });
+        });
+    }
+
+    // Funkce pro zpracování editace zakázky (pouze simulace, pro reálnou editaci by byl potřeba formulář)
+    function handleEditOrder(orderId) {
+        const order = activeOrders.find(o => o.id === orderId);
+        if (order) {
+            alert(`Simulace editace zakázky ${orderId}. Aktuální data:
+ID: ${order.id}
+Náklad: ${order.naklad}
+Původ: ${order.puvod}
+Cíl: ${order.cil}
+Přiřazeno: ${order.prideleno}
+Stav: ${order.stav}
+Poznámky: ${order.poznamky}
+
+Pro reálnou editaci byste museli implementovat formulář a logiku pro aktualizaci dat v activeOrders.`);
+        }
+    }
+
+    // Funkce pro zpracování smazání zakázky
+    function handleDeleteOrder(orderId) {
+        if (confirm(`Opravdu chcete smazat zakázku ${orderId}?`)) {
+            activeOrders = activeOrders.filter(order => order.id !== orderId);
+            renderActiveOrders(); // Znovu vykreslí tabulku dispečera
+            renderMyOrders(); // Znovu vykreslí tabulku strojvedoucího
+            alert(`Zakázka ${orderId} byla smazána.`);
+        }
+    }
+
+    // Funkce pro dynamické vykreslení tabulky "Moje aktuální zakázky" (pro strojvedoucího)
+    function renderMyOrders() {
+        myOrdersTableBody.innerHTML = '';
+        const currentUserName = localStorage.getItem('currentUserName');
+
+        const myOrders = activeOrders.filter(order => order.prideleno === currentUserName);
+
+        if (myOrders.length === 0) {
+            const noOrdersRow = document.createElement('tr');
+            noOrdersRow.innerHTML = `<td colspan="3" style="text-align: center; padding: 20px; color: var(--muted-text);">Nemáte žádné přidělené zakázky.</td>`;
+            myOrdersTableBody.appendChild(noOrdersRow);
+            return;
+        }
+
+        myOrders.forEach(order => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>Zakázka ${order.id} - ${order.prideleno}</td>
+                <td class="status-badge ${order.stav.toLowerCase().replace(' ', '-')}">${order.stav}</td>
+                <td>
+                    ${order.stav === 'Přiřazeno' ? `<button class="btn take-order-btn" data-order-id="${order.id}" style="background-color: var(--primary-color); margin-right: 5px;"><i class="fas fa-play-circle"></i> Převzít</button>` : ''}
+                    ${order.stav === 'V provozu' ? `<button class="btn complete-order-btn" data-order-id="${order.id}" style="background-color: var(--success-color);"><i class="fas fa-check-circle"></i> Dokončit</button>` : ''}
+                </td>
+            `;
+            myOrdersTableBody.appendChild(row);
+        });
+
+        document.querySelectorAll('.take-order-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const orderId = e.target.dataset.orderId;
+                handleTakeOrder(orderId);
+            });
+        });
+
+        document.querySelectorAll('.complete-order-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const orderId = e.target.dataset.orderId;
+                handleCompleteOrder(orderId);
+            });
+        });
+    }
+
+    // Funkce pro zpracování převzetí zakázky
+    function handleTakeOrder(orderId) {
+        const orderIndex = activeOrders.findIndex(order => order.id === orderId);
+        if (orderIndex !== -1) {
+            const currentUserName = localStorage.getItem('currentUserName');
+            if (activeOrders[orderIndex].prideleno === currentUserName) {
+                activeOrders[orderIndex].stav = 'V provozu';
+                alert(`Zakázka ${orderId} byla převzata.`);
+                renderActiveOrders();
+                renderMyOrders();
+            } else {
+                alert('Tuto zakázku nemůžete převzít, protože vám nebyla přidělena.');
+            }
+        }
+    }
+
+    // Funkce pro zpracování dokončení zakázky
+    function handleCompleteOrder(orderId) {
+        const orderIndex = activeOrders.findIndex(order => order.id === orderId);
+        if (orderIndex !== -1) {
+            const currentUserName = localStorage.getItem('currentUserName');
+            if (activeOrders[orderIndex].prideleno === currentUserName) {
+                activeOrders[orderIndex].stav = 'Dokončeno';
+                alert(`Zakázka ${orderId} byla dokončena.`);
+                renderActiveOrders();
+                renderMyOrders();
+            } else {
+                alert('Tuto zakázku nemůžete dokončit, protože vám nebyla přidělena.');
+            }
+        }
+    }
+
+    // Funkce pro aktualizaci možností v selectu "Přiřadit strojvedoucímu"
+    function updateDriverSelectOptions() {
+        pridelenoRidiciSelect.innerHTML = '<option value="">Vyberte strojvedoucího</option>';
+        for (const username in users) {
+            if (users[username].role === 'driver') {
+                const option = document.createElement('option');
+                option.value = users[username].name;
+                option.textContent = users[username].name;
+                pridelenoRidiciSelect.appendChild(option);
+            }
+        }
+    }
+
+    // Funkce pro inicializaci dashboardu po načtení stránky
+    function initializeDashboard() {
+        const currentUserRole = localStorage.getItem('currentUserRole');
+        const currentUserName = localStorage.getItem('currentUserName');
+
+        if (!currentUserRole) {
+            // Pokud uživatel není přihlášen, přesměrujeme ho na přihlašovací stránku
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // Zobrazí dashboard (tento soubor)
+        dashboardView.style.display = 'flex';
+
+        if (userRoleElement) {
+            userRoleElement.textContent = currentUserRole === 'dispatcher' ? 'Dispečer' : 'Strojvedoucí';
+        }
+        if (currentUsernameElement) {
+            currentUsernameElement.textContent = currentUserName || 'Neznámý uživatel';
+        }
+        if (nastaveniUsernameInput) {
+            nastaveniUsernameInput.value = currentUserName || '';
+        }
+
+        if (nastaveniRoleSelect) {
+            nastaveniRoleSelect.value = currentUserRole;
+        }
+
+        const dispatcherSections = ['pridelovani-vlaku', 'dochazka', 'clenove', 'nastaveni']; // EDR odstraněno
+        const driverSections = ['moje-zakazky', 'vykazy', 'dochazka', 'nastaveni'];
+
+        navLinks.forEach(link => {
+            const targetId = link.getAttribute('href').substring(1);
+            const listItem = link.closest('li');
+
+            if (currentUserRole === 'dispatcher') {
+                if (!dispatcherSections.includes(targetId)) {
+                    listItem.style.display = 'none';
+                } else {
+                    listItem.style.display = 'block';
+                }
+            } else if (currentUserRole === 'driver') {
+                if (!driverSections.includes(targetId)) {
+                    listItem.style.display = 'none';
+                } else {
+                    listItem.style.display = 'block';
+                }
+            }
+        });
+
+        // Nastavení výchozí sekce po přihlášení
+        if (currentUserRole === 'dispatcher') {
+            showSection('pridelovani-vlaku'); // Změněno na "Přidělování vlaků" jako výchozí
+        } else {
+            showSection('moje-zakazky');
+        }
+
+        updateDochazkaStatus();
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        updateDriverSelectOptions(); // Aktualizuje možnosti výběru řidičů
+        renderActiveOrders(); // Vykreslí aktivní zakázky
+        renderMyOrders(); // Vykreslí moje zakázky
+    }
+
+    // --- Event Listenery ---
+    logoutBtn.addEventListener('click', logout);
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('href').substring(1);
+            showSection(targetId);
+        });
+    });
+
+    checkInBtn.addEventListener('click', () => {
+        isWorking = true;
+        updateDochazkaStatus();
+        const userName = localStorage.getItem('currentUserName') || 'Neznámý uživatel';
+        const currentTime = new Date().toLocaleString('cs-CZ');
+        sendDiscordMessage(DISCORD_WEBHOOKS['Václav Novák'], `**${userName}** se právě **přihlásil do práce** v **${currentTime}**.`);
+    });
+
+    checkOutBtn.addEventListener('click', () => {
+        isWorking = false;
+        updateDochazkaStatus();
+        const userName = localStorage.getItem('currentUserName') || 'Neznámý uživatel';
+        const currentTime = new Date().toLocaleString('cs-CZ');
+        sendDiscordMessage(DISCORD_WEBHOOKS['Václav Novák'], `**${userName}** se právě **odhlásil z práce** v **${currentTime}**.`);
+    });
+
+    if (assignOrderForm) {
+        assignOrderForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const zakazkaId = document.getElementById('zakazka-id').value;
+            const typNakladu = document.getElementById('typ-nakladu').value;
+            const puvod = document.getElementById('puvod').value;
+            const cil = document.getElementById('cil').value;
+            const pridelenoRidici = document.getElementById('prideleno-ridici').value;
+            const poznamkyDispecer = document.getElementById('poznamky-dispecer').value;
+            const dispatcherName = localStorage.getItem('currentUserName') || 'Neznámý dispečer';
+
+            if (!zakazkaId || !typNakladu || !puvod || !cil || !pridelenoRidici) {
+                alert('Prosím, vyplňte všechna povinná pole pro zakázku.');
+                return;
+            }
+
+            if (activeOrders.some(order => order.id === zakazkaId)) {
+                alert(`Zakázka s ID "${zakazkaId}" již existuje. Zvolte prosím jiné ID.`);
+                return;
+            }
+
+            const newOrder = {
+                id: zakazkaId,
+                naklad: typNakladu,
+                puvod: puvod,
+                cil: cil,
+                prideleno: pridelenoRidici,
+                stav: 'Přiřazeno',
+                poznamky: poznamkyDispecer
+            };
+
+            activeOrders.push(newOrder);
+            renderActiveOrders();
+            renderMyOrders();
+
+            assignOrderForm.reset();
+            alert('Zakázka úspěšně přidělena!');
+
+            const assignedDriverWebhook = DISCORD_WEBHOOKS[pridelenoRidici];
+            if (assignedDriverWebhook) {
+                const discordMessage = `**Nová zakázka od dispečera ${dispatcherName}!**\n` +
+                                       `**ID Zakázky:** ${zakazkaId}\n` +
+                                       `**Náklad:** ${typNakladu}\n` +
+                                       `**Trasa:** ${puvod} -> ${cil}\n` +
+                                       `**Přiřazeno:** ${pridelenoRidici}\n` +
+                                       `_Nezapomeňte vyplnit výkaz jízdy, až dokončíte cestu!_`;
+                sendDiscordMessage(assignedDriverWebhook, discordMessage);
+            } else {
+                console.warn(`Webhook pro řidiče "${pridelenoRidici}" nebyl nalezen.`);
+            }
+        });
+    }
+
+    if (nastaveniRoleSelect) {
+        nastaveniRoleSelect.addEventListener('change', (e) => {
+            const newRole = e.target.value;
+            localStorage.setItem('currentUserRole', newRole);
+
+            settingsMessage.textContent = `Role byla změněna na "${newRole === 'dispatcher' ? 'Dispečer' : 'Strojvedoucí'}". Pro plné uplatnění změn se prosím odhlaste a znovu přihlaste.`;
+            settingsMessage.classList.add('show');
+            settingsMessage.style.color = 'var(--success-color)';
+
+            setTimeout(() => {
+                logout(); // Přesměrujeme na přihlašovací stránku pro načtení nové role
+            }, 2000);
+        });
+    }
+
+    if (settingsForm) {
+        settingsForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            settingsMessage.textContent = 'Nastavení uloženo (simulace).';
+            settingsMessage.classList.add('show');
+            settingsMessage.style.color = 'var(--success-color)';
+
+            setTimeout(() => {
+                settingsMessage.classList.remove('show');
+            }, 3000);
+        });
+    }
+
+    // Inicializace dashboardu při načtení stránky
+    initializeDashboard();
+});
