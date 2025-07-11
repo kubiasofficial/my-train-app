@@ -776,9 +776,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td>TRN-001</td><td>Kolín - Kutná Hora</td><td class="status-badge in-progress">V provozu</td><td>85</td><td>Přibyslavice</td></tr>
-                            <tr><td>TRN-002</td><td>Praha - Pardubice</td><td class="status-badge pending">Očekává odjezd</td><td>0</td><td>Praha hl.n.</td></tr>
-                            <!-- Další řádky dynamicky z API -->
+                            <!-- Řádky budou dynamicky načítány z API -->
                         </tbody>
                     </table>
                 </div>
@@ -838,23 +836,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>MCD-001</td>
-                                <td>Uhlí</td>
-                                <td>Ostrava - Brno</td>
-                                <td>Jana Nováková</td>
-                                <td class="status-badge assigned">Přiřazeno</td>
-                                <td><button class="btn" style="background-color: #f6ad55; padding: 5px 10px;"><i class="fas fa-edit"></i></button> <button class="btn" style="background-color: #e53e3e; padding: 5px 10px;"><i class="fas fa-times"></i></button></td>
-                            </tr>
-                            <tr>
-                                <td>MCD-002</td>
-                                <td>Kontejnery</td>
-                                <td>Praha - Liberec</td>
-                                <td>Petr Svoboda</td>
-                                <td class="status-badge in-progress">V provozu</td>
-                                <td><button class="btn" style="background-color: #f6ad55; padding: 5px 10px;"><i class="fas fa-edit"></i></button> <button class="btn" style="background-color: #e53e3e; padding: 5px 10px;"><i class="fas fa-times"></i></button></td>
-                            </tr>
-                            <!-- Dynamicky načtené a spravované zakázky -->
+                            <!-- Řádky budou dynamicky přidávány po přidělení zakázky -->
                         </tbody>
                     </table>
                 </div>
@@ -876,23 +858,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>MCD-003</td>
-                                <td>Dřevo</td>
-                                <td>České Budějovice</td>
-                                <td>Plzeň</td>
-                                <td class="status-badge assigned">Přiřazeno</td>
-                                <td><button class="btn" style="background-color: var(--primary-color);"><i class="fas fa-play-circle"></i> Spustit</button></td>
-                            </tr>
-                            <tr>
-                                <td>MCD-004</td>
-                                <td>Palivo</td>
-                                <td>Ústí nad Labem</td>
-                                <td>Děčín</td>
-                                <td class="status-badge in-progress">V provozu</td>
-                                <td><button class="btn" style="background-color: var(--success-color);"><i class="fas fa-check-circle"></i> Dokončit</button></td>
-                            </tr>
-                            <!-- Dynamicky načtené zakázky pro konkrétního strojvedoucího -->
+                            <!-- Řádky budou dynamicky načítány pro konkrétního strojvedoucího -->
                         </tbody>
                     </table>
                 </div>
@@ -908,8 +874,6 @@
                             <select id="vykaz-id-zakazky">
                                 <option value="">Vyberte dokončenou zakázku</option>
                                 <!-- Zde dynamicky načtené dokončené/aktivní zakázky pro strojvedoucího -->
-                                <option value="MCD-004">MCD-004 (Ústí n.L. - Děčín)</option>
-                                <option value="MCD-002">MCD-002 (Praha - Liberec)</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -951,9 +915,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td>MCD-002</td><td>08.07.2025</td><td>Praha - Liberec</td><td>110</td><td class="status-badge completed">Dokončeno</td></tr>
-                            <tr><td>MCD-001</td><td>07.07.2025</td><td>Ostrava - Brno</td><td>220</td><td class="status-badge completed">Dokončeno</td></tr>
-                            <!-- Dynamicky načtená historie výkazů -->
+                            <!-- Řádky budou dynamicky načítány -->
                         </tbody>
                     </table>
                 </div>
