@@ -3,50 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MultiCargoDoprava - Interní Systém</title>
+    <title>Přihlášení - MultiCargoDoprava</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* --- CSS Proměnné --- */
         :root {
             --primary-bg: #1a202c; /* Tmavé pozadí */
             --secondary-bg: #2d3748; /* Světlejší pozadí pro karty */
             --primary-color: #38b2ac; /* Tyrkysová/azurová jako hlavní barva */
             --accent-color: #4fd1c5; /* Světlejší tyrkysová pro akcenty */
             --text-color: #e2e8f0; /* Světlý text */
-            --muted-text: #a0aec0; /* Šedý text pro detaily */
             --input-border: #4a5568;
-            --border-color: #4a5568;
-            --shadow-light: rgba(0, 0, 0, 0.2);
-            --shadow-heavy: rgba(0, 0, 0, 0.4);
-            --success-color: #48bb78; /* Zelená pro úspěch */
-            --danger-color: #e53e3e; /* Červená pro chyby */
+            --shadow-dark: rgba(0, 0, 0, 0.4);
         }
 
-        /* --- Základní styly pro celé tělo --- */
         body {
             font-family: 'Montserrat', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: var(--primary-bg);
+            background: var(--primary-bg);
             color: var(--text-color);
-            line-height: 1.6;
-            display: flex;
-            min-height: 100vh;
-            overflow: hidden; /* Pro animované pozadí login stránky */
-        }
-
-        /* --- Styly pro přihlašovací stránku --- */
-        #login-view {
-            width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            overflow: hidden;
             position: relative;
-            z-index: 1;
         }
 
+        /* Abstraktní animované pozadí - vlny */
         .background-animation {
             position: absolute;
             top: 0;
@@ -189,821 +174,84 @@
             opacity: 1;
         }
 
-        /* --- Styly pro Dashboard --- */
-        #dashboard-view {
-            display: none; /* Skryto na začátku */
-            width: 100%; /* Dashboard zabere celou šířku */
-            height: 100vh; /* A celou výšku */
+        /* Animace */
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
         }
 
-        .sidebar {
-            width: 250px;
-            background-color: var(--secondary-bg);
-            padding: 30px 20px;
-            box-shadow: 2px 0 10px var(--shadow-heavy);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow-y: auto;
-            border-right: 1px solid var(--border-color);
-        }
-
-        .sidebar .logo {
-            font-size: 1.8em;
-            font-weight: 700;
-            color: var(--primary-color);
-            text-align: center;
-            margin-bottom: 40px;
-            letter-spacing: 1px;
-            position: relative;
-        }
-        .sidebar .logo::after {
-            content: '';
-            display: block;
-            width: 50px;
-            height: 3px;
-            background: var(--accent-color);
-            margin: 15px auto 0;
-            border-radius: 2px;
-        }
-
-        .sidebar nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .sidebar nav ul li {
-            margin-bottom: 15px;
-        }
-
-        .sidebar nav ul li a {
-            color: var(--text-color);
-            text-decoration: none;
-            font-size: 1.1em;
-            padding: 12px 15px;
-            display: flex;
-            align-items: center;
-            border-radius: 8px;
-            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
-            opacity: 0.9;
-        }
-
-        .sidebar nav ul li a i {
-            margin-right: 15px;
-            font-size: 1.3em;
-            color: var(--accent-color);
-            transition: color 0.3s ease;
-        }
-
-        .sidebar nav ul li a:hover,
-        .sidebar nav ul li a.active {
-            background-color: var(--primary-color);
-            color: white;
-            opacity: 1;
-            transform: translateX(5px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .sidebar nav ul li a:hover i,
-        .sidebar nav ul li a.active i {
-            color: white; /* Ikona bílá při hover/active */
-        }
-
-        .sidebar .user-info {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-            margin-top: 40px;
-        }
-        .sidebar .user-info p {
-            margin: 5px 0;
-            font-size: 0.9em;
-            color: var(--muted-text);
-        }
-        .sidebar .user-info strong {
-            color: var(--accent-color);
-            font-size: 1.1em;
-        }
-        .sidebar .logout-btn {
-            display: block;
-            width: 100%;
-            background-color: var(--danger-color);
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            margin-top: 15px;
-            text-decoration: none; /* Pro link, pokud je to href */
-        }
-        .sidebar .logout-btn:hover {
-            background-color: #c53030;
-            transform: translateY(-1px);
-        }
-
-
-        /* --- Main Content --- */
-        .main-content {
-            flex-grow: 1;
-            padding: 40px;
-            overflow-y: auto;
-        }
-
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-            background-color: var(--secondary-bg);
-            padding: 20px 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px var(--shadow-light);
-        }
-
-        .top-bar h1 {
-            margin: 0;
-            font-size: 2.5em;
-            color: var(--primary-color);
-            letter-spacing: 0.5px;
-        }
-
-        .top-bar .current-time {
-            font-size: 1.1em;
-            color: var(--muted-text);
-            display: flex;
-            align-items: center;
-        }
-        .top-bar .current-time i {
-            margin-right: 8px;
-            color: var(--accent-color);
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .card {
-            background-color: var(--secondary-bg);
-            padding: 25px 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px var(--shadow-light);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            position: relative;
-            overflow: hidden; /* Pro animované pozadí */
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px var(--shadow-heavy);
-        }
-
-        .card h3 {
-            color: var(--primary-color);
-            font-size: 1.6em;
-            margin-top: 0;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-        }
-        .card h3 i {
-            margin-right: 12px;
-            font-size: 1.2em;
-            color: var(--accent-color);
-        }
-
-        .card p {
-            color: var(--text-color);
-            margin-bottom: 15px;
-        }
-
-        .card .value {
-            font-size: 2.5em;
-            font-weight: 700;
-            color: var(--accent-color);
-            margin-bottom: 10px;
-        }
-
-        .card .btn {
-            display: inline-flex;
-            align-items: center;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .card .btn:hover {
-            background-color: var(--accent-color);
-            transform: translateY(-2px);
-        }
-        .card .btn i {
-            margin-right: 8px;
-        }
-
-        /* Specifické styly pro docházku */
-        .dochazka-status {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .dochazka-status p {
-            font-size: 1.2em;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-        .dochazka-status .status-active {
-            color: var(--success-color);
-        }
-        .dochazka-status .status-inactive {
-            color: var(--danger-color);
-        }
-        .dochazka-actions .btn {
-            margin: 0 10px;
-        }
-
-        /* Tabulky */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background-color: var(--secondary-bg);
-            border-radius: 12px;
-            overflow: hidden; /* Pro zaoblené rohy */
-            box-shadow: 0 4px 15px var(--shadow-light);
-        }
-
-        .data-table th, .data-table td {
-            padding: 15px 20px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .data-table th {
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.9em;
-            letter-spacing: 0.5px;
-        }
-
-        .data-table tr:nth-child(even) {
-            background-color: #2a323e; /* Trochu tmavší pro sudé řádky */
-        }
-        .data-table tr:hover {
-            background-color: #3e4a5c; /* Efekt při najetí myší */
-        }
-
-        .data-table .status-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .status-badge.pending { background-color: #f6ad55; color: #6a400a; } /* Oranžová */
-        .status-badge.assigned { background-color: #4299e1; color: #1e3a8a; } /* Modrá */
-        .status-badge.completed { background-color: var(--success-color); color: #276749; } /* Zelená */
-        .status-badge.in-progress { background-color: #ecc94b; color: #744210; } /* Žlutá */
-
-        /* Formuláře */
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-color);
-            font-weight: 600;
-        }
-        .form-group input[type="text"],
-        .form-group input[type="number"],
-        .form-group textarea,
-        .form-group select,
-        .form-group input[type="datetime-local"],
-        .form-group input[type="email"],
-        .form-group input[type="password"] {
-            width: calc(100% - 22px);
-            padding: 12px 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background-color: var(--primary-bg);
-            color: var(--text-color);
-            font-size: 1em;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            border-color: var(--primary-color);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(56, 178, 172, 0.3);
-        }
-        .form-group textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-
-        .form-actions {
-            text-align: right;
-            margin-top: 30px;
-        }
-        .form-actions button {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-        .form-actions button:hover {
-            background-color: var(--accent-color);
-            transform: translateY(-2px);
-        }
-
-        /* --- Animace prvků --- */
-        .card, .top-bar, .data-table, .form-section {
-            opacity: 0;
-            transform: translateY(20px);
-            animation: slideInUp 0.6s ease-out forwards;
-        }
-        .card:nth-child(1) { animation-delay: 0.1s; }
-        .card:nth-child(2) { animation-delay: 0.2s; }
-        .card:nth-child(3) { animation-delay: 0.3s; }
-        .card:nth-child(4) { animation-delay: 0.4s; }
-        .data-table { animation-delay: 0.5s; }
-        .form-section { animation-delay: 0.6s; }
-
-        @keyframes slideInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Přepínání obsahu pomocí JS */
-        .content-section {
-            display: none; /* Všechny sekce jsou na začátku skryté */
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-        .content-section.active {
-            display: block; /* Aktivní sekce se zobrazí */
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* --- Responzivní design --- */
-        @media (max-width: 992px) {
-            .sidebar {
-                width: 80px;
-                padding: 20px 10px;
-            }
-            .sidebar .logo span {
-                display: none; /* Skryje text, ponechá jen ikonu, pokud je */
-            }
-            .sidebar .logo::after {
-                width: 30px;
-            }
-            .sidebar nav ul li a {
-                justify-content: center;
-                padding: 10px 0;
-            }
-            .sidebar nav ul li a span {
-                display: none;
-            }
-            .sidebar nav ul li a i {
-                margin-right: 0;
-                font-size: 1.5em;
-            }
-            .sidebar .user-info {
-                display: none; /* Skrýt info uživatele v malém režimu */
-            }
-            .main-content {
-                padding: 20px;
-            }
-            .top-bar {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 15px 20px;
-            }
-            .top-bar h1 {
-                font-size: 2em;
-                margin-bottom: 10px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-                box-shadow: 0 2px 10px var(--shadow-heavy);
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-            }
-            .sidebar nav ul {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 10px;
-                margin-top: 15px;
-            }
-            .sidebar nav ul li {
-                margin-bottom: 0;
-            }
-            .sidebar nav ul li a {
-                padding: 8px 15px;
-                font-size: 0.9em;
-            }
-            .sidebar .logo {
-                margin-bottom: 15px;
-            }
-            .sidebar .logo span {
-                display: inline; /* Znovu zobrazit text na mobilu, pokud je místo */
-            }
-            .sidebar .user-info {
-                display: block;
-                margin-top: 20px;
-                border-top: none;
-            }
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            .data-table th, .data-table td {
-                padding: 10px 15px;
-                font-size: 0.9em;
-            }
-        }
-
-        @media (max-width: 480px) {
+        /* Responzivní design */
+        @media (max-width: 500px) {
             .login-container {
-                padding: 25px 15px;
+                padding: 30px 20px;
+                margin: 20px;
             }
             .login-container h2 {
-                font-size: 1.6em;
+                font-size: 1.8em;
             }
         }
     </style>
 </head>
 <body>
-
-    <!-- Přihlašovací stránka -->
-    <div id="login-view">
-        <div class="background-animation"></div>
-        <div class="login-container">
-            <h2>Přihlášení<br>MultiCargoDoprava</h2>
-            <form id="loginForm">
-                <div class="input-group">
-                    <label for="username"><i class="fas fa-user icon"></i> Uživatelské jméno</label>
-                    <input type="text" id="username" name="username" required>
-                </div>
-                <div class="input-group">
-                    <label for="password"><i class="fas fa-lock icon"></i> Heslo</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <button type="submit" class="login-button">Přihlásit se</button>
-                <p id="errorMessage" class="error-message"></p>
-            </form>
-        </div>
+    <div class="background-animation"></div>
+    <div class="login-container">
+        <h2>Přihlášení<br>MultiCargoDoprava</h2>
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="username"><i class="fas fa-user icon"></i> Uživatelské jméno</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="input-group">
+                <label for="password"><i class="fas fa-lock icon"></i> Heslo</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="login-button">Přihlásit se</button>
+            <p id="errorMessage" class="error-message"></p>
+        </form>
     </div>
 
-    <!-- Dashboard - skrytý na začátku -->
-    <div id="dashboard-view">
-        <aside class="sidebar">
-            <div>
-                <div class="logo">
-                    <i class="fas fa-truck-moving"></i> MultiCargo<span>Doprava</span>
-                </div>
-                <nav>
-                    <ul>
-                        <!-- Dispečer a strojvedoucí -->
-                        <li><a href="#dochazka" class="nav-link"><i class="fas fa-clock"></i> Docházka</a></li>
-                        <li><a href="#nastaveni" class="nav-link"><i class="fas fa-cogs"></i> Nastavení</a></li>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.getElementById('loginForm');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const errorMessage = document.getElementById('errorMessage');
 
-                        <!-- Pouze pro dispečera -->
-                        <li><a href="#prehled" class="nav-link"><i class="fas fa-tachometer-alt"></i> Přehled EDR</a></li>
-                        <li><a href="#pridelovani-vlaku" class="nav-link"><i class="fas fa-truck-loading"></i> Přidělování vlaků</a></li>
-                        <li><a href="#clenove" class="nav-link"><i class="fas fa-users"></i> Členové</a></li>
+            // --- MANUÁLNÍ DATABÁZE UŽIVATELŮ A HESEL (POUZE PRO DEMO!) ---
+            const users = {
+                'dispecer': { password: 'dispecerheslo', role: 'dispatcher', name: 'Eva Dvořáková' },
+                'strojvedouci': { password: 'strojvedouciheslo', role: 'driver', name: 'Jana Nováková' },
+                'admin': { password: 'adminheslo', role: 'dispatcher', name: 'Petr Král' },
+                'vaclav': { password: '1809', role: 'driver', name: 'Václav Novák' },
+                'kubiasofficial': { password: '2811', role: 'driver', name: 'Kubias Official' }
+            };
 
-                        <!-- Pouze pro strojvedoucího -->
-                        <li><a href="#moje-zakazky" class="nav-link"><i class="fas fa-clipboard-list"></i> Moje zakázky</a></li>
-                        <li><a href="#vykazy" class="nav-link"><i class="fas fa-file-invoice"></i> Vykazy tras</a></li>
-                    </ul>
-                </nav>
-            </div>
-            <div class="user-info">
-                <p>Přihlášen jako:</p>
-                <p><strong><span id="current-username"></span></strong></p>
-                <p>Role: <strong id="user-role"></strong></p>
-                <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Odhlásit se</button>
-            </div>
-        </aside>
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault(); // Zabrání výchozímu odeslání formuláře
 
-        <div class="main-content">
-            <div class="top-bar">
-                <h1>Dashboard</h1>
-                <div class="current-time">
-                    <i class="fas fa-calendar-alt"></i> <span id="current-time"></span>
-                </div>
-            </div>
+                const username = usernameInput.value;
+                const password = passwordInput.value;
 
-            <!-- Obsah sekce Docházka - pro obě role -->
-            <section id="dochazka" class="content-section">
-                <div class="card">
-                    <h3><i class="fas fa-clock"></i> Docházkový systém</h3>
-                    <div class="dochazka-status">
-                        <p>Aktuální stav: <span id="dochazka-status-text" class="status-inactive">Jste mimo práci</span></p>
-                        <div class="dochazka-actions">
-                            <button id="check-in-btn" class="btn"><i class="fas fa-door-open"></i> Příchod do práce</button>
-                            <button id="check-out-btn" class="btn" style="display:none;"><i class="fas fa-door-closed"></i> Odchod z práce</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
+                if (users[username] && users[username].password === password) {
+                    // Úspěšné přihlášení
+                    errorMessage.classList.remove('show'); // Skryje chybovou zprávu
 
-            <!-- Obsah sekce Přehled EDR - Pouze pro Dispečera -->
-            <section id="prehled" class="content-section">
-                <div class="card">
-                    <h3><i class="fas fa-tachometer-alt"></i> Přehled EDR (SimRail API)</h3>
-                    <p>Zde se budou zobrazovat **aktuální data z SimRail EDR API** v reálném čase pro server CZ-1.</p>
-                    <div class="dashboard-grid">
-                        <div class="card">
-                            <h3><i class="fas fa-map-marker-alt"></i> Počet vlaků online</h3>
-                            <div class="value" id="online-trains-count">Načítám...</div>
-                            <p>Aktivních vlakových souprav v síti.</p>
-                        </div>
-                        <div class="card">
-                            <h3><i class="fas fa-box-open"></i> Celkový náklad</h3>
-                            <div class="value" id="total-cargo-weight">Načítám...</div>
-                            <p>Celkové množství nákladu v provozu.</p>
-                        </div>
-                        <div class="card">
-                            <h3><i class="fas fa-clock"></i> Průměrné zpoždění</h3>
-                            <div class="value" id="average-delay">Načítám...</div>
-                            <p>Aktuální průměrné zpoždění vlaků v síti.</p>
-                        </div>
-                    </div>
-                    <h4>Detailní data EDR - Aktivní vlaky</h4>
-                    <table class="data-table" id="edr-train-data">
-                        <thead>
-                            <tr>
-                                <th>ID Vlaku</th>
-                                <th>Typ</th>
-                                <th>Z/Do</th>
-                                <th>Status</th>
-                                <th>Rychlost (km/h)</th>
-                                <th>Zpoždění (min)</th>
-                                <th>Aktuální lokace</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Řádky budou dynamicky načítány z API -->
-                            <tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--muted-text);">Načítám data...</td></tr>
-                        </tbody>
-                    </table>
+                    // Uloží roli a jméno uživatele do localStorage
+                    localStorage.setItem('currentUserRole', users[username].role);
+                    localStorage.setItem('currentUserName', users[username].name);
 
-                    <h4 style="margin-top: 40px;">Detailní data EDR - Stanice</h4>
-                    <table class="data-table" id="edr-station-data">
-                        <thead>
-                            <tr>
-                                <th>Název Stanice</th>
-                                <th>Obsazenost (%)</th>
-                                <th>Vlaky ve stanici</th>
-                                <th>Čekající vlaky</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Řádky budou dynamicky načítány z API -->
-                            <tr><td colspan="4" style="text-align: center; padding: 20px; color: var(--muted-text);">Načítám data...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Obsah sekce Přidělování vlaků - Pouze pro Dispečera -->
-            <section id="pridelovani-vlaku" class="content-section">
-                <div class="card form-section">
-                    <h3><i class="fas fa-truck-loading"></i> Přidělování nových zakázek</h3>
-                    <form>
-                        <div class="form-group">
-                            <label for="zakazka-id">ID Zakázky / Vlaku:</label>
-                            <input type="text" id="zakazka-id" placeholder="Např. MCD-001" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="typ-nakladu">Typ nákladu:</label>
-                            <input type="text" id="typ-nakladu" placeholder="Např. Uhlí, Dřevo, Kontejnery" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="puvod">Původ (SimRail lokace):</label>
-                            <input type="text" id="puvod" placeholder="Např. Ostrava hl.n." required>
-                        </div>
-                        <div class="form-group">
-                            <label for="cil">Cíl (SimRail lokace):</label>
-                            <input type="text" id="cil" placeholder="Např. Brno hl.n." required>
-                        </div>
-                        <div class="form-group">
-                            <label for="prideleno-ridici">Přiřadit strojvedoucímu:</label>
-                            <select id="prideleno-ridici">
-                                <option value="">Vyberte strojvedoucího</option>
-                                <!-- Zde budou dynamicky načtení aktivní strojvedoucí -->
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="poznamky-dispecer">Poznámky pro strojvedoucího:</label>
-                            <textarea id="poznamky-dispecer" rows="3" placeholder="Doplňující informace k zakázce..."></textarea>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit"><i class="fas fa-share-square"></i> Přiřadit zakázku</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="card form-section" style="margin-top: 30px;">
-                    <h3><i class="fas fa-list-alt"></i> Aktivní zakázky</h3>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>ID Zakázky</th>
-                                <th>Náklad</th>
-                                <th>Trasa</th>
-                                <th>Přiřazeno</th>
-                                <th>Stav</th>
-                                <th>Akce</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Řádky budou dynamicky přidávány po přidělení zakázky -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Obsah sekce Moji zakázky - Pouze pro Strojvedoucího -->
-            <section id="moje-zakazky" class="content-section">
-                <div class="card">
-                    <h3><i class="fas fa-clipboard-list"></i> Název přidělené zakázky</h3>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Zakázka</th>
-                                <th>Stav</th>
-                                <th>Akce</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Řádky budou dynamicky načítány pro konkrétního strojvedoucího -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Obsah sekce Výkazy tras - Pouze pro Strojvedoucího -->
-            <section id="vykazy" class="content-section">
-                <div class="card form-section">
-                    <h3><i class="fas fa-file-invoice"></i> Vyplnit výkaz jízdy</h3>
-                    <form>
-                        <div class="form-group">
-                            <label for="vykaz-id-zakazky">ID Zakázky:</label>
-                            <select id="vykaz-id-zakazky">
-                                <option value="">Vyberte dokončenou zakázku</option>
-                                <!-- Zde dynamicky načtené dokončené/aktivní zakázky pro strojvedoucího -->
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="start-cas">Čas odjezdu:</label>
-                            <input type="datetime-local" id="start-cas" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="konec-cas">Čas příjezdu:</label>
-                            <input type="datetime-local" id="konec-cas" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="ujete-km">Ujeté kilometry (v SimRailu):</label>
-                            <input type="number" id="ujete-km" min="0" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="spotreba">Spotřeba energie/paliva (pokud SimRail umožňuje sledovat):</label>
-                            <input type="text" id="spotreba" placeholder="Např. 500 kWh / 1200 l">
-                        </div>
-                        <div class="form-group">
-                            <label for="problemy">Poznámky / Problémy na trase:</label>
-                            <textarea id="problemy" rows="4" placeholder="Zaznamenejte případné incidenty, zpoždění, technické problémy..."></textarea>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit"><i class="fas fa-check-circle"></i> Odeslat výkaz</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="card form-section" style="margin-top: 30px;">
-                    <h3><i class="fas fa-history"></i> Historie mých výkazů</h3>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>ID Zakázky</th>
-                                <th>Datum</th>
-                                <th>Trasa</th>
-                                <th>Ujeto (km)</th>
-                                <th>Stav</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Řádky budou dynamicky načítány -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Obsah sekce Členové - Pouze pro Dispečera -->
-            <section id="clenove" class="content-section">
-                <div class="card">
-                    <h3><i class="fas fa-users"></i> Seznam členů firmy</h3>
-                    <p>Přehled všech aktivních členů MultiCargoDoprava, jejich role a aktuální status.</p>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Jméno</th>
-                                <th>Role</th>
-                                <th>Status docházky</th>
-                                <th>Poslední aktivita</th>
-                                <th>Akce</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>Václav Novák</td><td>Strojvedoucí</td><td class="status-badge status-inactive">Mimo práci</td><td>Před 1 hod.</td><td><button class="btn" style="background-color: #4299e1; padding: 5px 10px;"><i class="fas fa-info-circle"></i> Detail</button></td></tr>
-                            <tr><td>Kubias Official</td><td>Strojvedoucí</td><td class="status-badge status-active">V práci</td><td>Nyní (jízda test)</td><td><button class="btn" style="background-color: #4299e1; padding: 5px 10px;"><i class="fas fa-info-circle"></i> Detail</button></td></tr>
-                            <!-- Další členové -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Obsah sekce Nastavení - pro obě role -->
-            <section id="nastaveni" class="content-section">
-                <div class="card form-section">
-                    <h3><i class="fas fa-cogs"></i> Nastavení profilu</h3>
-                    <form id="settingsForm"> <!-- Přidáno ID pro snadnější manipulaci JS -->
-                        <div class="form-group">
-                            <label for="nastaveni-username">Uživatelské jméno:</label>
-                            <input type="text" id="nastaveni-username" value="" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="nastaveni-email">Email:</label>
-                            <input type="email" id="nastaveni-email" placeholder="vas.email@firma.cz">
-                        </div>
-                        <div class="form-group">
-                            <label for="nastaveni-simrail-id">SimRail ID:</label>
-                            <input type="text" id="nastaveni-simrail-id" placeholder="VaseSimRailID">
-                        </div>
-                        <!-- NOVÝ PRVEK: Výběr role -->
-                        <div class="form-group">
-                            <label for="nastaveni-role">Role:</label>
-                            <select id="nastaveni-role">
-                                <option value="driver">Strojvedoucí</option>
-                                <option value="dispatcher">Dispečer</option>
-                            </select>
-                            <p class="role-change-warning" style="font-size: 0.85em; color: var(--muted-text); margin-top: 5px;">
-                                *Změna role vyžaduje opětovné přihlášení pro plné uplatnění práv.*
-                            </p>
-                        </div>
-                        <div class="form-group">
-                            <label for="nastaveni-password">Změnit heslo:</label>
-                            <input type="password" id="nastaveni-password" placeholder="Nové heslo">
-                        </div>
-                        <div class="form-group">
-                            <label for="nastaveni-password-confirm">Potvrdit nové heslo:</label>
-                            <input type="password" id="nastaveni-password-confirm" placeholder="Potvrzení hesla">
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit"><i class="fas fa-save"></i> Uložit nastavení</button>
-                        </div>
-                        <p id="settingsMessage" class="error-message"></p> <!-- Pro zprávy o uložení/chybě -->
-                    </form>
-                </div>
-            </section>
-
-        </div>
-    </div>
-
-    <script src="script.js"></script>
+                    // Po přihlášení uživatel zůstane na této stránce.
+                    // Pokud byste chtěl/a po přihlášení zobrazit nějaký obsah,
+                    // musel/a byste ho přidat přímo do tohoto souboru index.html
+                    // nebo přesměrovat na jinou existující stránku.
+                    alert('Přihlášení úspěšné!'); // Pouze pro informaci, že přihlášení proběhlo
+                } else {
+                    // Neúspěšné přihlášení
+                    errorMessage.textContent = 'Neplatné uživatelské jméno nebo heslo.';
+                    errorMessage.classList.add('show'); // Zobrazí chybovou zprávu
+                }
+            });
+        });
+    </script>
 </body>
 </html>
