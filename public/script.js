@@ -17,15 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const dochazkaStatusText = document.getElementById('dochazka-status-text');
     const nastaveniUsernameInput = document.getElementById('nastaveni-username');
 
-    // NOVÉ ELEMENTY PRO NASTAVENÍ ROLE
     const nastaveniRoleSelect = document.getElementById('nastaveni-role');
     const settingsMessage = document.getElementById('settingsMessage');
     const settingsForm = document.getElementById('settingsForm');
 
-
-    // --- MANUÁLNÍ DATABÁZE UŽIVATELŮ A HESEL (POUZE PRO DEMO!) ---
-    // POZOR: Změna role zde je pouze na straně klienta (v prohlížeči).
-    // Pro reálnou aplikaci by bylo nutné ověřování a ukládání role na serveru!
+    // --- MANUÁLNÍ DATABÁZE UŽIVATELŮ A HESEL (VŠE V PROHLÍŽEČI) ---
+    // POZOR: Toto je nebezpečné pro reálné aplikace, hesla jsou v kódu!
     const users = {
         'dispecer': { password: 'dispecerheslo', role: 'dispatcher', name: 'Eva Dvořáková' },
         'strojvedouci': { password: 'strojvedouciheslo', role: 'driver', name: 'Jana Nováková' },
@@ -78,14 +75,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Funkce pro přihlášení
+    // --- PŘIHLÁŠENÍ BEZ DATABÁZE (LOKÁLNÍ OVĚŘENÍ) ---
     function login(username, password) {
+        errorMessage.classList.remove('show'); // Skryje předchozí chybu
+
         if (users[username] && users[username].password === password) {
-            errorMessage.classList.remove('show');
+            // Úspěšné přihlášení
             localStorage.setItem('currentUserRole', users[username].role);
             localStorage.setItem('currentUserName', users[username].name);
-            renderDashboard(); // Zobrazí dashboard
+            renderDashboard();
         } else {
+            // Neúspěšné přihlášení
             errorMessage.textContent = 'Neplatné uživatelské jméno nebo heslo.';
             errorMessage.classList.add('show');
         }
@@ -97,10 +97,64 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('currentUserName');
         loginView.style.display = 'flex';
         dashboardView.style.display = 'none';
-        usernameInput.value = ''; // Vyčistí pole
+        usernameInput.value = '';
         passwordInput.value = '';
         errorMessage.classList.remove('show');
     }
+
+    // Funkce pro načítání dat ze SimRail API
+    async function fetchSimRailData() {
+        const serverCode = 'CZ-1'; // Váš požadovaný server
+        const trainPositionsEndpoint = `https://panel.simrail.eu:8084/train-positions-open?serverCode=${serverCode}`;
+        const timeEndpoint = `https://api1.aws.simrail.eu:8082/api/getTime?serverCode=${serverCode}`;
+
+        // Získání počtu vlaků online
+        try {
+            const response = await fetch(trainPositionsEndpoint);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            const onlineTrainsCount = data.length; // Předpokládáme, že API vrací pole vlaků
+            const trainsOnlineValueElement = document.querySelector('#prehled .card:nth-child(1) .value');
+            if (trainsOnlineValueElement) {
+                trainsOnlineValueElement.textContent = onlineTrainsCount;
+            }
+        } catch (error) {
+            console.error('Chyba při načítání pozic vlaků ze SimRail API:', error);
+            // Můžete zde aktualizovat UI, např. zobrazit "N/A" nebo chybovou zprávu
+            const trainsOnlineValueElement = document.querySelector('#prehled .card:nth-child(1) .value');
+            if (trainsOnlineValueElement) {
+                trainsOnlineValueElement.textContent = 'N/A';
+            }
+        }
+
+        // Získání aktuálního herního času (pokud je potřeba zobrazit)
+        try {
+            const response = await fetch(timeEndpoint);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            // Předpokládáme, že API vrací objekt s klíčem 'time' nebo podobně
+            // Příklad: { "time": "2025-07-11T17:30:00Z" }
+            // Zde byste museli upravit podle skutečné struktury odpovědi
+            // Pro jednoduchost, pokud API vrací jen čas, můžeme ho zobrazit
+            // const gameTimeElement = document.getElementById('game-time'); // Pokud máte takový element
+            // if (gameTimeElement && data.time) {
+            //     gameTimeElement.textContent = new Date(data.time).toLocaleTimeString('cs-CZ');
+            // }
+        } catch (error) {
+            console.error('Chyba při načítání herního času ze SimRail API:', error);
+        }
+
+        // POZNÁMKA K CORS:
+        // Přímé volání externích API z prohlížeče může narazit na CORS (Cross-Origin Resource Sharing) omezení.
+        // Pokud se objeví chyby typu "Access-Control-Allow-Origin", budete potřebovat proxy server.
+        // Pro Vercel by se to dalo řešit pomocí Vercel Serverless Function jako proxy,
+        // ale to by znamenalo návrat k "backendu" pro API volání.
+    }
+
 
     // Funkce pro zobrazení dashboardu po přihlášení
     function renderDashboard() {
@@ -108,12 +162,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentUserName = localStorage.getItem('currentUserName');
 
         if (!currentUserRole) {
-            logout(); // Pokud není role, odhlásí a vrátí na login
+            logout();
             return;
         }
 
         loginView.style.display = 'none';
-        dashboardView.style.display = 'flex'; // Zobrazí dashboard
+        dashboardView.style.display = 'flex';
 
         if (userRoleElement) {
             userRoleElement.textContent = currentUserRole === 'dispatcher' ? 'Dispečer' : 'Strojvedoucí';
@@ -125,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
             nastaveniUsernameInput.value = currentUserName || '';
         }
 
-        // Nastavení aktuální role ve výběru v nastavení
         if (nastaveniRoleSelect) {
             nastaveniRoleSelect.value = currentUserRole;
         }
@@ -152,16 +205,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Nastavení výchozí sekce po přihlášení
         if (currentUserRole === 'dispatcher') {
             showSection('prehled');
+            fetchSimRailData(); // Načte data ze SimRail API, když je zobrazen přehled
+            // Nastaví interval pro pravidelné načítání dat (např. každých 30 sekund)
+            // POZOR: Příliš časté volání API může vést k zablokování!
+            setInterval(fetchSimRailData, 30000);
         } else {
             showSection('moje-zakazky');
         }
 
-        updateDochazkaStatus(); // Aktualizuje stav docházky
-        setInterval(updateTime, 1000); // Spustí aktualizaci času
-        updateTime(); // První zobrazení času
+        updateDochazkaStatus();
+        setInterval(updateTime, 1000);
+        updateTime();
     }
 
     // --- Event Listenery ---
@@ -183,42 +239,39 @@ document.addEventListener('DOMContentLoaded', () => {
     checkInBtn.addEventListener('click', () => {
         isWorking = true;
         updateDochazkaStatus();
-        // alert('Úspěšně jste se přihlásil do práce!');
     });
 
     checkOutBtn.addEventListener('click', () => {
         isWorking = false;
         updateDochazkaStatus();
-        // alert('Úspěšně jste se odhlásil z práce!');
     });
 
-    // NOVÝ EVENT LISTENER PRO ZMĚNU ROLE V NASTAVENÍ
+    // EVENT LISTENER PRO ZMĚNU ROLE V NASTAVENÍ
     if (nastaveniRoleSelect) {
         nastaveniRoleSelect.addEventListener('change', (e) => {
             const newRole = e.target.value;
             localStorage.setItem('currentUserRole', newRole); // Aktualizuje roli v localStorage
 
-            // Zobrazí zprávu o úspěšné změně
             settingsMessage.textContent = `Role byla změněna na "${newRole === 'dispatcher' ? 'Dispečer' : 'Strojvedoucí'}". Pro plné uplatnění změn se prosím odhlaste a znovu přihlaste.`;
             settingsMessage.classList.add('show');
-            settingsMessage.style.color = 'var(--success-color)'; // Zelená barva pro úspěch
+            settingsMessage.style.color = 'var(--success-color)';
 
-            // Okamžité překreslení dashboardu pro zobrazení změn v menu atd.
-            renderDashboard();
+            renderDashboard(); // Okamžité překreslení dashboardu pro zobrazení změn v menu atd.
 
-            // Skryje zprávu po několika sekundách
             setTimeout(() => {
                 settingsMessage.classList.remove('show');
             }, 5000);
         });
     }
 
-    // NOVÝ EVENT LISTENER PRO ODESLÁNÍ FORMULÁŘE NASTAVENÍ (pro ostatní pole)
+    // EVENT LISTENER PRO ODESLÁNÍ FORMULÁŘE NASTAVENÍ (pro ostatní pole)
     if (settingsForm) {
         settingsForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            // Zde by v reálné aplikaci proběhlo odeslání dat na backend.
-            // Prozatím jen zobrazíme simulovanou zprávu o uložení.
+            // Všechna nastavení se ukládají jen v prohlížeči, ne perzistentně.
+            // Zde byste mohli přidat logiku pro uložení např. emailu nebo SimRail ID
+            // do localStorage, pokud byste je chtěli "pamatovat".
+
             settingsMessage.textContent = 'Nastavení uloženo (simulace).';
             settingsMessage.classList.add('show');
             settingsMessage.style.color = 'var(--success-color)';
