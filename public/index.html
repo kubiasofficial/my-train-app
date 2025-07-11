@@ -15,6 +15,7 @@
             --text-color: #e2e8f0; /* Světlý text */
             --input-border: #4a5568;
             --shadow-dark: rgba(0, 0, 0, 0.4);
+            --danger-color: #e53e3e; /* Červená pro chyby */
         }
 
         body {
@@ -31,7 +32,6 @@
             position: relative;
         }
 
-        /* Abstraktní animované pozadí - vlny */
         .background-animation {
             position: absolute;
             top: 0;
@@ -240,11 +240,8 @@
                     localStorage.setItem('currentUserRole', users[username].role);
                     localStorage.setItem('currentUserName', users[username].name);
 
-                    // Po přihlášení uživatel zůstane na této stránce.
-                    // Pokud byste chtěl/a po přihlášení zobrazit nějaký obsah,
-                    // musel/a byste ho přidat přímo do tohoto souboru index.html
-                    // nebo přesměrovat na jinou existující stránku.
-                    alert('Přihlášení úspěšné!'); // Pouze pro informaci, že přihlášení proběhlo
+                    // Přesměrování na dashboard.html
+                    window.location.href = 'dashboard.html';
                 } else {
                     // Neúspěšné přihlášení
                     errorMessage.textContent = 'Neplatné uživatelské jméno nebo heslo.';
