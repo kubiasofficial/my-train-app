@@ -29,8 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Tabulka pro moje zakázky (pro strojvedoucího)
     const myOrdersTableBody = document.querySelector('#moje-zakazky .data-table tbody');
 
-    // Discord Webhook URL - Zde je vaše URL pro odesílání zpráv
-    const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S';
+    // Specifické Discord webhooky pro každého člena
+    const DISCORD_WEBHOOKS = {
+        'Václav Novák': 'https://discord.com/api/webhooks/1393281378711375893/NY_mgWJYiN55TKEh4GgPiFcKi5VIQuYegk1DkfAaWtKmn_4e2GK2QQL88yLsljW2REmF',
+        'Kubias Official': 'https://discord.com/api/webhooks/1393281502090887319/4wn_5xu9jf7KmigYHU1MwHP18K93wz_J-5rBqKyY4mipHF9sSeRP5KL4G-jk782MhviG'
+    };
+
 
     // --- MANUÁLNÍ DATABÁZE UŽIVATELŮ A HESEL (VŠE V PROHLÍŽEČI) ---
     // POZOR: Toto je nebezpečné pro reálné aplikace, hesla jsou v kódu!
@@ -44,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Pole pro ukládání aktivních zakázek (pouze v paměti prohlížeče)
     // V reálné aplikaci by toto bylo uloženo v databázi.
-    let activeOrders = [];
+    let activeOrders = []; // Toto pole se po refreshy stránky vymaže!
 
     let isWorking = false; // Simulace stavu docházky
 
@@ -91,9 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Funkce pro odeslání zprávy na Discord webhook
-    async function sendDiscordMessage(message) {
+    // Nyní přijímá URL webhooku jako parametr
+    async function sendDiscordMessage(webhookUrl, message) {
         try {
-            const response = await fetch(DISCORD_WEBHOOK_URL, {
+            const response = await fetch(webhookUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -149,14 +154,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            const onlineTrainsCount = data.length; // Předpokládáme, že API vrací pole vlaků
             const trainsOnlineValueElement = document.querySelector('#prehled .card:nth-child(1) .value');
             if (trainsOnlineValueElement) {
-                trainsOnlineValueElement.textContent = onlineTrainsCount;
+                trainsOnlineValueElement.textContent = data.length;
             }
         } catch (error) {
             console.error('Chyba při načítání pozic vlaků ze SimRail API:', error);
-            // Můžete zde aktualizovat UI, např. zobrazit "N/A" nebo chybovou zprávu
             const trainsOnlineValueElement = document.querySelector('#prehled .card:nth-child(1) .value');
             if (trainsOnlineValueElement) {
                 trainsOnlineValueElement.textContent = 'N/A';
@@ -170,28 +173,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            // Předpokládáme, že API vrací objekt s klíčem 'time' nebo podobně
-            // Příklad: { "time": "2025-07-11T17:30:00Z" }
-            // Zde byste museli upravit podle skutečné struktury odpovědi
-            // const gameTimeElement = document.getElementById('game-time'); // Pokud máte takový element
-            // if (gameTimeElement && data.time) {
-            //     gameTimeElement.textContent = new Date(data.time).toLocaleTimeString('cs-CZ');
-            // }
+            // Implementace zobrazení herního času, pokud je potřeba
         } catch (error) {
             console.error('Chyba při načítání herního času ze SimRail API:', error);
         }
-
-        // POZNÁMKA K CORS:
-        // Přímé volání externích API z prohlížeče může narazit na CORS (Cross-Origin Resource Sharing) omezení.
-        // Pokud se objeví chyby typu "Access-Control-Allow-Origin", budete potřebovat proxy server.
-        // Pro Vercel by se to dalo řešit pomocí Vercel Serverless Function jako proxy,
-        // ale to by znamenalo návrat k "backendu" pro API volání.
     }
-
 
     // Funkce pro dynamické vykreslení tabulky aktivních zakázek (pro dispečera)
     function renderActiveOrders() {
-        activeOrdersTableBody.innerHTML = ''; // Vyčistí tabulku před přidáním nových řádků
+        activeOrdersTableBody.innerHTML = '';
 
         if (activeOrders.length === 0) {
             const noOrdersRow = document.createElement('tr');
@@ -216,7 +206,6 @@ document.addEventListener('DOMContentLoaded', () => {
             activeOrdersTableBody.appendChild(row);
         });
 
-        // Přidání event listenerů pro nově vytvořená tlačítka editace a smazání
         document.querySelectorAll('.edit-order-btn').forEach(button => {
             button.addEventListener('click', (e) => {
                 const orderId = e.target.dataset.orderId;
@@ -236,8 +225,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleEditOrder(orderId) {
         const order = activeOrders.find(o => o.id === orderId);
         if (order) {
-            // Zde by se obvykle otevřel modální formulář s předvyplněnými daty zakázky
-            // Pro jednoduchost teď jen alert
             alert(`Simulace editace zakázky ${orderId}. Aktuální data:
 ID: ${order.id}
 Náklad: ${order.naklad}
@@ -253,18 +240,17 @@ Pro reálnou editaci byste museli implementovat formulář a logiku pro aktualiz
 
     // Funkce pro zpracování smazání zakázky
     function handleDeleteOrder(orderId) {
-        if (confirm(`Opravdu chcete smazat zakázku ${orderId}?`)) { // Použijte vlastní modal pro lepší UX
+        if (confirm(`Opravdu chcete smazat zakázku ${orderId}?`)) {
             activeOrders = activeOrders.filter(order => order.id !== orderId);
             renderActiveOrders(); // Znovu vykreslí tabulku dispečera
             renderMyOrders(); // Znovu vykreslí tabulku strojvedoucího
-            alert(`Zakázka ${orderId} byla smazána.`); // Použijte vlastní modal
+            alert(`Zakázka ${orderId} byla smazána.`);
         }
     }
 
-
     // Funkce pro dynamické vykreslení tabulky "Moje aktuální zakázky" (pro strojvedoucího)
     function renderMyOrders() {
-        myOrdersTableBody.innerHTML = ''; // Vyčistí tabulku před přidáním nových řádků
+        myOrdersTableBody.innerHTML = '';
         const currentUserName = localStorage.getItem('currentUserName');
 
         const myOrders = activeOrders.filter(order => order.prideleno === currentUserName);
@@ -289,7 +275,6 @@ Pro reálnou editaci byste museli implementovat formulář a logiku pro aktualiz
             myOrdersTableBody.appendChild(row);
         });
 
-        // Přidání event listenerů pro nově vytvořená tlačítka
         document.querySelectorAll('.take-order-btn').forEach(button => {
             button.addEventListener('click', (e) => {
                 const orderId = e.target.dataset.orderId;
@@ -309,15 +294,14 @@ Pro reálnou editaci byste museli implementovat formulář a logiku pro aktualiz
     function handleTakeOrder(orderId) {
         const orderIndex = activeOrders.findIndex(order => order.id === orderId);
         if (orderIndex !== -1) {
-            // Zkontrolujte, zda je uživatel přidělený k této zakázce
             const currentUserName = localStorage.getItem('currentUserName');
             if (activeOrders[orderIndex].prideleno === currentUserName) {
                 activeOrders[orderIndex].stav = 'V provozu';
-                alert(`Zakázka ${orderId} byla převzata.`); // Použijte vlastní modal
-                renderActiveOrders(); // Aktualizovat tabulku dispečera
-                renderMyOrders(); // Aktualizovat tabulku strojvedoucího
+                alert(`Zakázka ${orderId} byla převzata.`);
+                renderActiveOrders();
+                renderMyOrders();
             } else {
-                alert('Tuto zakázku nemůžete převzít, protože vám nebyla přidělena.'); // Použijte vlastní modal
+                alert('Tuto zakázku nemůžete převzít, protože vám nebyla přidělena.');
             }
         }
     }
@@ -326,19 +310,17 @@ Pro reálnou editaci byste museli implementovat formulář a logiku pro aktualiz
     function handleCompleteOrder(orderId) {
         const orderIndex = activeOrders.findIndex(order => order.id === orderId);
         if (orderIndex !== -1) {
-            // Zkontrolujte, zda je uživatel přidělený k této zakázce
             const currentUserName = localStorage.getItem('currentUserName');
             if (activeOrders[orderIndex].prideleno === currentUserName) {
                 activeOrders[orderIndex].stav = 'Dokončeno';
-                alert(`Zakázka ${orderId} byla dokončena.`); // Použijte vlastní modal
-                renderActiveOrders(); // Aktualizovat tabulku dispečera
-                renderMyOrders(); // Aktualizovat tabulku strojvedoucího
+                alert(`Zakázka ${orderId} byla dokončena.`);
+                renderActiveOrders();
+                renderMyOrders();
             } else {
-                alert('Tuto zakázku nemůžete dokončit, protože vám nebyla přidělena.'); // Použijte vlastní modal
+                alert('Tuto zakázku nemůžete dokončit, protože vám nebyla přidělena.');
             }
         }
     }
-
 
     // Funkce pro aktualizaci možností v selectu "Přiřadit strojvedoucímu"
     function updateDriverSelectOptions() {
@@ -352,7 +334,6 @@ Pro reálnou editaci byste museli implementovat formulář a logiku pro aktualiz
             }
         }
     }
-
 
     // Funkce pro zobrazení dashboardu po přihlášení
     function renderDashboard() {
@@ -405,15 +386,13 @@ Pro reálnou editaci byste museli implementovat formulář a logiku pro aktualiz
 
         if (currentUserRole === 'dispatcher') {
             showSection('prehled');
-            fetchSimRailData(); // Načte data ze SimRail API, když je zobrazen přehled
-            // Nastaví interval pro pravidelné načítání dat (např. každých 30 sekund)
-            // POZOR: Příliš časté volání API může vést k zablokování!
+            fetchSimRailData();
             setInterval(fetchSimRailData, 30000);
-            updateDriverSelectOptions(); // Aktualizuje možnosti pro přidělování zakázek
-            renderActiveOrders(); // Vykreslí aktivní zakázky pro dispečera
+            updateDriverSelectOptions();
+            renderActiveOrders(); // Vykreslí aktivní zakázky (z paměti)
         } else {
             showSection('moje-zakazky');
-            renderMyOrders(); // Vykreslí zakázky pro přihlášeného strojvedoucího
+            renderMyOrders(); // Vykreslí zakázky pro přihlášeného (z paměti)
         }
 
         updateDochazkaStatus();
@@ -443,7 +422,8 @@ Pro reálnou editaci byste museli implementovat formulář a logiku pro aktualiz
         updateDochazkaStatus();
         const userName = localStorage.getItem('currentUserName') || 'Neznámý uživatel';
         const currentTime = new Date().toLocaleString('cs-CZ');
-        sendDiscordMessage(`**${userName}** se právě **přihlásil do práce** v **${currentTime}**.`);
+        // Použijeme obecný webhook pro docházku, nebo můžete přidat specifický
+        sendDiscordMessage(DISCORD_WEBHOOKS['Václav Novák'], `**${userName}** se právě **přihlásil do práce** v **${currentTime}**.`);
     });
 
     // Event listener pro tlačítko "Odchod z práce"
@@ -452,7 +432,8 @@ Pro reálnou editaci byste museli implementovat formulář a logiku pro aktualiz
         updateDochazkaStatus();
         const userName = localStorage.getItem('currentUserName') || 'Neznámý uživatel';
         const currentTime = new Date().toLocaleString('cs-CZ');
-        sendDiscordMessage(`**${userName}** se právě **odhlásil z práce** v **${currentTime}**.`);
+        // Použijeme obecný webhook pro docházku, nebo můžete přidat specifický
+        sendDiscordMessage(DISCORD_WEBHOOKS['Václav Novák'], `**${userName}** se právě **odhlásil z práce** v **${currentTime}**.`);
     });
 
     // NOVÝ EVENT LISTENER PRO ODESLÁNÍ FORMULÁŘE PŘIDĚLOVÁNÍ ZAKÁZEK
@@ -466,14 +447,15 @@ Pro reálnou editaci byste museli implementovat formulář a logiku pro aktualiz
             const cil = document.getElementById('cil').value;
             const pridelenoRidici = document.getElementById('prideleno-ridici').value;
             const poznamkyDispecer = document.getElementById('poznamky-dispecer').value;
+            const dispatcherName = localStorage.getItem('currentUserName') || 'Neznámý dispečer';
 
             // Základní validace
             if (!zakazkaId || !typNakladu || !puvod || !cil || !pridelenoRidici) {
-                alert('Prosím, vyplňte všechna povinná pole pro zakázku.'); // Použijte vlastní modal pro lepší UX
+                alert('Prosím, vyplňte všechna povinná pole pro zakázku.');
                 return;
             }
 
-            // Kontrola, zda ID zakázky již neexistuje
+            // Kontrola, zda ID zakázky již neexistuje v paměti
             if (activeOrders.some(order => order.id === zakazkaId)) {
                 alert(`Zakázka s ID "${zakazkaId}" již existuje. Zvolte prosím jiné ID.`);
                 return;
@@ -495,23 +477,35 @@ Pro reálnou editaci byste museli implementovat formulář a logiku pro aktualiz
 
             // Vyčistí formulář
             assignOrderForm.reset();
-            // Můžete přidat zprávu o úspěchu
-            alert('Zakázka úspěšně přidělena!'); // Použijte vlastní modal pro lepší UX
+            alert('Zakázka úspěšně přidělena!');
+
+            // --- Odeslání zprávy na Discord pro konkrétního řidiče ---
+            const assignedDriverWebhook = DISCORD_WEBHOOKS[pridelenoRidici];
+            if (assignedDriverWebhook) {
+                const discordMessage = `**Nová zakázka od dispečera ${dispatcherName}!**\n` +
+                                       `**ID Zakázky:** ${zakazkaId}\n` +
+                                       `**Náklad:** ${typNakladu}\n` +
+                                       `**Trasa:** ${puvod} -> ${cil}\n` +
+                                       `**Přiřazeno:** ${pridelenoRidici}\n` +
+                                       `_Nezapomeňte vyplnit výkaz jízdy, až dokončíte cestu!_`;
+                sendDiscordMessage(assignedDriverWebhook, discordMessage);
+            } else {
+                console.warn(`Webhook pro řidiče "${pridelenoRidici}" nebyl nalezen.`);
+            }
         });
     }
-
 
     // EVENT LISTENER PRO ZMĚNU ROLE V NASTAVENÍ
     if (nastaveniRoleSelect) {
         nastaveniRoleSelect.addEventListener('change', (e) => {
             const newRole = e.target.value;
-            localStorage.setItem('currentUserRole', newRole); // Aktualizuje roli v localStorage
+            localStorage.setItem('currentUserRole', newRole);
 
             settingsMessage.textContent = `Role byla změněna na "${newRole === 'dispatcher' ? 'Dispečer' : 'Strojvedoucí'}". Pro plné uplatnění změn se prosím odhlaste a znovu přihlaste.`;
             settingsMessage.classList.add('show');
             settingsMessage.style.color = 'var(--success-color)';
 
-            renderDashboard(); // Okamžité překreslení dashboardu pro zobrazení změn v menu atd.
+            renderDashboard();
 
             setTimeout(() => {
                 settingsMessage.classList.remove('show');
@@ -523,10 +517,6 @@ Pro reálnou editaci byste museli implementovat formulář a logiku pro aktualiz
     if (settingsForm) {
         settingsForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            // Všechna nastavení se ukládají jen v prohlížeči, ne perzistentně.
-            // Zde byste mohli přidat logiku pro uložení např. emailu nebo SimRail ID
-            // do localStorage, pokud byste je chtěli "pamatovat".
-
             settingsMessage.textContent = 'Nastavení uloženo (simulace).';
             settingsMessage.classList.add('show');
             settingsMessage.style.color = 'var(--success-color)';
@@ -537,7 +527,6 @@ Pro reálnou editaci byste museli implementovat formulář a logiku pro aktualiz
         });
     }
 
-
     // Kontrola přihlášení při načtení stránky
     if (localStorage.getItem('currentUserRole')) {
         renderDashboard();
@@ -545,8 +534,4 @@ Pro reálnou editaci byste museli implementovat formulář a logiku pro aktualiz
         loginView.style.display = 'flex';
         dashboardView.style.display = 'none';
     }
-
-    // Inicializační volání pro vykreslení tabulek při načtení stránky,
-    // pokud je uživatel již přihlášen (např. po refresh)
-    // Toto je již voláno v renderDashboard(), takže zde není nutné duplikovat.
 });
