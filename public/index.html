@@ -700,13 +700,13 @@
                         <li><a href="#nastaveni" class="nav-link"><i class="fas fa-cogs"></i> Nastavení</a></li>
 
                         <!-- Pouze pro dispečera -->
-                        <li class="role-dispatcher"><a href="#prehled" class="nav-link"><i class="fas fa-tachometer-alt"></i> Přehled EDR</a></li>
-                        <li class="role-dispatcher"><a href="#pridelovani-vlaku" class="nav-link"><i class="fas fa-truck-loading"></i> Přidělování vlaků</a></li>
-                        <li class="role-dispatcher"><a href="#clenove" class="nav-link"><i class="fas fa-users"></i> Členové</a></li>
+                        <li><a href="#prehled" class="nav-link"><i class="fas fa-tachometer-alt"></i> Přehled EDR</a></li>
+                        <li><a href="#pridelovani-vlaku" class="nav-link"><i class="fas fa-truck-loading"></i> Přidělování vlaků</a></li>
+                        <li><a href="#clenove" class="nav-link"><i class="fas fa-users"></i> Členové</a></li>
 
                         <!-- Pouze pro strojvedoucího -->
-                        <li class="role-driver"><a href="#moje-zakazky" class="nav-link"><i class="fas fa-clipboard-list"></i> Moje zakázky</a></li>
-                        <li class="role-driver"><a href="#vykazy" class="nav-link"><i class="fas fa-file-invoice"></i> Vykazy tras</a></li>
+                        <li><a href="#moje-zakazky" class="nav-link"><i class="fas fa-clipboard-list"></i> Moje zakázky</a></li>
+                        <li><a href="#vykazy" class="nav-link"><i class="fas fa-file-invoice"></i> Vykazy tras</a></li>
                     </ul>
                 </nav>
             </div>
@@ -737,7 +737,6 @@
                             <button id="check-out-btn" class="btn" style="display:none;"><i class="fas fa-door-closed"></i> Odchod z práce</button>
                         </div>
                     </div>
-                    <!-- Sekce "Moje docházka (Posledních 7 dní)" byla odstraněna -->
                 </div>
             </section>
 
@@ -745,38 +744,56 @@
             <section id="prehled" class="content-section">
                 <div class="card">
                     <h3><i class="fas fa-tachometer-alt"></i> Přehled EDR (SimRail API)</h3>
-                    <p>Zde se budou zobrazovat **aktuální data z SimRail EDR API** v reálném čase. Tyto karty by se aktualizovaly pomocí JavaScriptu.</p>
+                    <p>Zde se budou zobrazovat **aktuální data z SimRail EDR API** v reálném čase pro server CZ-1.</p>
                     <div class="dashboard-grid">
                         <div class="card">
                             <h3><i class="fas fa-map-marker-alt"></i> Počet vlaků online</h3>
-                            <div class="value">45</div>
+                            <div class="value" id="online-trains-count">Načítám...</div>
                             <p>Aktivních vlakových souprav v síti.</p>
                         </div>
                         <div class="card">
-                            <h3><i class="fas fa-box-open"></i> Dostupný náklad</h3>
-                            <div class="value">128 t</div>
-                            <p>Celkové množství dostupného nákladu k přepravě.</p>
+                            <h3><i class="fas fa-box-open"></i> Celkový náklad</h3>
+                            <div class="value" id="total-cargo-weight">Načítám...</div>
+                            <p>Celkové množství nákladu v provozu.</p>
                         </div>
                         <div class="card">
                             <h3><i class="fas fa-clock"></i> Průměrné zpoždění</h3>
-                            <div class="value">2 min</div>
+                            <div class="value" id="average-delay">Načítám...</div>
                             <p>Aktuální průměrné zpoždění vlaků v síti.</p>
                         </div>
                     </div>
-                    <h4>Detailní data EDR (tabulka/grafy)</h4>
-                    <p>Zde by byla dynamická tabulka nebo interaktivní grafy zobrazující např. obsazenost tratí, aktivní relace, aktuální incidenty atd. Tato část by vyžadovala významnou integraci s SimRail API a komplexní JavaScript.</p>
-                    <table class="data-table">
+                    <h4>Detailní data EDR - Aktivní vlaky</h4>
+                    <table class="data-table" id="edr-train-data">
                         <thead>
                             <tr>
                                 <th>ID Vlaku</th>
-                                <th>Trasa</th>
-                                <th>Stav</th>
+                                <th>Typ</th>
+                                <th>Z/Do</th>
+                                <th>Status</th>
                                 <th>Rychlost (km/h)</th>
-                                <th>Pozice</th>
+                                <th>Zpoždění (min)</th>
+                                <th>Aktuální lokace</th>
                             </tr>
                         </thead>
                         <tbody>
                             <!-- Řádky budou dynamicky načítány z API -->
+                            <tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--muted-text);">Načítám data...</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h4 style="margin-top: 40px;">Detailní data EDR - Stanice</h4>
+                    <table class="data-table" id="edr-station-data">
+                        <thead>
+                            <tr>
+                                <th>Název Stanice</th>
+                                <th>Obsazenost (%)</th>
+                                <th>Vlaky ve stanici</th>
+                                <th>Čekající vlaky</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Řádky budou dynamicky načítány z API -->
+                            <tr><td colspan="4" style="text-align: center; padding: 20px; color: var(--muted-text);">Načítám data...</td></tr>
                         </tbody>
                     </table>
                 </div>

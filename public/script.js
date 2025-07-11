@@ -29,6 +29,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Tabulka pro moje zakázky (pro strojvedoucího)
     const myOrdersTableBody = document.querySelector('#moje-zakazky .data-table tbody');
 
+    // EDR specifické elementy
+    const onlineTrainsCountElement = document.getElementById('online-trains-count');
+    const totalCargoWeightElement = document.getElementById('total-cargo-weight');
+    const averageDelayElement = document.getElementById('average-delay');
+    const edrTrainDataTableBody = document.querySelector('#edr-train-data tbody');
+    const edrStationDataTableBody = document.querySelector('#edr-station-data tbody');
+
+
     // Specifické Discord webhooky pro každého člena
     const DISCORD_WEBHOOKS = {
         'Václav Novák': 'https://discord.com/api/webhooks/1393281378711375893/NY_mgWJYiN55TKEh4GgPiFcKi5VIQuYegk1DkfAaWtKmn_4e2GK2QQL88yLsljW2REmF',
@@ -145,37 +153,105 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchSimRailData() {
         const serverCode = 'CZ-1'; // Váš požadovaný server
         const trainPositionsEndpoint = `https://panel.simrail.eu:8084/train-positions-open?serverCode=${serverCode}`;
-        const timeEndpoint = `https://api1.aws.simrail.eu:8082/api/getTime?serverCode=${serverCode}`;
+        const stationsEndpoint = `https://panel.simrail.eu:8084/stations-open?serverCode=${serverCode}`;
+        // const timeEndpoint = `https://api1.aws.simrail.eu:8082/api/getTime?serverCode=${serverCode}`; // Není přímo použito pro EDR data
 
-        // Získání počtu vlaků online
+        // Resetování UI pro načítání
+        onlineTrainsCountElement.textContent = 'Načítám...';
+        totalCargoWeightElement.textContent = 'Načítám...';
+        averageDelayElement.textContent = 'Načítám...';
+        edrTrainDataTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--muted-text);">Načítám data...</td></tr>`;
+        edrStationDataTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px; color: var(--muted-text);">Načítám data...</td></tr>`;
+
+
+        // Získání dat o pozicích vlaků
         try {
             const response = await fetch(trainPositionsEndpoint);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            const data = await response.json();
-            const trainsOnlineValueElement = document.querySelector('#prehled .card:nth-child(1) .value');
-            if (trainsOnlineValueElement) {
-                trainsOnlineValueElement.textContent = data.length;
+            const trainData = await response.json();
+
+            // Aktualizace karet
+            onlineTrainsCountElement.textContent = trainData.length;
+
+            let totalCargo = 0;
+            let totalDelay = 0;
+            let delayedTrains = 0;
+
+            edrTrainDataTableBody.innerHTML = ''; // Vyčistí tabulku před přidáním nových řádků
+            if (trainData.length === 0) {
+                edrTrainDataTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--muted-text);">Žádné aktivní vlaky.</td></tr>`;
+            } else {
+                trainData.forEach(train => {
+                    // Odhad nákladu, pokud API neposkytuje přímo
+                    // Předpokládejme, že 'cargoWeight' je vlastnost, pokud existuje
+                    totalCargo += train.cargoWeight || 0; // Nahraďte 'cargoWeight' skutečnou vlastností z API
+
+                    // Zpoždění
+                    if (train.delayMinutes && train.delayMinutes > 0) {
+                        totalDelay += train.delayMinutes;
+                        delayedTrains++;
+                    }
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${train.trainNo || 'N/A'}</td>
+                        <td>${train.trainType || 'N/A'}</td>
+                        <td>${train.fromStation || 'N/A'} - ${train.toStation || 'N/A'}</td>
+                        <td>${train.status || 'N/A'}</td>
+                        <td>${train.speedKmH !== undefined ? train.speedKmH : 'N/A'}</td>
+                        <td>${train.delayMinutes !== undefined ? train.delayMinutes : 'N/A'}</td>
+                        <td>${train.currentStation || 'N/A'}</td>
+                    `;
+                    edrTrainDataTableBody.appendChild(row);
+                });
             }
+
+            totalCargoWeightElement.textContent = `${totalCargo} t`;
+            if (delayedTrains > 0) {
+                averageDelayElement.textContent = `${(totalDelay / delayedTrains).toFixed(0)} min`;
+            } else {
+                averageDelayElement.textContent = `0 min`;
+            }
+
         } catch (error) {
             console.error('Chyba při načítání pozic vlaků ze SimRail API:', error);
-            const trainsOnlineValueElement = document.querySelector('#prehled .card:nth-child(1) .value');
-            if (trainsOnlineValueElement) {
-                trainsOnlineValueElement.textContent = 'N/A';
-            }
+            onlineTrainsCountElement.textContent = 'Chyba';
+            totalCargoWeightElement.textContent = 'Chyba';
+            averageDelayElement.textContent = 'Chyba';
+            edrTrainDataTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--danger-color);">Chyba při načítání dat o vlacích.</td></tr>`;
         }
 
-        // Získání aktuálního herního času (pokud je potřeba zobrazit)
+        // Získání dat o stanicích
         try {
-            const response = await fetch(timeEndpoint);
+            const response = await fetch(stationsEndpoint);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            const data = await response.json();
-            // Implementace zobrazení herního času, pokud je potřeba
+            const stationData = await response.json();
+
+            edrStationDataTableBody.innerHTML = ''; // Vyčistí tabulku
+            if (stationData.length === 0) {
+                edrStationDataTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px; color: var(--muted-text);">Žádná data o stanicích.</td></tr>`;
+            } else {
+                stationData.forEach(station => {
+                    const row = document.createElement('tr');
+                    // Předpokládáme, že API vrací data jako station.name, station.occupancy, station.trainsInStation, station.waitingTrains
+                    // Pokud API poskytuje jiné názvy vlastností, je potřeba je zde upravit
+                    row.innerHTML = `
+                        <td>${station.name || 'N/A'}</td>
+                        <td>${station.occupancy !== undefined ? station.occupancy.toFixed(0) + '%' : 'N/A'}</td>
+                        <td>${station.trainsInStation !== undefined ? station.trainsInStation : 'N/A'}</td>
+                        <td>${station.waitingTrains !== undefined ? station.waitingTrains : 'N/A'}</td>
+                    `;
+                    edrStationDataTableBody.appendChild(row);
+                });
+            }
+
         } catch (error) {
-            console.error('Chyba při načítání herního času ze SimRail API:', error);
+            console.error('Chyba při načítání dat o stanicích ze SimRail API:', error);
+            edrStationDataTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px; color: var(--danger-color);">Chyba při načítání dat o stanicích.</td></tr>`;
         }
     }
 
@@ -386,8 +462,8 @@ Pro reálnou editaci byste museli implementovat formulář a logiku pro aktualiz
 
         if (currentUserRole === 'dispatcher') {
             showSection('prehled');
-            fetchSimRailData();
-            setInterval(fetchSimRailData, 30000);
+            fetchSimRailData(); // Načte data ze SimRail API, když je zobrazen přehled
+            setInterval(fetchSimRailData, 30000); // Aktualizuje data každých 30 sekund
             updateDriverSelectOptions();
             renderActiveOrders(); // Vykreslí aktivní zakázky (z paměti)
         } else {
