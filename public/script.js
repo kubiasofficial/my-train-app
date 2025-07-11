@@ -208,11 +208,59 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${order.puvod} - ${order.cil}</td>
                 <td>${order.prideleno}</td>
                 <td class="status-badge ${order.stav.toLowerCase().replace(' ', '-')}">${order.stav}</td>
-                <td><button class="btn" style="background-color: #f6ad55; padding: 5px 10px;"><i class="fas fa-edit"></i></button> <button class="btn" style="background-color: #e53e3e; padding: 5px 10px;"><i class="fas fa-times"></i></button></td>
+                <td>
+                    <button class="btn edit-order-btn" data-order-id="${order.id}" style="background-color: #f6ad55; padding: 5px 10px; margin-right: 5px;"><i class="fas fa-edit"></i></button>
+                    <button class="btn delete-order-btn" data-order-id="${order.id}" style="background-color: #e53e3e; padding: 5px 10px;"><i class="fas fa-times"></i></button>
+                </td>
             `;
             activeOrdersTableBody.appendChild(row);
         });
+
+        // Přidání event listenerů pro nově vytvořená tlačítka editace a smazání
+        document.querySelectorAll('.edit-order-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const orderId = e.target.dataset.orderId;
+                handleEditOrder(orderId);
+            });
+        });
+
+        document.querySelectorAll('.delete-order-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const orderId = e.target.dataset.orderId;
+                handleDeleteOrder(orderId);
+            });
+        });
     }
+
+    // Funkce pro zpracování editace zakázky (pouze simulace, pro reálnou editaci by byl potřeba formulář)
+    function handleEditOrder(orderId) {
+        const order = activeOrders.find(o => o.id === orderId);
+        if (order) {
+            // Zde by se obvykle otevřel modální formulář s předvyplněnými daty zakázky
+            // Pro jednoduchost teď jen alert
+            alert(`Simulace editace zakázky ${orderId}. Aktuální data:
+ID: ${order.id}
+Náklad: ${order.naklad}
+Původ: ${order.puvod}
+Cíl: ${order.cil}
+Přiřazeno: ${order.prideleno}
+Stav: ${order.stav}
+Poznámky: ${order.poznamky}
+
+Pro reálnou editaci byste museli implementovat formulář a logiku pro aktualizaci dat v activeOrders.`);
+        }
+    }
+
+    // Funkce pro zpracování smazání zakázky
+    function handleDeleteOrder(orderId) {
+        if (confirm(`Opravdu chcete smazat zakázku ${orderId}?`)) { // Použijte vlastní modal pro lepší UX
+            activeOrders = activeOrders.filter(order => order.id !== orderId);
+            renderActiveOrders(); // Znovu vykreslí tabulku dispečera
+            renderMyOrders(); // Znovu vykreslí tabulku strojvedoucího
+            alert(`Zakázka ${orderId} byla smazána.`); // Použijte vlastní modal
+        }
+    }
+
 
     // Funkce pro dynamické vykreslení tabulky "Moje aktuální zakázky" (pro strojvedoucího)
     function renderMyOrders() {
@@ -422,6 +470,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Základní validace
             if (!zakazkaId || !typNakladu || !puvod || !cil || !pridelenoRidici) {
                 alert('Prosím, vyplňte všechna povinná pole pro zakázku.'); // Použijte vlastní modal pro lepší UX
+                return;
+            }
+
+            // Kontrola, zda ID zakázky již neexistuje
+            if (activeOrders.some(order => order.id === zakazkaId)) {
+                alert(`Zakázka s ID "${zakazkaId}" již existuje. Zvolte prosím jiné ID.`);
                 return;
             }
 
