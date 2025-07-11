@@ -1,177 +1,190 @@
-// --- Vzít vlak a Kdo co dělá ---
-    // const takeTrainBtn = document.getElementById('takeTrainBtn');
-    // const takeTrainModal = document.getElementById('takeTrainModal');
-    // const takeTrainModalContent = document.getElementById('takeTrainModalContent');
-    // const closeTakeTrainModalBtn = document.getElementById('closeTakeTrainModalBtn');
-    // Odebráno: tlačítko a tabulka "Vzít vlak" a "Kdo co dělá" dle požadavku uživatele.
-// --- Zaměstnanci widget (nový systém) ---
-let employees = [];
-const employeeStatusTableBody = document.querySelector('#employeeStatusTable tbody');
-const actionStatusMessage = document.getElementById('actionStatusMessage');
-const myStatusDisplay = document.getElementById('myStatusDisplay');
-const myStatusActions = document.getElementById('myStatusActions');
-const empInBtn = document.getElementById('empInBtn');
-const empOutBtn = document.getElementById('empOutBtn');
-
-// Získat přihlášeného uživatele z localStorage
-function getLoggedInUser() {
-    try {
-        const userStr = localStorage.getItem('discordUser');
-        if (!userStr) return null;
-        return JSON.parse(userStr);
-    } catch (e) { return null; }
-}
-
-let myEmployee = null;
-
-// Funkce pro aktualizaci/přidání statusu zaměstnance do tabulky
-async function updateEmployeeStatusInTable(empName, inDuty) {
-    let row = document.getElementById(`status-row-${empName.replace(/\s/g, '-')}`);
-    const statusText = inDuty ? '🟢 Ve službě' : '🔴 Mimo službu';
-    const statusClass = inDuty ? 'status-in-service' : 'status-out-of-service';
-
-    if (!row) {
-        row = employeeStatusTableBody.insertRow();
-        row.id = `status-row-${empName.replace(/\s/g, '-')}`;
-        const nameCell = row.insertCell(0);
-        nameCell.textContent = empName;
-        const statusCell = row.insertCell(1);
-        statusCell.className = statusClass;
-        statusCell.textContent = statusText;
-    } else {
-        const statusCell = row.cells[1];
-        statusCell.className = statusClass;
-        statusCell.textContent = statusText;
-    }
-}
-
-// Funkce pro načtení počátečních statusů a nalezení mého zaměstnance
-async function loadInitialEmployeeStatuses() {
-    const res = await fetch('/api/employees');
-    employees = await res.json();
-    const user = getLoggedInUser();
-    if (user) {
-        myEmployee = employees.find(emp => emp.discordId === user.id || emp.name === user.username);
-    }
-    employees.forEach(emp => {
-        updateEmployeeStatusInTable(emp.name, emp.currentStatus === 'Ve službě');
-    });
-    updateMyStatusWidget();
-}
-
-function updateMyStatusWidget() {
-    if (!myEmployee) {
-        myStatusDisplay.textContent = 'Nepodařilo se najít váš účet v seznamu zaměstnanců.';
-        myStatusActions.style.display = 'none';
-        return;
-    }
-    const inDuty = myEmployee.currentStatus === 'Ve službě';
-    myStatusDisplay.textContent = `Status: ${inDuty ? '🟢 Ve službě' : '🔴 Mimo službu'}`;
-    myStatusActions.style.display = 'flex';
-}
-
-// Funkce pro zobrazení zprávy
-function showStatusMessage(message, isError = false) {
-    actionStatusMessage.textContent = message;
-    actionStatusMessage.style.color = isError ? '#e53935' : '#43b581';
-    setTimeout(() => actionStatusMessage.textContent = '', 5000);
-}
-
-// Funkce pro odeslání stavu zaměstnance na Discord a uložení na server
-async function sendEmployeeStatus(emp, inDuty) {
-    const embed = {
-        color: inDuty ? 0x43b581 : 0xe53935,
-        title: inDuty ? '🚦 Zaměstnanec ve službě' : '🏁 Zaměstnanec mimo službu',
-        description: `**${emp.name}** je nyní ${inDuty ? 've službě! \u{1F7E2}' : 'mimo službu. \u{1F534}'}`,
-        timestamp: new Date().toISOString(),
-        footer: {
-            text: 'Multi-Cargo Doprava',
-            icon_url: 'https://cdn.discordapp.com/emojis/1140725956576686201.webp?size=96&quality=lossless'
-        }
-    };
-    try {
-        // Uložit na server
-        await fetch('/api/employees', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: emp.id, currentStatus: inDuty ? 'Ve službě' : 'Mimo službu' })
-        });
-        // Odeslat na Discord
-        await fetch('https://discord.com/api/webhooks/1390845026375831552/Wf4OvVgDoV44X-e-11SMn5yskwHHh2-DyEUohAzu853kn5TD-6_RNRrIl8LSuGVTUC1S', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ embeds: [embed] })
-        });
-        showStatusMessage('Status byl úspěšně změněn a odeslán!');
-    } catch (e) {
-        showStatusMessage('Chyba při ukládání nebo odesílání na Discord.', true);
-    }
-}
-
-
 document.addEventListener('DOMContentLoaded', () => {
-    // Načíst počáteční statusy při načtení stránky
-    loadInitialEmployeeStatuses();
+    const loginView = document.getElementById('login-view');
+    const dashboardView = document.getElementById('dashboard-view');
+    const loginForm = document.getElementById('loginForm');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const errorMessage = document.getElementById('errorMessage');
 
-    // Event listenery pro tlačítka "Příchod" a "Odchod"
-    if (empInBtn) {
-        empInBtn.addEventListener('click', async () => {
-            if (myEmployee) {
-                await sendEmployeeStatus(myEmployee, true);
-                myEmployee.currentStatus = 'Ve službě';
-                updateEmployeeStatusInTable(myEmployee.name, true);
-                updateMyStatusWidget();
-            }
-        });
-    }
-    if (empOutBtn) {
-        empOutBtn.addEventListener('click', async () => {
-            if (myEmployee) {
-                await sendEmployeeStatus(myEmployee, false);
-                myEmployee.currentStatus = 'Mimo službu';
-                updateEmployeeStatusInTable(myEmployee.name, false);
-                updateMyStatusWidget();
-            }
-        });
-    }
+    const timeElement = document.getElementById('current-time');
+    const navLinks = document.querySelectorAll('.nav-link'); // Změněno na .nav-link
+    const contentSections = document.querySelectorAll('.content-section');
+    const userRoleElement = document.getElementById('user-role');
+    const currentUsernameElement = document.getElementById('current-username');
+    const logoutBtn = document.getElementById('logout-btn');
+    const checkInBtn = document.getElementById('check-in-btn');
+    const checkOutBtn = document.getElementById('check-out-btn');
+    const dochazkaStatusText = document.getElementById('dochazka-status-text');
+    const nastaveniUsernameInput = document.getElementById('nastaveni-username');
 
 
+    // --- MANUÁLNÍ DATABÁZE UŽIVATELŮ A HESEL (POUZE PRO DEMO!) ---
+    const users = {
+        'dispecer': { password: 'dispecerheslo', role: 'dispatcher', name: 'Eva Dvořáková' },
+        'strojvedouci': { password: 'strojvedouciheslo', role: 'driver', name: 'Jana Nováková' },
+        'admin': { password: 'adminheslo', role: 'dispatcher', name: 'Petr Král' },
+        'vaclav': { password: '1809', role: 'driver', name: 'Václav Novák' },
+        'kubiasofficial': { password: '2811', role: 'driver', name: 'Kubias Official' }
+    };
 
+    let isWorking = false; // Simulace stavu docházky
 
-    // --- Zbytek vašeho původního script.js kódu (restart alert, načítání vlaků, generování vlaku) ---
-
-    // --- Restart alert ---
-    const restartTimes = ["01:30", "08:30", "15:30"];
-    const restartAlert = document.getElementById('restartAlert');
-    const closeRestartAlert = document.getElementById('closeRestartAlert');
-    function checkRestartAlert() {
+    // Funkce pro aktualizaci času
+    function updateTime() {
         const now = new Date();
-        const pragueTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Prague' }));
-        const h = pragueTime.getHours().toString().padStart(2, '0');
-        const m = pragueTime.getMinutes().toString().padStart(2, '0');
-        const current = `${h}:${m}`;
-        for (let t of restartTimes) {
-            let [th, tm] = t.split(':').map(Number);
-            let restartDate = new Date(pragueTime);
-            restartDate.setHours(th, tm, 0, 0);
-            restartDate.setMinutes(restartDate.getMinutes() - 30);
-            let alertH = restartDate.getHours().toString().padStart(2, '0');
-            let alertM = restartDate.getMinutes().toString().padStart(2, '0');
-            let alertTime = `${alertH}:${alertM}`;
-            if (current === alertTime) {
-                if (restartAlert) restartAlert.style.display = 'block';
-                return;
-            }
-        }
-        if (restartAlert) restartAlert.style.display = 'none';
+        timeElement.textContent = now.toLocaleString('cs-CZ', { dateStyle: 'full', timeStyle: 'medium' });
     }
-    if (closeRestartAlert) {
-        closeRestartAlert.addEventListener('click', () => {
-            if (restartAlert) restartAlert.style.display = 'none';
-        });
-    }
-    setInterval(checkRestartAlert, 30000);
-    checkRestartAlert();
 
-    // --- VŠECHNY FUNKCE A PROMĚNNÉ PRO GENEROVÁNÍ VLAKŮ BYLY ODSTRANĚNY ---
+    // Funkce pro zobrazení konkrétní sekce dashboardu
+    function showSection(id) {
+        contentSections.forEach(section => {
+            section.classList.remove('active');
+        });
+        const activeSection = document.getElementById(id);
+        if (activeSection) {
+            activeSection.classList.add('active');
+        }
+
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+        });
+        const correspondingNavLink = document.querySelector(`[href="#${id}"]`);
+        if (correspondingNavLink) {
+             correspondingNavLink.classList.add('active');
+        }
+    }
+
+    // Funkce pro aktualizaci stavu docházky
+    function updateDochazkaStatus() {
+        if (isWorking) {
+            dochazkaStatusText.textContent = 'Jste v práci';
+            dochazkaStatusText.classList.remove('status-inactive');
+            dochazkaStatusText.classList.add('status-active');
+            checkInBtn.style.display = 'none';
+            checkOutBtn.style.display = 'inline-flex';
+        } else {
+            dochazkaStatusText.textContent = 'Jste mimo práci';
+            dochazkaStatusText.classList.remove('status-active');
+            dochazkaStatusText.classList.add('status-inactive');
+            checkInBtn.style.display = 'inline-flex';
+            checkOutBtn.style.display = 'none';
+        }
+    }
+
+    // Funkce pro přihlášení
+    function login(username, password) {
+        if (users[username] && users[username].password === password) {
+            errorMessage.classList.remove('show');
+            localStorage.setItem('currentUserRole', users[username].role);
+            localStorage.setItem('currentUserName', users[username].name);
+            renderDashboard(); // Zobrazí dashboard
+        } else {
+            errorMessage.textContent = 'Neplatné uživatelské jméno nebo heslo.';
+            errorMessage.classList.add('show');
+        }
+    }
+
+    // Funkce pro odhlášení
+    function logout() {
+        localStorage.removeItem('currentUserRole');
+        localStorage.removeItem('currentUserName');
+        loginView.style.display = 'flex';
+        dashboardView.style.display = 'none';
+        usernameInput.value = ''; // Vyčistí pole
+        passwordInput.value = '';
+        errorMessage.classList.remove('show');
+    }
+
+    // Funkce pro zobrazení dashboardu po přihlášení
+    function renderDashboard() {
+        const currentUserRole = localStorage.getItem('currentUserRole');
+        const currentUserName = localStorage.getItem('currentUserName');
+
+        if (!currentUserRole) {
+            logout(); // Pokud není role, odhlásí a vrátí na login
+            return;
+        }
+
+        loginView.style.display = 'none';
+        dashboardView.style.display = 'flex'; // Zobrazí dashboard
+
+        if (userRoleElement) {
+            userRoleElement.textContent = currentUserRole === 'dispatcher' ? 'Dispečer' : 'Strojvedoucí';
+        }
+        if (currentUsernameElement) {
+            currentUsernameElement.textContent = currentUserName || 'Neznámý uživatel';
+        }
+        if (nastaveniUsernameInput) {
+            nastaveniUsernameInput.value = currentUserName || '';
+        }
+
+        const dispatcherSections = ['prehled', 'pridelovani-vlaku', 'dochazka', 'clenove', 'nastaveni'];
+        const driverSections = ['moje-zakazky', 'vykazy', 'dochazka', 'nastaveni'];
+
+        navLinks.forEach(link => {
+            const targetId = link.getAttribute('href').substring(1);
+            const listItem = link.closest('li');
+
+            if (currentUserRole === 'dispatcher') {
+                if (!dispatcherSections.includes(targetId)) {
+                    listItem.style.display = 'none';
+                } else {
+                    listItem.style.display = 'block';
+                }
+            } else if (currentUserRole === 'driver') {
+                if (!driverSections.includes(targetId)) {
+                    listItem.style.display = 'none';
+                } else {
+                    listItem.style.display = 'block';
+                }
+            }
+        });
+
+        // Nastavení výchozí sekce po přihlášení
+        if (currentUserRole === 'dispatcher') {
+            showSection('prehled');
+        } else {
+            showSection('moje-zakazky');
+        }
+
+        updateDochazkaStatus(); // Aktualizuje stav docházky
+        setInterval(updateTime, 1000); // Spustí aktualizaci času
+        updateTime(); // První zobrazení času
+    }
+
+    // --- Event Listenery ---
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        login(usernameInput.value, passwordInput.value);
+    });
+
+    logoutBtn.addEventListener('click', logout);
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('href').substring(1);
+            showSection(targetId);
+        });
+    });
+
+    checkInBtn.addEventListener('click', () => {
+        isWorking = true;
+        updateDochazkaStatus();
+        // alert('Úspěšně jste se přihlásil do práce!');
+    });
+
+    checkOutBtn.addEventListener('click', () => {
+        isWorking = false;
+        updateDochazkaStatus();
+        // alert('Úspěšně jste se odhlásil z práce!');
+    });
+
+    // Kontrola přihlášení při načtení stránky
+    if (localStorage.getItem('currentUserRole')) {
+        renderDashboard();
+    } else {
+        loginView.style.display = 'flex';
+        dashboardView.style.display = 'none';
+    }
 });
