@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorMessage = document.getElementById('errorMessage');
 
     const timeElement = document.getElementById('current-time');
-    const navLinks = document.querySelectorAll('.nav-link'); // Změněno na .nav-link
+    const navLinks = document.querySelectorAll('.nav-link');
     const contentSections = document.querySelectorAll('.content-section');
     const userRoleElement = document.getElementById('user-role');
     const currentUsernameElement = document.getElementById('current-username');
@@ -17,8 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const dochazkaStatusText = document.getElementById('dochazka-status-text');
     const nastaveniUsernameInput = document.getElementById('nastaveni-username');
 
+    // NOVÉ ELEMENTY PRO NASTAVENÍ ROLE
+    const nastaveniRoleSelect = document.getElementById('nastaveni-role');
+    const settingsMessage = document.getElementById('settingsMessage');
+    const settingsForm = document.getElementById('settingsForm');
+
 
     // --- MANUÁLNÍ DATABÁZE UŽIVATELŮ A HESEL (POUZE PRO DEMO!) ---
+    // POZOR: Změna role zde je pouze na straně klienta (v prohlížeči).
+    // Pro reálnou aplikaci by bylo nutné ověřování a ukládání role na serveru!
     const users = {
         'dispecer': { password: 'dispecerheslo', role: 'dispatcher', name: 'Eva Dvořáková' },
         'strojvedouci': { password: 'strojvedouciheslo', role: 'driver', name: 'Jana Nováková' },
@@ -118,6 +125,11 @@ document.addEventListener('DOMContentLoaded', () => {
             nastaveniUsernameInput.value = currentUserName || '';
         }
 
+        // Nastavení aktuální role ve výběru v nastavení
+        if (nastaveniRoleSelect) {
+            nastaveniRoleSelect.value = currentUserRole;
+        }
+
         const dispatcherSections = ['prehled', 'pridelovani-vlaku', 'dochazka', 'clenove', 'nastaveni'];
         const driverSections = ['moje-zakazky', 'vykazy', 'dochazka', 'nastaveni'];
 
@@ -179,6 +191,44 @@ document.addEventListener('DOMContentLoaded', () => {
         updateDochazkaStatus();
         // alert('Úspěšně jste se odhlásil z práce!');
     });
+
+    // NOVÝ EVENT LISTENER PRO ZMĚNU ROLE V NASTAVENÍ
+    if (nastaveniRoleSelect) {
+        nastaveniRoleSelect.addEventListener('change', (e) => {
+            const newRole = e.target.value;
+            localStorage.setItem('currentUserRole', newRole); // Aktualizuje roli v localStorage
+
+            // Zobrazí zprávu o úspěšné změně
+            settingsMessage.textContent = `Role byla změněna na "${newRole === 'dispatcher' ? 'Dispečer' : 'Strojvedoucí'}". Pro plné uplatnění změn se prosím odhlaste a znovu přihlaste.`;
+            settingsMessage.classList.add('show');
+            settingsMessage.style.color = 'var(--success-color)'; // Zelená barva pro úspěch
+
+            // Okamžité překreslení dashboardu pro zobrazení změn v menu atd.
+            renderDashboard();
+
+            // Skryje zprávu po několika sekundách
+            setTimeout(() => {
+                settingsMessage.classList.remove('show');
+            }, 5000);
+        });
+    }
+
+    // NOVÝ EVENT LISTENER PRO ODESLÁNÍ FORMULÁŘE NASTAVENÍ (pro ostatní pole)
+    if (settingsForm) {
+        settingsForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Zde by v reálné aplikaci proběhlo odeslání dat na backend.
+            // Prozatím jen zobrazíme simulovanou zprávu o uložení.
+            settingsMessage.textContent = 'Nastavení uloženo (simulace).';
+            settingsMessage.classList.add('show');
+            settingsMessage.style.color = 'var(--success-color)';
+
+            setTimeout(() => {
+                settingsMessage.classList.remove('show');
+            }, 3000);
+        });
+    }
+
 
     // Kontrola přihlášení při načtení stránky
     if (localStorage.getItem('currentUserRole')) {
